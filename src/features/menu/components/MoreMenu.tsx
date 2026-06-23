@@ -2,7 +2,8 @@ import React from "react";
 import { StyleSheet, View, TouchableOpacity, Pressable } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { AnimatePresence, MotiView } from "moti";
-import { ActivityIcon, CardIcon, ListIcon } from "../../../shared/ui/icons";
+import { Easing } from "react-native-reanimated";
+import { ActivityIcon, CardIcon, ListIcon, SettingsIcon } from "../../../shared/ui/icons";
 import { theme } from "../../../shared/styles/theme";
 
 interface MoreMenuProps {
@@ -11,6 +12,7 @@ interface MoreMenuProps {
   onOpenSubscriptions: () => void;
   onOpenAnalytics: () => void;
   onOpenHistory: () => void;
+  onOpenSettings: () => void;
 }
 
 export function MoreMenu({
@@ -19,6 +21,7 @@ export function MoreMenu({
   onOpenSubscriptions,
   onOpenAnalytics,
   onOpenHistory,
+  onOpenSettings,
 }: MoreMenuProps) {
   return (
     <AnimatePresence>
@@ -37,10 +40,10 @@ export function MoreMenu({
 
           <MotiView
             style={styles.menu}
-            from={{ opacity: 0, scale: 0.9, translateY: -8 }}
+            from={{ opacity: 0, scale: 0.96, translateY: -6 }}
             animate={{ opacity: 1, scale: 1, translateY: 0 }}
-            exit={{ opacity: 0, scale: 0.95, translateY: -8 }}
-            transition={{ type: "spring", stiffness: 420, damping: 30 }}
+            exit={{ opacity: 0, scale: 0.98, translateY: -6 }}
+            transition={{ type: "timing", duration: 160, easing: Easing.out(Easing.cubic) }}
           >
             <TouchableOpacity style={styles.item} onPress={onOpenHistory} activeOpacity={0.7}>
               <ListIcon color={theme.colors.textSoft} />
@@ -55,6 +58,11 @@ export function MoreMenu({
             <TouchableOpacity style={styles.item} onPress={onOpenAnalytics} activeOpacity={0.7}>
               <ActivityIcon color={theme.colors.textSoft} />
               <Text style={styles.itemText}>Tempo</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.item} onPress={onOpenSettings} activeOpacity={0.7}>
+              <SettingsIcon color={theme.colors.textSoft} />
+              <Text style={styles.itemText}>Ayarlar</Text>
             </TouchableOpacity>
           </MotiView>
         </View>

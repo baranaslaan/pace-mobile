@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
 import { StyleSheet, View, TouchableOpacity, Dimensions } from "react-native";
 import { AnimatePresence, MotiView } from "moti";
+import { Easing } from "react-native-reanimated";
 import { XIcon } from "./icons";
 import { theme } from "../styles/theme";
 import { Text } from "../typography/Text";
@@ -40,7 +41,7 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
             from={{ translateY: SCREEN_HEIGHT }}
             animate={{ translateY: 0 }}
             exit={{ translateY: SCREEN_HEIGHT }}
-            transition={{ type: "spring", stiffness: 320, damping: 34 }}
+            transition={{ type: "timing", duration: 300, easing: Easing.out(Easing.cubic) }}
           >
             <View style={styles.grabber} />
 

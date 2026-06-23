@@ -17,6 +17,7 @@ import { MoreMenu } from "../features/menu/components/MoreMenu";
 import { SubscriptionsSheet } from "../features/subscriptions/components/SubscriptionsSheet";
 import { HistorySheet } from "../features/expense-history/components/HistorySheet";
 import { AnalyticsSheet } from "../features/analytics/components/AnalyticsSheet";
+import { SettingsSheet } from "../features/settings/components/SettingsSheet";
 import { Paywall } from "../features/pro/components/Paywall";
 
 import { theme } from "../shared/styles/theme";
@@ -47,7 +48,7 @@ export default function AppIndex() {
   }, [hydrated, rollIfNewMonth]);
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeSheet, setActiveSheet] = useState<"none" | "history" | "subs" | "analytics" | "paywall">("none");
+  const [activeSheet, setActiveSheet] = useState<"none" | "history" | "subs" | "analytics" | "paywall" | "settings">("none");
 
   const handleUpgrade = () => {
     setActiveSheet("paywall");
@@ -127,6 +128,10 @@ export default function AppIndex() {
               setMenuOpen(false);
               setActiveSheet("analytics");
             }}
+            onOpenSettings={() => {
+              setMenuOpen(false);
+              setActiveSheet("settings");
+            }}
           />
 
           <HistorySheet
@@ -143,6 +148,13 @@ export default function AppIndex() {
             open={activeSheet === "analytics"}
             onClose={() => setActiveSheet("none")}
             onUpgrade={handleUpgrade}
+          />
+
+          <SettingsSheet
+            open={activeSheet === "settings"}
+            onClose={() => setActiveSheet("none")}
+            onUpgrade={handleUpgrade}
+            onOpenSubscriptions={() => setActiveSheet("subs")}
           />
 
           <Paywall open={activeSheet === "paywall"} onClose={() => setActiveSheet("none")} />

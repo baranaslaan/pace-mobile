@@ -82,6 +82,7 @@ interface PaceState {
   ) => void;
   removeExpense: (id: string) => void;
   resetToday: () => void;
+  resetAll: () => void;
   completeOnboarding: () => void;
   unlockPro: () => void;
   rollIfNewMonth: () => void;
@@ -167,6 +168,18 @@ export const usePaceStore = create<PaceState>()(
         }),
 
       completeOnboarding: () => set({ onboarded: true }),
+
+      // Tüm kullanıcı verisini sıfırlar (onboarding'e döner). Pro hakkı korunur
+      // — satın alma veri sıfırlamayla kaybolmamalı.
+      resetAll: () =>
+        set({
+          budget: 0,
+          subscriptions: [],
+          entries: [],
+          archive: [],
+          activeMonth: "",
+          onboarded: false,
+        }),
 
       unlockPro: () => set({ isPro: true }),
 
