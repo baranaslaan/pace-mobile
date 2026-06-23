@@ -120,6 +120,8 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: -2,
     fontVariant: ["tabular-nums"],
+    textAlign: "center",
+    paddingHorizontal: 10,
   },
   unit: {
     fontFamily: theme.fonts.outfitMedium,
