@@ -3,7 +3,8 @@ import { StyleSheet, View, TouchableOpacity, Pressable } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { AnimatePresence, MotiView } from "moti";
 import { Easing } from "react-native-reanimated";
-import { ActivityIcon, CardIcon, ListIcon, SettingsIcon } from "../../../shared/ui/icons";
+import { usePaceStore } from "../../../shared/store/usePaceStore";
+import { ActivityIcon, CardIcon, ListIcon, SettingsIcon, SparklesIcon } from "../../../shared/ui/icons";
 import { theme } from "../../../shared/styles/theme";
 
 interface MoreMenuProps {
@@ -13,6 +14,7 @@ interface MoreMenuProps {
   onOpenAnalytics: () => void;
   onOpenHistory: () => void;
   onOpenSettings: () => void;
+  onOpenPaywall: () => void;
 }
 
 export function MoreMenu({
@@ -22,7 +24,9 @@ export function MoreMenu({
   onOpenAnalytics,
   onOpenHistory,
   onOpenSettings,
+  onOpenPaywall,
 }: MoreMenuProps) {
+  const isPro = usePaceStore((s) => s.isPro);
   return (
     <AnimatePresence>
       {open && (
@@ -64,6 +68,19 @@ export function MoreMenu({
               <SettingsIcon color={theme.colors.textSoft} />
               <Text style={styles.itemText}>Ayarlar</Text>
             </TouchableOpacity>
+
+            {!isPro && (
+              <>
+                <View style={styles.divider} />
+                <TouchableOpacity style={styles.proItem} onPress={onOpenPaywall} activeOpacity={0.85}>
+                  <SparklesIcon color={theme.colors.stateGood} size={18} />
+                  <View style={styles.proInfo}>
+                    <Text style={styles.proTitle}>Pace Pro</Text>
+                    <Text style={styles.proSub}>Tempo + dışa aktarma</Text>
+                  </View>
+                </TouchableOpacity>
+              </>
+            )}
           </MotiView>
         </View>
       )}
@@ -103,5 +120,32 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
     fontSize: 15,
     fontWeight: "600",
+  },
+  divider: {
+    height: 1,
+    marginVertical: 6,
+    marginHorizontal: 8,
+    backgroundColor: theme.colors.hairline,
+  },
+  proItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    backgroundColor: "rgba(59, 130, 246, 0.1)",
+  },
+  proInfo: {
+    marginLeft: 12,
+  },
+  proTitle: {
+    color: theme.colors.stateGood,
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  proSub: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    marginTop: 1,
   },
 });

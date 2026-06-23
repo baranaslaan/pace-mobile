@@ -85,6 +85,7 @@ interface PaceState {
   resetAll: () => void;
   completeOnboarding: () => void;
   unlockPro: () => void;
+  lockPro: () => void;
   rollIfNewMonth: () => void;
 }
 
@@ -182,6 +183,8 @@ export const usePaceStore = create<PaceState>()(
         }),
 
       unlockPro: () => set({ isPro: true }),
+
+      lockPro: () => set({ isPro: false }),
 
       rollIfNewMonth: () =>
         set((s) => {

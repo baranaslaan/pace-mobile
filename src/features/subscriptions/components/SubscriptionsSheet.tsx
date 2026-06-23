@@ -16,9 +16,10 @@ const FREE_LIMIT = 3;
 interface SubscriptionsSheetProps {
   open: boolean;
   onClose: () => void;
+  onUpgrade: () => void;
 }
 
-export function SubscriptionsSheet({ open, onClose }: SubscriptionsSheetProps) {
+export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSheetProps) {
   const budget = usePaceStore((s) => s.budget);
   const setBudget = usePaceStore((s) => s.setBudget);
   const subscriptions = usePaceStore((s) => s.subscriptions);
@@ -76,8 +77,11 @@ export function SubscriptionsSheet({ open, onClose }: SubscriptionsSheetProps) {
         <View style={styles.lock}>
           <Text style={styles.lockText}>
             Ücretsiz planda en fazla {FREE_LIMIT} sabit gider.
-            <Text style={styles.proSpan}> Pace Pro</Text> ile sınırsız ekle.
+            <Text style={styles.proSpan}> Pace Pro</Text> ile sınırsız ekle — tek seferlik, ömür boyu.
           </Text>
+          <TouchableOpacity style={styles.lockCta} onPress={onUpgrade} activeOpacity={0.9}>
+            <Text style={styles.lockCtaText}>Pace Pro'ya geç</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <View style={styles.addRow}>
@@ -156,6 +160,19 @@ const styles = StyleSheet.create({
   proSpan: {
     color: theme.colors.stateGood,
     fontWeight: "700",
+  },
+  lockCta: {
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: theme.colors.stateGood,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 14,
+  },
+  lockCtaText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#fff",
   },
   addRow: {
     flexDirection: "row",

@@ -132,6 +132,10 @@ export default function AppIndex() {
               setMenuOpen(false);
               setActiveSheet("settings");
             }}
+            onOpenPaywall={() => {
+              setMenuOpen(false);
+              setActiveSheet("paywall");
+            }}
           />
 
           <HistorySheet
@@ -142,6 +146,7 @@ export default function AppIndex() {
           <SubscriptionsSheet
             open={activeSheet === "subs"}
             onClose={() => setActiveSheet("none")}
+            onUpgrade={handleUpgrade}
           />
 
           <AnalyticsSheet

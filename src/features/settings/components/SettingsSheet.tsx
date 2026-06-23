@@ -24,6 +24,8 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
   const entries = usePaceStore((s) => s.entries);
   const isPro = usePaceStore((s) => s.isPro);
   const resetAll = usePaceStore((s) => s.resetAll);
+  const unlockPro = usePaceStore((s) => s.unlockPro);
+  const lockPro = usePaceStore((s) => s.lockPro);
 
   const [confirmReset, setConfirmReset] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -157,6 +159,27 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
         </View>
       )}
 
+      {__DEV__ && (
+        <>
+          <Text style={styles.sectionLabel}>Geliştirici</Text>
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => (isPro ? lockPro() : unlockPro())}
+            activeOpacity={0.7}
+          >
+            <View style={styles.rowInfo}>
+              <Text style={styles.rowTitle}>Pace Pro (test)</Text>
+              <Text style={styles.rowSub}>Şu an: {isPro ? "açık" : "kapalı"} — dokun değiştir</Text>
+            </View>
+            <View style={[styles.devToggle, isPro && styles.devToggleOn]}>
+              <Text style={[styles.devToggleText, isPro && styles.devToggleTextOn]}>
+                {isPro ? "PRO" : "FREE"}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </>
+      )}
+
       <Text style={styles.about}>pace · sürüm {VERSION}</Text>
     </BottomSheet>
   );
@@ -262,6 +285,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
     color: theme.colors.stateGood,
+  },
+  devToggle: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: theme.radius.pill,
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+  },
+  devToggleOn: {
+    backgroundColor: theme.colors.stateGood,
+  },
+  devToggleText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: theme.colors.textSoft,
+  },
+  devToggleTextOn: {
+    color: "#fff",
   },
   dangerRow: {
     flexDirection: "row",
