@@ -95,6 +95,7 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
 const styles = StyleSheet.create({
   bar: {
     zIndex: 1,
+    backgroundColor: theme.colors.bgPage,
   },
   card: {
     borderTopLeftRadius: theme.radius.input,

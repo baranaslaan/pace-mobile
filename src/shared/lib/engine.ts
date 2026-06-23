@@ -224,3 +224,78 @@ export function burnForecast(
     message: `Dikkat — bu hızla ayın ${zeroDay}'inde bütçen biter.`,
   };
 }
+
+export interface WeeklyTrend {
+  /** Son 7 günün (bugün dahil) toplam harcaması. */
+  thisWeek: number;
+  /** Önceki 7 günün toplam harcaması. */
+  lastWeek: number;
+  /** Son 7 gün günlük ortalama. */
+  thisAvg: number;
+  /** Önceki 7 gün günlük ortalama. */
+  lastAvg: number;
+  /** Geçen haftaya göre yüzde değişim (+ arttı, − azaldı); referans 0 ise null. */
+  deltaPct: number | null;
+}
+
+/**
+ * Kayan 7 günlük pencere ile haftalık harcama hızı: son 7 gün vs önceki 7 gün.
+ * Ay sınırını doğal olarak aşar (gün bazlı map üzerinden çalışır).
+ */
+export function weeklyTrend(
+  expenses: Record<string, number>,
+  now: Date = new Date(),
+): WeeklyTrend {
+  let thisWeek = 0;
+  let lastWeek = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - i);
+    thisWeek += expenses[dayKey(d)] ?? 0;
+  }
+  for (let i = 7; i < 14; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - i);
+    lastWeek += expenses[dayKey(d)] ?? 0;
+  }
+  const thisAvg = thisWeek / 7;
+  const lastAvg = lastWeek / 7;
+  const deltaPct = lastAvg > 0 ? ((thisAvg - lastAvg) / lastAvg) * 100 : null;
+  return { thisWeek, lastWeek, thisAvg, lastAvg, deltaPct };
+}
+
+export interface WeekdayStat {
+  /** 0=Pazar … 6=Cumartesi (JS getDay). */
+  weekday: number;
+  /** Bu ay o güne denk gelen günlerdeki toplam harcama. */
+  total: number;
+  /** Bu ay o güne denk gelen (geçmiş) gün sayısı. */
+  days: number;
+  /** Ortalama (total / days). */
+  avg: number;
+}
+
+/**
+ * Bu ayın geçmiş günlerini haftanın gününe göre gruplar (saf). Hangi günler
+ * daha çok harcandığını gösterir — pencere bu ayla sınırlı.
+ */
+export function weekdayBreakdown(
+  expenses: Record<string, number>,
+  now: Date = new Date(),
+): WeekdayStat[] {
+  const totals = new Array(7).fill(0);
+  const counts = new Array(7).fill(0);
+  const elapsed = dayOfMonth(now);
+  for (let d = 1; d <= elapsed; d++) {
+    const date = new Date(now.getFullYear(), now.getMonth(), d);
+    const wd = date.getDay();
+    totals[wd] += expenses[dayKey(date)] ?? 0;
+    counts[wd] += 1;
+  }
+  return totals.map((t, i) => ({
+    weekday: i,
+    total: t,
+    days: counts[i],
+    avg: counts[i] > 0 ? t / counts[i] : 0,
+  }));
+}

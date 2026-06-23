@@ -3,7 +3,7 @@ import { StyleSheet, View, TouchableOpacity, ScrollView } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
-import { expensesByDay } from "../../../shared/lib/engine";
+import { expensesByDay, weeklyTrend, weekdayBreakdown } from "../../../shared/lib/engine";
 import { dayKey } from "../../../shared/lib/date";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { LockIcon } from "../../../shared/ui/icons";
@@ -15,6 +15,11 @@ const MONTHS_TR = [
   "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
   "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
 ];
+
+// Pazartesi-başlangıçlı görüntü sırası (JS getDay indeksi) + etiketleri.
+const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+const WEEKDAY_LABELS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+const WEEKDAY_FULL = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
 
 function monthLabel(key: string): string {
   const [y, m] = key.split("-").map(Number);
@@ -53,9 +58,20 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
   const isPro = usePaceStore((s) => s.isPro);
   const { forecast, stats } = useLimitLogic();
 
-  const days = recentDays(expensesByDay(entries), HISTORY_DAYS);
+  const expMap = expensesByDay(entries);
+  const days = recentDays(expMap, HISTORY_DAYS);
   const maxAmount = Math.max(1, ...days.map((d) => d.amount));
   const surplus = forecast.endBalance >= 0;
+
+  const trend = weeklyTrend(expMap);
+  const weekdays = weekdayBreakdown(expMap);
+  const maxWeekdayAvg = Math.max(1, ...weekdays.map((w) => w.avg));
+  const peak = weekdays.reduce((a, b) => (b.avg > a.avg ? b : a), weekdays[0]);
+  const projected = Math.round(stats.pace * stats.total);
+
+  // Trend yönü: harcama azaldıysa "iyi" (mavi), arttıysa "uyarı" (amber).
+  const down = trend.deltaPct !== null && trend.deltaPct < 0;
+  const deltaAbs = trend.deltaPct === null ? 0 : Math.abs(Math.round(trend.deltaPct));
 
   return (
     <BottomSheet open={open} onClose={onClose} title="Tempo">
@@ -79,11 +95,40 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
 
         <View style={styles.proWrap}>
           <View style={!isPro && { opacity: 0.3, pointerEvents: "none" }}>
+            <Text style={styles.sectionLabel}>Haftalık tempo</Text>
+            <View style={styles.trendCard}>
+              <View style={styles.trendTop}>
+                <View>
+                  <Text style={styles.trendValue}>₺{Math.round(trend.thisWeek)}</Text>
+                  <Text style={styles.trendCaption}>son 7 gün</Text>
+                </View>
+                {trend.deltaPct !== null && (
+                  <View style={[styles.trendChip, down ? styles.trendChipDown : styles.trendChipUp]}>
+                    <Text style={[styles.trendChipText, down ? styles.trendChipTextDown : styles.trendChipTextUp]}>
+                      {down ? "↓" : "↑"} %{deltaAbs}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <Text style={styles.trendNote}>
+                {trend.deltaPct === null
+                  ? "Geçen hafta veri yok — kıyas için bir hafta gerek."
+                  : down
+                    ? `Geçen haftaya göre %${deltaAbs} daha az harcadın. Tempon yavaşlıyor 👏`
+                    : `Geçen haftaya göre %${deltaAbs} daha fazla harcadın. Tempona dikkat.`}
+              </Text>
+            </View>
+
             <View style={[styles.forecast, surplus ? styles.forecastGood : styles.forecastBad]}>
               <Text style={styles.forecastLabel}>Ay sonu öngörüsü</Text>
               <Text style={[styles.forecastMsg, surplus ? styles.forecastMsgGood : styles.forecastMsgBad]}>
                 {forecast.message}
               </Text>
+              {stats.pace > 0 && (
+                <Text style={styles.forecastSub}>
+                  Tahmini ay sonu harcama ₺{projected} / havuz ₺{Math.round(stats.pool)}
+                </Text>
+              )}
             </View>
 
             <Text style={styles.sectionLabel}>Son günler</Text>
@@ -100,6 +145,36 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                 </View>
               ))}
             </View>
+
+            <Text style={styles.sectionLabel}>Haftanın günleri</Text>
+            <View style={styles.weekChart}>
+              {WEEKDAY_ORDER.map((wd) => {
+                const stat = weekdays[wd];
+                const h = Math.max(4, (stat.avg / maxWeekdayAvg) * 64);
+                const isPeak = stat.avg > 0 && wd === peak.weekday;
+                return (
+                  <View key={wd} style={styles.weekCol}>
+                    <View style={styles.weekBarTrack}>
+                      <View
+                        style={[
+                          styles.weekBar,
+                          { height: h },
+                          isPeak ? styles.weekBarPeak : styles.weekBarDim,
+                        ]}
+                      />
+                    </View>
+                    <Text style={[styles.weekLabel, isPeak && styles.weekLabelPeak]}>
+                      {WEEKDAY_LABELS[WEEKDAY_ORDER.indexOf(wd)]}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+            <Text style={styles.weekNote}>
+              {peak.avg > 0
+                ? `En çok ${WEEKDAY_FULL[peak.weekday]} günleri harcıyorsun · ort ₺${Math.round(peak.avg)}`
+                : "Haftanın günü dağılımı için biraz daha veri gerek."}
+            </Text>
 
             {archive.length > 0 && (
               <>
@@ -207,6 +282,105 @@ const styles = StyleSheet.create({
   },
   forecastMsgBad: {
     color: theme.colors.stateCrit,
+  },
+  forecastSub: {
+    fontSize: 13,
+    color: theme.colors.textSoft,
+    marginTop: 10,
+    fontVariant: ["tabular-nums"],
+  },
+  trendCard: {
+    backgroundColor: "rgba(255, 255, 255, 0.04)",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 32,
+  },
+  trendTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  trendValue: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: theme.colors.textPrimary,
+    fontVariant: ["tabular-nums"],
+  },
+  trendCaption: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: theme.colors.textMute,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginTop: 2,
+  },
+  trendChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: theme.radius.pill,
+  },
+  trendChipDown: {
+    backgroundColor: "rgba(59, 130, 246, 0.12)",
+  },
+  trendChipUp: {
+    backgroundColor: "rgba(245, 158, 11, 0.12)",
+  },
+  trendChipText: {
+    fontSize: 13,
+    fontWeight: "700",
+    fontVariant: ["tabular-nums"],
+  },
+  trendChipTextDown: {
+    color: theme.colors.stateGood,
+  },
+  trendChipTextUp: {
+    color: theme.colors.stateWarn,
+  },
+  trendNote: {
+    fontSize: 13,
+    color: theme.colors.textSoft,
+    lineHeight: 19,
+    marginTop: 12,
+  },
+  weekChart: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    height: 84,
+    marginBottom: 12,
+  },
+  weekCol: {
+    flex: 1,
+    alignItems: "center",
+  },
+  weekBarTrack: {
+    height: 64,
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+  weekBar: {
+    width: 16,
+    borderRadius: 5,
+  },
+  weekBarPeak: {
+    backgroundColor: theme.colors.stateGood,
+  },
+  weekBarDim: {
+    backgroundColor: "rgba(255, 255, 255, 0.12)",
+  },
+  weekLabel: {
+    marginTop: 8,
+    fontSize: 11,
+    fontWeight: "600",
+    color: theme.colors.textMute,
+  },
+  weekLabelPeak: {
+    color: theme.colors.textPrimary,
+  },
+  weekNote: {
+    fontSize: 13,
+    color: theme.colors.textSoft,
+    lineHeight: 19,
+    marginBottom: 32,
   },
   sectionLabel: {
     fontSize: 14,
