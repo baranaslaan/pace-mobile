@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, TouchableOpacity } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Share, Alert } from "react-native";
 import Constants from "expo-constants";
+import { File, Paths } from "expo-file-system";
 import { Text } from "../../../shared/typography/Text";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
-import { CardIcon, ChevronLeftIcon, SparklesIcon, TrashIcon, CheckIcon } from "../../../shared/ui/icons";
+import { expensesToCSV } from "../../../shared/lib/csv";
+import { CardIcon, ChevronLeftIcon, SparklesIcon, TrashIcon, CheckIcon, DownloadIcon, LockIcon } from "../../../shared/ui/icons";
 import { theme } from "../../../shared/styles/theme";
 
 interface SettingsSheetProps {
@@ -19,10 +21,12 @@ const VERSION = Constants.expoConfig?.version ?? "1.0.0";
 export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }: SettingsSheetProps) {
   const budget = usePaceStore((s) => s.budget);
   const subscriptions = usePaceStore((s) => s.subscriptions);
+  const entries = usePaceStore((s) => s.entries);
   const isPro = usePaceStore((s) => s.isPro);
   const resetAll = usePaceStore((s) => s.resetAll);
 
   const [confirmReset, setConfirmReset] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   // Sheet kapanınca onay adımını sıfırla.
   useEffect(() => {
@@ -33,6 +37,30 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
     resetAll();
     setConfirmReset(false);
     onClose();
+  };
+
+  const handleExport = async () => {
+    if (!isPro) {
+      onUpgrade();
+      return;
+    }
+    if (entries.length === 0) {
+      Alert.alert("Dışa aktarılacak veri yok", "Önce birkaç harcama gir.");
+      return;
+    }
+    try {
+      setExporting(true);
+      // UTF-8 BOM → Excel'in Türkçe karakterleri doğru okuması için.
+      const csv = String.fromCharCode(0xfeff) + expensesToCSV(entries);
+      const file = new File(Paths.cache, "pace-harcamalar.csv");
+      file.create({ overwrite: true });
+      file.write(csv);
+      await Share.share({ url: file.uri, title: "pace harcamalar" });
+    } catch (e) {
+      Alert.alert("Dışa aktarma başarısız", "Bir şeyler ters gitti, tekrar dene.");
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -82,6 +110,30 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
 
       {/* Veri / tehlikeli bölge */}
       <Text style={styles.sectionLabel}>Veri</Text>
+
+      <TouchableOpacity
+        style={[styles.row, { marginBottom: 8 }]}
+        onPress={handleExport}
+        disabled={exporting}
+        activeOpacity={0.7}
+      >
+        <View style={styles.rowIcon}>
+          <DownloadIcon color={theme.colors.textSoft} />
+        </View>
+        <View style={styles.rowInfo}>
+          <Text style={styles.rowTitle}>Harcamaları dışa aktar</Text>
+          <Text style={styles.rowSub}>
+            {exporting ? "Hazırlanıyor…" : "CSV olarak paylaş (Excel, Numbers…)"}
+          </Text>
+        </View>
+        {!isPro && (
+          <View style={styles.proChip}>
+            <LockIcon color={theme.colors.stateGood} size={12} />
+            <Text style={styles.proChipText}>Pro</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+
       {!confirmReset ? (
         <TouchableOpacity style={styles.dangerRow} onPress={() => setConfirmReset(true)} activeOpacity={0.7}>
           <View style={styles.rowIcon}>
@@ -196,6 +248,20 @@ const styles = StyleSheet.create({
   },
   chevron: {
     transform: [{ rotate: "180deg" }],
+  },
+  proChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: theme.radius.pill,
+    backgroundColor: "rgba(59, 130, 246, 0.12)",
+  },
+  proChipText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: theme.colors.stateGood,
   },
   dangerRow: {
     flexDirection: "row",

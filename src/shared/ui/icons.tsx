@@ -113,6 +113,16 @@ export function ListIcon({ size = 18, color = theme.colors.textPrimary }: IconPr
   );
 }
 
+export function DownloadIcon({ size = 18, color = theme.colors.textPrimary }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M12 3v12" />
+      <Path d="m7 10 5 5 5-5" />
+      <Path d="M5 21h14" />
+    </Svg>
+  );
+}
+
 export function SettingsIcon({ size = 18, color = theme.colors.textPrimary }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
