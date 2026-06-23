@@ -1,56 +1,91 @@
-# Welcome to your Expo app 👋
+# pace · mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> Günlük harcama **tempona** hâkim ol. Aylık bütçeni ve sabit giderlerini bir kez gir; pace her gün ne kadar harcayabileceğini senin için hesaplasın.
 
-## Get started
+**pace**, kalan harcanabilir paranı ayın kalan günlerine bölerek sana tek bir sayı veren bir günlük bütçe uygulamasıdır: _bugün ne kadar harcayabilirsin._ Az harcadığın gün pay yarına büyür, çok harcadığın gün sıkışır — ekran rengi tempona göre maviden kırmızıya döner.
 
-1. Install dependencies
+Bu repo, [Next.js ile yazılmış web sürümünün](https://github.com/baranaslaan/pace-app) **React Native (Expo)** portudur. Aynı ürün, native cihaz deneyimi.
 
-   ```bash
-   npm install
-   ```
+---
 
-2. Start the app
+## 📱 Özellikler
 
-   ```bash
-   npx expo start
-   ```
+- **Onboarding akışı** — karşılama → bütçe → sabit giderler → özet, adım adım.
+- **Limit halkası** — kalan günlük tutarı animasyonlu bir ring ile gösterir; tempo durumuna göre renk değiştirir (iyi · dikkat · kritik · aşıldı).
+- **Hızlı harcama girişi** — tek dokunuşla tutar + opsiyonel not.
+- **Geçmiş** — günün kalemlerini düzenle, sil, bugünü sıfırla.
+- **Bütçe & Sabit Giderler** — kira/abonelik gibi giderleri peşin rezerve et.
+- **Tempo (Analytics)** — harcama dağılımı ve aylık projeksiyon.
+- **Tam rollover motoru** — günlük limit türetilen bir değerdir; her gün yeniden hesaplanır.
 
-In the output, you'll find options to open the app in a
+## 🧮 Çekirdek mantık
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Hesap motoru ([`src/shared/lib/engine.ts`](src/shared/lib/engine.ts)) store'dan bağımsız, saf ve test edilebilir:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+harcanabilir = aylık bütçe − sabit giderler − bu ay şimdiye dek harcanan
+günlük limit = harcanabilir ÷ ayın kalan günü (bugün dahil)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Dün az harcandıysa pay büyür (ödül), aşıldıysa küçülür (sıkılaşma).
 
-### Other setup steps
+## 🛠 Teknoloji
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+| Katman | Araç |
+|---|---|
+| Framework | Expo SDK 56 · React Native 0.85 · React 19 |
+| Yönlendirme | expo-router (file-based) |
+| Animasyon | Reanimated 4 · Moti |
+| State | Zustand + persist |
+| Kalıcılık | react-native-mmkv |
+| Grafik | react-native-svg |
+| Tipografi | Outfit (`@expo-google-fonts`) |
 
-## Learn more
+## 🏗 Mimari
 
-To learn more about developing your project with Expo, look at the following resources:
+Feature-based klasör yapısı:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```
+src/
+├── app/              # expo-router ekranları (index, _layout)
+├── features/         # her özellik kendi components/hooks/ ile
+│   ├── onboarding/
+│   ├── limit-board/
+│   ├── expense-input/
+│   ├── expense-history/
+│   ├── subscriptions/
+│   ├── analytics/
+│   ├── menu/
+│   ├── splash/
+│   └── pro/
+└── shared/           # ortak çekirdek
+    ├── lib/          # engine, tone, date — saf mantık
+    ├── store/        # zustand + mmkv
+    ├── styles/       # design tokens (theme.ts)
+    ├── typography/   # Outfit ağırlık eşlemeli Text, Logo
+    └── ui/           # BottomSheet, icons
+```
 
-## Join the community
+`shared/styles/theme.ts` tek doğruluk kaynağı: renkler, boşluk ölçeği, köşe yarıçapları ve Outfit ağırlıkları.
 
-Join our community of developers creating universal apps.
+## 🚀 Çalıştırma
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm install
+npx expo prebuild        # native ios/android klasörlerini üretir (repoda yok)
+npx expo run:ios         # veya: npx expo run:android
+```
+
+Geliştirme için Metro yeterli:
+
+```bash
+npx expo start
+```
+
+> Native klasörler (`ios/`, `android/`) Expo CNG yaklaşımıyla repoda tutulmaz; `app.json`'dan `prebuild` ile yeniden üretilir.
+
+## 📄 Lisans
+
+© 2026 Baran Aslan — **Tüm hakları saklıdır.** Bu repo yalnızca portfolyo/gösterim
+amacıyla herkese açıktır. Kod görüntülenebilir ancak izinsiz kullanılamaz,
+kopyalanamaz veya türev çalışma oluşturulamaz. Ayrıntılar için [LICENSE](LICENSE).

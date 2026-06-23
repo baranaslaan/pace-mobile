@@ -31,7 +31,22 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
+
+# editors
+.vscode/
+.idea/
+
+# logs
+*.log
+
+# AI assistant / agent files
+.claude/
+CLAUDE.md
+AGENTS.md
+.cursor/
+.cursorrules
 
 # typescript
 *.tsbuildinfo

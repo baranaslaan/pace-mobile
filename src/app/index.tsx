@@ -1,98 +1,182 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect, useState } from "react";
+import { StyleSheet, View, TouchableOpacity, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
+import { AnimatePresence, MotiView } from "moti";
+import { usePaceStore } from "../shared/store/usePaceStore";
+import { getTone } from "../shared/lib/tone";
+import { useLimitLogic } from "../features/limit-board/hooks/useLimitLogic";
+import { Logo } from "../shared/typography/Logo";
+import { MoreIcon } from "../shared/ui/icons";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { Splash } from "../features/splash/components/Splash";
+import { Onboarding } from "../features/onboarding/components/Onboarding";
+import { LimitBoard } from "../features/limit-board/components/LimitBoard";
+import { ExpenseInput } from "../features/expense-input/components/ExpenseInput";
+import { MoreMenu } from "../features/menu/components/MoreMenu";
+import { SubscriptionsSheet } from "../features/subscriptions/components/SubscriptionsSheet";
+import { HistorySheet } from "../features/expense-history/components/HistorySheet";
+import { AnalyticsSheet } from "../features/analytics/components/AnalyticsSheet";
+import { Paywall } from "../features/pro/components/Paywall";
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+import { theme } from "../shared/styles/theme";
+
+const MIN_SPLASH_MS = 1400;
+
+export default function AppIndex() {
+  const onboarded = usePaceStore((s) => s.onboarded);
+  const hydrated = usePaceStore((s) => s._hydrated);
+  const rollIfNewMonth = usePaceStore((s) => s.rollIfNewMonth);
+  const { remaining, limit } = useLimitLogic();
+  const tone = getTone(remaining, limit);
+
+  const [mounted, setMounted] = useState(false);
+  const [minElapsed, setMinElapsed] = useState(false);
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    setMounted(true);
+    const t = setTimeout(() => setMinElapsed(true), MIN_SPLASH_MS);
+    return () => clearTimeout(t);
+  }, []);
+
+  const ready = mounted && minElapsed && hydrated;
+
+  useEffect(() => {
+    if (hydrated) rollIfNewMonth();
+  }, [hydrated, rollIfNewMonth]);
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeSheet, setActiveSheet] = useState<"none" | "history" | "subs" | "analytics" | "paywall">("none");
+
+  const handleUpgrade = () => {
+    setActiveSheet("paywall");
+  };
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <AnimatePresence>
+      {!ready ? (
+        <Splash key="splash" />
+      ) : !onboarded ? (
+        <MotiView
+          key="onboarding"
+          style={styles.screen}
+          from={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ type: "timing", duration: 500 }}
+        >
+          <Onboarding />
+        </MotiView>
+      ) : (
+        <MotiView
+          key="app"
+          style={styles.screen}
+          from={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ type: "timing", duration: 500 }}
+        >
+          <KeyboardAvoidingView 
+            style={styles.safe} 
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <View style={StyleSheet.absoluteFill} pointerEvents="none">
+              <Svg width="100%" height="100%">
+                <Defs>
+                  <RadialGradient id="bgGlow" cx="50%" cy="10%" rx="100%" ry="55%">
+                    <Stop offset="0%" stopColor={tone.color} stopOpacity="0.13" />
+                    <Stop offset="60%" stopColor={tone.color} stopOpacity="0" />
+                  </RadialGradient>
+                </Defs>
+                <Rect width="100%" height="100%" fill="url(#bgGlow)" />
+              </Svg>
+            </View>
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+            <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]}>
+              <Logo color={tone.color} />
+              <TouchableOpacity
+                style={styles.more}
+                onPress={() => setMenuOpen(!menuOpen)}
+                activeOpacity={0.7}
+              >
+                <MoreIcon color={theme.colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+              <View style={styles.main}>
+                <LimitBoard />
+              </View>
+            </TouchableWithoutFeedback>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
+            <ExpenseInput bottomInset={insets.bottom} />
+          </KeyboardAvoidingView>
+
+          <MoreMenu
+            open={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            onOpenHistory={() => {
+              setMenuOpen(false);
+              setActiveSheet("history");
+            }}
+            onOpenSubscriptions={() => {
+              setMenuOpen(false);
+              setActiveSheet("subs");
+            }}
+            onOpenAnalytics={() => {
+              setMenuOpen(false);
+              setActiveSheet("analytics");
+            }}
           />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+          <HistorySheet
+            open={activeSheet === "history"}
+            onClose={() => setActiveSheet("none")}
+          />
+
+          <SubscriptionsSheet
+            open={activeSheet === "subs"}
+            onClose={() => setActiveSheet("none")}
+          />
+
+          <AnalyticsSheet
+            open={activeSheet === "analytics"}
+            onClose={() => setActiveSheet("none")}
+            onUpgrade={handleUpgrade}
+          />
+
+          <Paywall open={activeSheet === "paywall"} onClose={() => setActiveSheet("none")} />
+        </MotiView>
+      )}
+    </AnimatePresence>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    backgroundColor: theme.colors.bgPage,
   },
-  safeArea: {
+  safe: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
+  },
+  more: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  main: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
