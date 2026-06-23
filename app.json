@@ -8,7 +8,6 @@
     "scheme": "pacemobile",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.baranaslan.pace-mobile"
     },
     "android": {
