@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, TouchableOpacity, Share, Alert } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Share, Alert, Switch, ScrollView } from "react-native";
 import Constants from "expo-constants";
 import { File, Paths } from "expo-file-system";
 import { Text } from "../../../shared/typography/Text";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { expensesToCSV } from "../../../shared/lib/csv";
-import { CardIcon, ChevronLeftIcon, SparklesIcon, TrashIcon, CheckIcon, DownloadIcon, LockIcon } from "../../../shared/ui/icons";
+import {
+  ensureNotificationPermission,
+  scheduleDailyReminder,
+  cancelDailyReminder,
+  sendTestNotification,
+} from "../../../shared/lib/notifications";
+import { CardIcon, ChevronLeftIcon, SparklesIcon, TrashIcon, CheckIcon, DownloadIcon, LockIcon, BellIcon } from "../../../shared/ui/icons";
 import { theme } from "../../../shared/styles/theme";
 
 interface SettingsSheetProps {
@@ -26,9 +32,33 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
   const resetAll = usePaceStore((s) => s.resetAll);
   const unlockPro = usePaceStore((s) => s.unlockPro);
   const lockPro = usePaceStore((s) => s.lockPro);
+  const reminderEnabled = usePaceStore((s) => s.reminderEnabled);
+  const reminderHour = usePaceStore((s) => s.reminderHour);
+  const reminderMinute = usePaceStore((s) => s.reminderMinute);
+  const setReminder = usePaceStore((s) => s.setReminder);
 
   const [confirmReset, setConfirmReset] = useState(false);
   const [exporting, setExporting] = useState(false);
+
+  const reminderTime = `${String(reminderHour).padStart(2, "0")}:${String(reminderMinute).padStart(2, "0")}`;
+
+  const toggleReminder = async () => {
+    if (reminderEnabled) {
+      await cancelDailyReminder();
+      setReminder(false, reminderHour, reminderMinute);
+      return;
+    }
+    const granted = await ensureNotificationPermission();
+    if (!granted) {
+      Alert.alert(
+        "Bildirim izni kapalı",
+        "Hatırlatma için telefon Ayarlar → Bildirimler → pace'ten izin vermen gerekiyor.",
+      );
+      return;
+    }
+    await scheduleDailyReminder(reminderHour, reminderMinute);
+    setReminder(true, reminderHour, reminderMinute);
+  };
 
   // Sheet kapanınca onay adımını sıfırla.
   useEffect(() => {
@@ -67,6 +97,11 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
 
   return (
     <BottomSheet open={open} onClose={onClose} title="Ayarlar">
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
       {/* Pro durumu */}
       {isPro ? (
         <View style={[styles.proCard, styles.proCardActive]}>
@@ -92,6 +127,27 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
           </TouchableOpacity>
         </View>
       )}
+
+      {/* Bildirimler */}
+      <Text style={styles.sectionLabel}>Bildirimler</Text>
+      <View style={styles.row}>
+        <View style={styles.rowIcon}>
+          <BellIcon color={theme.colors.textSoft} />
+        </View>
+        <View style={styles.rowInfo}>
+          <Text style={styles.rowTitle}>Günlük hatırlatma</Text>
+          <Text style={styles.rowSub}>
+            {reminderEnabled ? `Her gün ${reminderTime}` : "Kapalı"}
+          </Text>
+        </View>
+        <Switch
+          style={{ alignSelf: "center" }}
+          value={reminderEnabled}
+          onValueChange={toggleReminder}
+          trackColor={{ false: "rgba(255,255,255,0.15)", true: theme.colors.stateGood }}
+          thumbColor="#fff"
+        />
+      </View>
 
       {/* Bütçe */}
       <Text style={styles.sectionLabel}>Bütçe</Text>
@@ -177,15 +233,41 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
               </Text>
             </View>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.row, { marginTop: 8 }]}
+            onPress={async () => {
+              const ok = await ensureNotificationPermission();
+              if (!ok) {
+                Alert.alert("Bildirim izni kapalı", "Önce bildirim izni ver.");
+                return;
+              }
+              await sendTestNotification();
+              Alert.alert("Gönderildi", "5 saniye içinde bildirim gelecek (uygulamayı arka plana al).");
+            }}
+            activeOpacity={0.7}
+          >
+            <View style={styles.rowInfo}>
+              <Text style={styles.rowTitle}>Test bildirimi gönder</Text>
+              <Text style={styles.rowSub}>5 sn sonra tek seferlik bildirim</Text>
+            </View>
+          </TouchableOpacity>
         </>
       )}
 
       <Text style={styles.about}>pace · sürüm {VERSION}</Text>
+      </ScrollView>
     </BottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
+  scroll: {
+    flexShrink: 1,
+  },
+  scrollContent: {
+    paddingBottom: 8,
+  },
   proCard: {
     flexDirection: "row",
     alignItems: "center",

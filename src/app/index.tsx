@@ -19,6 +19,7 @@ import { HistorySheet } from "../features/expense-history/components/HistoryShee
 import { AnalyticsSheet } from "../features/analytics/components/AnalyticsSheet";
 import { SettingsSheet } from "../features/settings/components/SettingsSheet";
 import { Paywall } from "../features/pro/components/Paywall";
+import { scheduleDailyReminder } from "../shared/lib/notifications";
 
 import { theme } from "../shared/styles/theme";
 
@@ -28,6 +29,9 @@ export default function AppIndex() {
   const onboarded = usePaceStore((s) => s.onboarded);
   const hydrated = usePaceStore((s) => s._hydrated);
   const rollIfNewMonth = usePaceStore((s) => s.rollIfNewMonth);
+  const reminderEnabled = usePaceStore((s) => s.reminderEnabled);
+  const reminderHour = usePaceStore((s) => s.reminderHour);
+  const reminderMinute = usePaceStore((s) => s.reminderMinute);
   const { remaining, limit } = useLimitLogic();
   const tone = getTone(remaining, limit);
 
@@ -46,6 +50,13 @@ export default function AppIndex() {
   useEffect(() => {
     if (hydrated) rollIfNewMonth();
   }, [hydrated, rollIfNewMonth]);
+
+  // Hatırlatma açıksa, OS planı temizlemiş olabilir — açılışta yeniden kur.
+  useEffect(() => {
+    if (hydrated && reminderEnabled) {
+      scheduleDailyReminder(reminderHour, reminderMinute).catch(() => {});
+    }
+  }, [hydrated, reminderEnabled, reminderHour, reminderMinute]);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSheet, setActiveSheet] = useState<"none" | "history" | "subs" | "analytics" | "paywall" | "settings">("none");

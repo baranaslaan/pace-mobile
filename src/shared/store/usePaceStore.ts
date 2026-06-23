@@ -69,6 +69,9 @@ interface PaceState {
   activeMonth: string;
   onboarded: boolean;
   isPro: boolean;
+  reminderEnabled: boolean;
+  reminderHour: number;
+  reminderMinute: number;
   _hydrated: boolean;
 
   setBudget: (amount: number) => void;
@@ -86,6 +89,7 @@ interface PaceState {
   completeOnboarding: () => void;
   unlockPro: () => void;
   lockPro: () => void;
+  setReminder: (enabled: boolean, hour: number, minute: number) => void;
   rollIfNewMonth: () => void;
 }
 
@@ -99,6 +103,9 @@ export const usePaceStore = create<PaceState>()(
       activeMonth: "",
       onboarded: false,
       isPro: false,
+      reminderEnabled: false,
+      reminderHour: 20,
+      reminderMinute: 0,
       _hydrated: false,
 
       setBudget: (amount) =>
@@ -186,6 +193,9 @@ export const usePaceStore = create<PaceState>()(
 
       lockPro: () => set({ isPro: false }),
 
+      setReminder: (enabled, hour, minute) =>
+        set({ reminderEnabled: enabled, reminderHour: hour, reminderMinute: minute }),
+
       rollIfNewMonth: () =>
         set((s) => {
           const now = monthKey();
@@ -230,6 +240,9 @@ export const usePaceStore = create<PaceState>()(
         activeMonth,
         onboarded,
         isPro,
+        reminderEnabled,
+        reminderHour,
+        reminderMinute,
       }) => ({
         budget,
         subscriptions,
@@ -238,6 +251,9 @@ export const usePaceStore = create<PaceState>()(
         activeMonth,
         onboarded,
         isPro,
+        reminderEnabled,
+        reminderHour,
+        reminderMinute,
       }),
       version: 3,
       migrate: (persisted) => {
