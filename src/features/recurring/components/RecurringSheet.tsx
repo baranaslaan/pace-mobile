@@ -108,7 +108,7 @@ export function RecurringSheet({ open, onClose }: RecurringSheetProps) {
 
   return (
     <BottomSheet open={open} onClose={onClose} title={t("recurring.title")}>
-      <ScrollView style={styles.scroll} contentContainerStyle={{ paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
+      <ScrollView style={styles.scroll} contentContainerStyle={{ paddingBottom: 24 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {/* Hızlı ekleme */}
         <Text style={styles.sectionLabel}>{t("recurring.quickSection")}</Text>
         <Text style={styles.hint}>{t("recurring.quickHint")}</Text>

@@ -57,7 +57,7 @@ export const en: Catalog = {
 
   subsStep: {
     title: "Any fixed expenses?",
-    hint: "Rent, subscriptions, loans… We reserve these up front. You can skip this.",
+    hint: "Rent, subscriptions, loans… reserved from your budget up front. Skip if you like.",
     whatFor: "What for?",
   },
 
@@ -110,8 +110,7 @@ export const en: Catalog = {
     title: "Today's expenses",
     summaryTotal: "Today's total",
     items: "{n} items",
-    empty:
-      "No expenses yet today. Close the menu and enter an amount from the home screen to add one here.",
+    empty: "No expenses yet today. Enter an amount from the home screen and it shows up here.",
     resetToday: "Reset today",
     confirmReset: "Delete all of today's entries?",
   },

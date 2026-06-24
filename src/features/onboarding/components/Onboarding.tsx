@@ -69,7 +69,7 @@ export function Onboarding() {
             from={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            transition={{ type: "timing", duration: 260 }}
           >
             {step === 0 && <WelcomeStep />}
             {step === 1 && (

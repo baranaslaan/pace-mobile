@@ -13,6 +13,8 @@ export interface Currency {
   symbol: string;
   /** Ayar ekranındaki ad (TR). */
   label: string;
+  /** Binlik ayıracı (TRY/EUR "." · USD/GBP ","). */
+  group: string;
 }
 
 /** Varsayılan para birimi (mevcut davranış). */
@@ -20,10 +22,10 @@ export const DEFAULT_CURRENCY = "TRY";
 
 /** Seçilebilir para birimleri — ayar ekranındaki görünüm sırası. */
 export const CURRENCIES: Currency[] = [
-  { code: "TRY", symbol: "₺", label: "Türk Lirası" },
-  { code: "USD", symbol: "$", label: "ABD Doları" },
-  { code: "EUR", symbol: "€", label: "Euro" },
-  { code: "GBP", symbol: "£", label: "Sterlin" },
+  { code: "TRY", symbol: "₺", label: "Türk Lirası", group: "." },
+  { code: "USD", symbol: "$", label: "ABD Doları", group: "," },
+  { code: "EUR", symbol: "€", label: "Euro", group: "." },
+  { code: "GBP", symbol: "£", label: "Sterlin", group: "," },
 ];
 
 const BY_CODE: Record<string, Currency> = Object.fromEntries(
@@ -45,7 +47,19 @@ export function symbolOf(code: string | undefined): string {
   return currencyByCode(code).symbol;
 }
 
-/** Sembol ön ekli, tam sayıya yuvarlanmış tutar (ör. "₺123"). */
+/** Tam sayıya binlik ayıracı uygular (ör. 4286 → "4.286"). */
+function groupThousands(n: number, sep: string): string {
+  const sign = n < 0 ? "-" : "";
+  const digits = String(Math.abs(n));
+  return sign + digits.replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+}
+
+/** Sembolsüz, binlik ayıraçlı, yuvarlanmış sayı (ör. "4.286"). */
+export function formatNumber(amount: number, code: string | undefined): string {
+  return groupThousands(Math.round(amount), currencyByCode(code).group);
+}
+
+/** Sembol ön ekli, binlik ayıraçlı, yuvarlanmış tutar (ör. "₺4.286"). */
 export function formatMoney(amount: number, code: string | undefined): string {
-  return `${symbolOf(code)}${Math.round(amount)}`;
+  return `${symbolOf(code)}${formatNumber(amount, code)}`;
 }

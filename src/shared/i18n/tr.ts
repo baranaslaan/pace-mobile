@@ -55,7 +55,7 @@ export const tr = {
 
   subsStep: {
     title: "Sabit giderlerin var mı?",
-    hint: "Kira, abonelik, kredi… Bunları bütçenden peşin ayırırız. İstersen boş geçebilirsin.",
+    hint: "Kira, abonelik, kredi… Bütçenden peşin ayrılır, boş da geçebilirsin.",
     whatFor: "Ne için?",
   },
 
@@ -108,8 +108,7 @@ export const tr = {
     title: "Bugünün harcamaları",
     summaryTotal: "Bugün toplam",
     items: "{n} kalem",
-    empty:
-      "Bugün henüz harcama yok. Menüyü kapatıp ana ekrandan tutar girdiğinde kalem buraya düşer.",
+    empty: "Bugün henüz harcama yok. Ana ekrandan tutar girince burada görünür.",
     resetToday: "Bugünü sıfırla",
     confirmReset: "Bugünün tüm kalemleri silinsin mi?",
   },

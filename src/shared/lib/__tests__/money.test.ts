@@ -27,9 +27,14 @@ describe("money", () => {
     expect(symbolOf("EUR")).toBe("€");
   });
 
-  it("formatMoney sembol ön ekli ve yuvarlanmış", () => {
+  it("formatMoney sembol ön ekli, yuvarlanmış, binlik ayıraçlı", () => {
     expect(formatMoney(123.4, "USD")).toBe("$123");
     expect(formatMoney(123.6, "TRY")).toBe("₺124");
     expect(formatMoney(0, "EUR")).toBe("€0");
+    // Binlik ayıracı para birimine göre (TRY/EUR "." · USD/GBP ",").
+    expect(formatMoney(4286, "TRY")).toBe("₺4.286");
+    expect(formatMoney(1234567, "USD")).toBe("$1,234,567");
+    expect(formatMoney(15000, "EUR")).toBe("€15.000");
+    expect(formatMoney(-2500, "GBP")).toBe("£-2,500");
   });
 });

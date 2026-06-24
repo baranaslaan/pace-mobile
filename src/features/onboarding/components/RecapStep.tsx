@@ -13,7 +13,7 @@ interface RecapStepProps {
 }
 
 export function RecapStep({ budget, subs }: RecapStepProps) {
-  const { symbol } = useCurrency();
+  const { symbol, fmtNum } = useCurrency();
   const { t } = useT();
   const points = [
     t("recap.point1"),
@@ -38,7 +38,7 @@ export function RecapStep({ budget, subs }: RecapStepProps) {
 
       <View style={styles.limit}>
         <Text style={styles.prefix}>{symbol}</Text>
-        <Text style={styles.value}>{Math.round(limit)}</Text>
+        <Text style={styles.value}>{fmtNum(limit)}</Text>
         <Text style={styles.unit}>{t("recap.perDay")}</Text>
       </View>
 

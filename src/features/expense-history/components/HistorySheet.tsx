@@ -48,7 +48,7 @@ export function HistorySheet({ open, onClose }: HistorySheetProps) {
         {t("history.items", { n: today.length })}
       </Text>
 
-      <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 20 }} keyboardShouldPersistTaps="handled">
+      <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 20 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <AnimatePresence>
           {today.map((entry) => (
             <EntryRow

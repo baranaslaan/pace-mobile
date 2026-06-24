@@ -20,7 +20,7 @@ export function StepDots({ total, active, accent }: StepDotsProps) {
             width: i === active ? 22 : 7,
             backgroundColor: i === active ? accent : "rgba(255,255,255,0.16)",
           }}
-          transition={{ type: "spring", stiffness: 400, damping: 32 }}
+          transition={{ type: "timing", duration: 240 }}
         />
       ))}
     </View>

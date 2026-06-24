@@ -24,13 +24,15 @@ function fitFontSize(length: number): number {
 }
 
 export function Ring({ remaining, limit, tone }: any) {
-  const { symbol } = useCurrency();
+  const { symbol, fmtNum, toDisplay } = useCurrency();
   const { t } = useT();
   const over = tone.key === "over";
   const ratio = Math.max(0, Math.min(1, limit > 0 ? remaining / limit : 0));
   const offset = CIRC * (1 - ratio);
-  const shown = Math.round(remaining);
-  const valueSize = fitFontSize(String(shown).length);
+  // Görüntü birimine çevrilmiş + binlik ayıraçlı sayı; key için sayısal değer.
+  const shownNum = Math.round(toDisplay(remaining));
+  const shownText = fmtNum(remaining);
+  const valueSize = fitFontSize(shownText.length);
 
   const circleAnimatedProps = useAnimatedProps(() => {
     return {
@@ -75,13 +77,13 @@ export function Ring({ remaining, limit, tone }: any) {
       <View style={styles.center}>
         <MotiText style={styles.kalan}>{t("ring.left")}</MotiText>
         <MotiText
-          key={shown}
+          key={shownNum}
           style={[styles.value, { fontSize: valueSize }]}
           from={{ opacity: 0.3, scale: 0.88 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "spring", stiffness: 320, damping: 18 }}
+          transition={{ type: "timing", duration: 280 }}
         >
-          {shown}
+          {shownText}
         </MotiText>
         <MotiText style={styles.unit}>{symbol} {t("ring.perDay")}</MotiText>
         <MotiText

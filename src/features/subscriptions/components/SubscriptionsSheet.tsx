@@ -60,7 +60,7 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
 
       <Text style={styles.listLabel}>{t("subs.listLabel")}</Text>
 
-      <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 20 }} keyboardShouldPersistTaps="handled">
+      <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 20 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <AnimatePresence>
           {subscriptions.map((sub) => (
             <SubscriptionRow

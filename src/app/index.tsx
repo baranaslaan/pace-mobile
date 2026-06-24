@@ -22,6 +22,7 @@ import { SettingsSheet } from "../features/settings/components/SettingsSheet";
 import { Paywall } from "../features/pro/components/Paywall";
 import { scheduleDailyReminder } from "../shared/lib/notifications";
 import { translate, type Language } from "../shared/i18n";
+import { useWidgetSync } from "../widgets/useWidgetSync";
 
 import { theme } from "../shared/styles/theme";
 
@@ -38,6 +39,9 @@ export default function AppIndex() {
   const language = usePaceStore((s) => s.language) as Language;
   const { remaining, limit } = useLimitLogic();
   const tone = getTone(remaining, limit);
+
+  // Günlük limit/tempo değiştikçe iOS ana ekran widget'ını güncel tut.
+  useWidgetSync();
 
   const [mounted, setMounted] = useState(false);
   const [minElapsed, setMinElapsed] = useState(false);

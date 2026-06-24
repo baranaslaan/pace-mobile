@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { usePaceStore } from "./usePaceStore";
-import { symbolOf } from "@/shared/lib/money";
+import { symbolOf, formatMoney, formatNumber } from "@/shared/lib/money";
 
 /**
  * Aktif para birimini + kur dönüşümünü store'dan reaktif olarak verir.
@@ -28,7 +28,9 @@ export function useCurrency() {
       rate,
       toDisplay,
       toBase,
-      fmt: (base: number) => `${symbol}${Math.round(toDisplay(base))}`,
+      fmt: (base: number) => formatMoney(toDisplay(base), currency),
+      // Sembolsüz, görüntü birimine çevrilmiş, gruplu sayı (ör. ring içi).
+      fmtNum: (base: number) => formatNumber(toDisplay(base), currency),
     };
   }, [currency, rates]);
 }

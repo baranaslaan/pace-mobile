@@ -28,7 +28,7 @@ export function SubscriptionRow({ sub, onUpdateAmount, onRemove }: SubscriptionR
       from={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 56 }}
       exit={{ opacity: 0, height: 0 }}
-      transition={{ type: "spring", stiffness: 420, damping: 36 }}
+      transition={{ type: "timing", duration: 220 }}
     >
       <Text style={styles.itemName} numberOfLines={1}>{sub.name}</Text>
 

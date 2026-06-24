@@ -7,6 +7,7 @@ import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
 import { ArrowUpIcon } from "../../../shared/ui/icons";
 import { CATEGORIES, categoryById } from "../../../shared/lib/categories";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { tapLight, tapWarn } from "../../../shared/lib/haptics";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 import { Text } from "../../../shared/typography/Text";
@@ -31,7 +32,11 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
   const submit = () => {
     if (!valid) return;
     // Kullanıcı görüntü biriminde girer; depoya taban birimde yazılır.
-    addExpense(toBase(amount), note, category);
+    const amountBase = toBase(amount);
+    addExpense(amountBase, note, category);
+    // Limiti aşıran harcamada uyarı, normalde hafif dokunuş.
+    if (remaining - amountBase < 0) tapWarn();
+    else tapLight();
     setInput("");
     setNote("");
     setCategory(undefined);
@@ -111,7 +116,10 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
                     <TouchableOpacity
                       key={tpl.id}
                       style={styles.quickChip}
-                      onPress={() => applyTemplate(tpl.id)}
+                      onPress={() => {
+                        applyTemplate(tpl.id);
+                        tapLight();
+                      }}
                       activeOpacity={0.7}
                     >
                       <View style={[styles.chipDot, { backgroundColor: color }]} />

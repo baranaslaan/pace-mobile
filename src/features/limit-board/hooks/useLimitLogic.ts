@@ -13,7 +13,7 @@ import {
   expensesByDay,
   type PaceSnapshot,
 } from "@/shared/lib/engine";
-import { symbolOf } from "@/shared/lib/money";
+import { formatMoney } from "@/shared/lib/money";
 import { translate, type Language } from "@/shared/i18n";
 
 /**
@@ -51,7 +51,7 @@ export function useLimitLogic() {
     // Taban tutarı görüntü birimine çevirip biçimlendiren fmt. Bileşenler
     // aynısını useCurrency üzerinden kullanır.
     const rate = rates[currency] && rates[currency] > 0 ? rates[currency] : 1;
-    const fmt = (base: number) => `${symbolOf(currency)}${Math.round(base * rate)}`;
+    const fmt = (base: number) => formatMoney(base * rate, currency);
 
     // Saf forecast'a dile göre mesaj giydir (motor dilden bağımsız kaldı).
     const f = burnForecast(snap, now);

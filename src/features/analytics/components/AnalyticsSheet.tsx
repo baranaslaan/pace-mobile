@@ -72,7 +72,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
 
   return (
     <BottomSheet open={open} onClose={onClose} title={t("analytics.title")}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 0 }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ paddingBottom: 0 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <View style={styles.stats}>
           <View style={styles.stat}>
             <Text style={styles.statValue}>{fmt(stats.spent)}</Text>
