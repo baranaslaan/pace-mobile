@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, TouchableOpacity, ScrollView } from "react-native";
+import { StyleSheet, View, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { MotiView } from "moti";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { CheckIcon, SparklesIcon } from "../../../shared/ui/icons";
+import { tapLight, tapSuccess } from "../../../shared/lib/haptics";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
@@ -49,11 +50,18 @@ export function Paywall({ open, onClose }: PaywallProps) {
     return () => clearTimeout(t);
   }, [phase, onClose]);
 
+  const selectPlan = (id: string) => {
+    if (id === plan) return;
+    tapLight();
+    setPlan(id);
+  };
+
   const handlePurchase = () => {
     if (phase !== "idle") return;
     setPhase("purchasing");
     setTimeout(() => {
       unlockPro();
+      tapSuccess();
       setPhase("done");
     }, MOCK_PURCHASE_MS);
   };
@@ -67,9 +75,15 @@ export function Paywall({ open, onClose }: PaywallProps) {
         contentContainerStyle={styles.body}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.badge}>
-          <SparklesIcon color="#fff" />
-        </View>
+        <MotiView
+          key={unlocked ? "unlocked" : "idle"}
+          style={styles.badge}
+          from={{ scale: 0.7, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "timing", duration: 240 }}
+        >
+          {unlocked ? <CheckIcon color="#fff" size={28} /> : <SparklesIcon color="#fff" />}
+        </MotiView>
 
         {unlocked ? (
           <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ alignItems: "center" }}>
@@ -100,7 +114,7 @@ export function Paywall({ open, onClose }: PaywallProps) {
                   <TouchableOpacity
                     key={p.id}
                     style={[styles.plan, active && styles.planActive]}
-                    onPress={() => setPlan(p.id)}
+                    onPress={() => selectPlan(p.id)}
                     activeOpacity={0.85}
                   >
                     {p.id === "lifetime" && (
@@ -126,9 +140,14 @@ export function Paywall({ open, onClose }: PaywallProps) {
               disabled={phase !== "idle"}
               activeOpacity={0.9}
             >
-              <Text style={styles.ctaText}>
-                {phase === "purchasing" ? t("paywall.processing") : t("paywall.buy", { price: selected.price })}
-              </Text>
+              {phase === "purchasing" ? (
+                <View style={styles.ctaBusy}>
+                  <ActivityIndicator size="small" color="#000" />
+                  <Text style={styles.ctaText}>{t("paywall.processing")}</Text>
+                </View>
+              ) : (
+                <Text style={styles.ctaText}>{t("paywall.buy", { price: selected.price })}</Text>
+              )}
             </TouchableOpacity>
 
             <Text style={styles.fine}>{t("paywall.fine")}</Text>
@@ -266,6 +285,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
+  },
+  ctaBusy: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   ctaText: {
     color: "#000",

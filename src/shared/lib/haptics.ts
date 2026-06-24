@@ -15,3 +15,8 @@ export function tapLight(): void {
 export function tapWarn(): void {
   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
 }
+
+/** Başarı — tamamlanan anlamlı akış (ör. Pro açıldı, onboarding bitti). */
+export function tapSuccess(): void {
+  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+}

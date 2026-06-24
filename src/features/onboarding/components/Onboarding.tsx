@@ -10,6 +10,7 @@ import { SubscriptionsStep } from "./SubscriptionsStep";
 import { FeaturesStep } from "./FeaturesStep";
 import { RecapStep } from "./RecapStep";
 import { StepDots } from "./StepDots";
+import { tapSuccess } from "../../../shared/lib/haptics";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
@@ -25,13 +26,19 @@ export function Onboarding() {
   const budgetValid = !Number.isNaN(parsedBudget) && parsedBudget > 0;
   const advanceBudget = () => budgetValid && flow.goNext();
 
+  // Onboarding'i bitirmek anlamlı bir tamamlanma anı → success haptik.
+  const finish = () => {
+    tapSuccess();
+    flow.finish();
+  };
+
   const cta =
     step === 0
       ? { label: t("common.start"), disabled: false, onClick: flow.goNext }
       : step === 1
         ? { label: t("common.continue"), disabled: !budgetValid, onClick: advanceBudget }
         : step === 4
-          ? { label: t("common.finish"), disabled: false, onClick: flow.finish }
+          ? { label: t("common.finish"), disabled: false, onClick: finish }
           : { label: t("common.continue"), disabled: false, onClick: flow.goNext };
 
   return (
@@ -66,8 +73,8 @@ export function Onboarding() {
           <MotiView
             key={step}
             style={styles.stepWrap}
-            from={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
             exit={{ opacity: 0 }}
             transition={{ type: "timing", duration: 260 }}
           >
