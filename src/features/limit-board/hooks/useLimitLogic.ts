@@ -60,16 +60,26 @@ export function useLimitLogic() {
           ? translate(language, "analytics.forecastSurplus", { balance: fmt(f.endBalance) })
           : translate(language, "analytics.forecastDeficit", { day: f.zeroDay ?? 0 });
 
+    const limit = dailyLimit(snap, now);
+    // Rollover görünür biçimde devrede mi: bugünkü limit, düz günlük paydan
+    // (havuz / aydaki gün) anlamlı ölçüde saptıysa devir mekaniği çalışmış
+    // demektir (az harcandıysa yukarı, aşıldıysa aşağı). İpucu tetikçisi.
+    const stats = monthStats(snap, now);
+    const evenShare = stats.total > 0 ? pool / stats.total : 0;
+    const rolloverActive =
+      pool > 0 && Math.abs(limit - evenShare) > Math.max(1, evenShare * 0.05);
+
     return {
-      limit: dailyLimit(snap, now),
+      limit,
       remaining: remainingToday(snap, now),
       spent: spentToday(snap, now),
       forecast: { ...f, message },
-      stats: monthStats(snap, now),
+      stats,
       pool,
       subsTotal,
       budget,
       setup,
+      rolloverActive,
     };
   }, [budget, subscriptions, entries, currency, rates, language]);
 }

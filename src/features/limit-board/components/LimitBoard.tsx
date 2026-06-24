@@ -1,9 +1,10 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
-import { MotiView, MotiText } from "moti";
+import { StyleSheet, View, TouchableOpacity } from "react-native";
+import { MotiView, MotiText, AnimatePresence } from "moti";
 import { getTone } from "../../../shared/lib/tone";
 import { CardIcon } from "../../../shared/ui/icons";
 import { useLimitLogic } from "../hooks/useLimitLogic";
+import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { useCurrency } from "../../../shared/store/useCurrency";
 import { useT } from "../../../shared/i18n";
 import { Ring } from "./Ring";
@@ -11,10 +12,14 @@ import { theme } from "../../../shared/styles/theme";
 import { Text } from "../../../shared/typography/Text";
 
 export function LimitBoard() {
-  const { remaining, limit, spent, setup, budget, subsTotal } = useLimitLogic();
+  const { remaining, limit, spent, setup, budget, subsTotal, rolloverActive } = useLimitLogic();
   const { fmt } = useCurrency();
   const { t } = useT();
   const tone = getTone(remaining, limit);
+  const rolloverTipSeen = usePaceStore((s) => s.rolloverTipSeen);
+  const markRolloverTipSeen = usePaceStore((s) => s.markRolloverTipSeen);
+  // Devir görünür biçimde çalıştığı ilk anda, henüz görülmemişse tek seferlik ipucu.
+  const showTip = !setup && rolloverActive && !rolloverTipSeen;
 
   if (setup) {
     const oversubscribed = setup === "oversubscribed";
@@ -66,6 +71,26 @@ export function LimitBoard() {
           <Text style={styles.statLabel}>{t("board.limit")}</Text>
         </View>
       </View>
+
+      <AnimatePresence>
+        {showTip && (
+          <MotiView
+            key="rolloverTip"
+            from={{ opacity: 0, translateY: 8 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            exit={{ opacity: 0, translateY: 8 }}
+            transition={{ type: "timing", duration: 220 }}
+          >
+            <TouchableOpacity
+              style={styles.tip}
+              onPress={markRolloverTipSeen}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.tipText}>{t("board.rolloverTip")}</Text>
+            </TouchableOpacity>
+          </MotiView>
+        )}
+      </AnimatePresence>
     </View>
   );
 }
@@ -144,5 +169,18 @@ const styles = StyleSheet.create({
     width: 1,
     height: 32,
     backgroundColor: "rgba(255, 255, 255, 0.08)",
+  },
+  tip: {
+    maxWidth: 320,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+  },
+  tipText: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: theme.colors.textSoft,
+    textAlign: "center",
   },
 });

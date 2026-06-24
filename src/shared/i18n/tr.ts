@@ -97,6 +97,8 @@ export const tr = {
     hint: "••• → Bütçe & Giderler",
     spent: "harcanan",
     limit: "limit",
+    rolloverTip:
+      "Limitin her gün yeniden hesaplanır: az harcadığın gün artar, çok harcadığın gün kısılır. Dokun, anladım.",
   },
 
   ring: {

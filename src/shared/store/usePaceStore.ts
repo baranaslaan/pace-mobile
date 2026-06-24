@@ -67,6 +67,8 @@ interface PaceState {
   reminderEnabled: boolean;
   reminderHour: number;
   reminderMinute: number;
+  /** Rollover (devir) ipucu bir kez gösterilip kapatıldı mı? */
+  rolloverTipSeen: boolean;
   _hydrated: boolean;
 
   setBudget: (amount: number) => void;
@@ -99,6 +101,7 @@ interface PaceState {
   setLanguage: (code: string) => void;
   setRates: (rates: Record<string, number>) => void;
   setReminder: (enabled: boolean, hour: number, minute: number) => void;
+  markRolloverTipSeen: () => void;
   rollIfNewMonth: () => void;
 }
 
@@ -121,6 +124,7 @@ export const usePaceStore = create<PaceState>()(
       reminderEnabled: false,
       reminderHour: 20,
       reminderMinute: 0,
+      rolloverTipSeen: false,
       _hydrated: false,
 
       setBudget: (amount) =>
@@ -315,6 +319,8 @@ export const usePaceStore = create<PaceState>()(
       setReminder: (enabled, hour, minute) =>
         set({ reminderEnabled: enabled, reminderHour: hour, reminderMinute: minute }),
 
+      markRolloverTipSeen: () => set({ rolloverTipSeen: true }),
+
       rollIfNewMonth: () =>
         set((s) => rollMonth(s, monthKey()) ?? s),
     }),
@@ -338,6 +344,7 @@ export const usePaceStore = create<PaceState>()(
         reminderEnabled,
         reminderHour,
         reminderMinute,
+        rolloverTipSeen,
       }) => ({
         budget,
         subscriptions,
@@ -355,8 +362,9 @@ export const usePaceStore = create<PaceState>()(
         reminderEnabled,
         reminderHour,
         reminderMinute,
+        rolloverTipSeen,
       }),
-      version: 7,
+      version: 8,
       migrate: (persisted) => {
         const s = (persisted ?? {}) as Partial<PaceState>;
         return {
@@ -395,6 +403,11 @@ export const usePaceStore = create<PaceState>()(
           rates: isRateTable(s.rates) ? s.rates : FALLBACK_RATES,
           ratesUpdatedAt:
             typeof s.ratesUpdatedAt === "number" ? s.ratesUpdatedAt : 0,
+          reminderEnabled: Boolean(s.reminderEnabled),
+          reminderHour: typeof s.reminderHour === "number" ? s.reminderHour : 20,
+          reminderMinute:
+            typeof s.reminderMinute === "number" ? s.reminderMinute : 0,
+          rolloverTipSeen: Boolean(s.rolloverTipSeen),
         } as PaceState;
       },
     },

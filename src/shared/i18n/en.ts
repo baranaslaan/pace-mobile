@@ -98,6 +98,8 @@ export const en: Catalog = {
     hint: "••• → Budget & Expenses",
     spent: "spent",
     limit: "limit",
+    rolloverTip:
+      "Your limit recalculates daily: underspend and it rises, overspend and it tightens. Tap to dismiss.",
   },
 
   ring: {
