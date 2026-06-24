@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   },
   launchNote: {
     fontSize: 12,
-    color: theme.colors.stateWarn,
+    color: theme.colors.stateGood,
     textAlign: "center",
     marginBottom: 16,
   },

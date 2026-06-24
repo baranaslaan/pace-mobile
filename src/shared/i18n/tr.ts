@@ -251,7 +251,7 @@ export const tr = {
     annual: "Yıllık",
     annualNote: "yılda bir yenilenir",
     bestValue: "En avantajlı",
-    launchNote: "Kuruluş fiyatı — uygulama büyüdükçe artacak.",
+    launchNote: "Açılışa özel fiyat — ilk kullananlara, kısa süreliğine 💙",
     processing: "İşleniyor…",
     buy: "Pace Pro'yu aç · {price}",
     fine: "Gerçek satın alma mobil uygulamada (App Store / Google Play).",
