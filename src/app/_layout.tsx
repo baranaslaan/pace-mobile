@@ -11,6 +11,7 @@ import {
 } from "@expo-google-fonts/outfit";
 import { usePaceStore } from "@/shared/store/usePaceStore";
 import { fetchRates } from "@/shared/lib/rates";
+import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -56,8 +57,10 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
-    </Stack>
+    <ErrorBoundary>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+      </Stack>
+    </ErrorBoundary>
   );
 }

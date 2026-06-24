@@ -20,6 +20,12 @@ export const en: Catalog = {
     neutral: "setup needed",
   },
 
+  error: {
+    title: "Something went wrong",
+    body: "An unexpected error occurred. You can try again.",
+    retry: "Try again",
+  },
+
   menu: {
     today: "Today's expenses",
     budget: "Budget & Expenses",

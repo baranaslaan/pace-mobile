@@ -19,6 +19,12 @@ export const tr = {
     neutral: "kurulum gerekli",
   },
 
+  error: {
+    title: "Bir şeyler ters gitti",
+    body: "Beklenmedik bir hata oluştu. Tekrar deneyebilirsin.",
+    retry: "Tekrar dene",
+  },
+
   menu: {
     today: "Bugünün harcamaları",
     budget: "Bütçe & Giderler",
