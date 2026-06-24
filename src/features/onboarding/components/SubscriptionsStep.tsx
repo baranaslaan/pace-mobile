@@ -3,6 +3,7 @@ import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView } from "react
 import { AnimatePresence, MotiView } from "moti";
 import { PlusIcon, XIcon } from "../../../shared/ui/icons";
 import type { SubDraft } from "../hooks/useOnboardingFlow";
+import { useCurrency } from "../../../shared/store/useCurrency";
 import { theme } from "../../../shared/styles/theme";
 import { Text } from "../../../shared/typography/Text";
 
@@ -17,6 +18,7 @@ export function SubscriptionsStep({
   onAdd,
   onRemove,
 }: SubscriptionsStepProps) {
+  const { symbol, fmt } = useCurrency();
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
 
@@ -49,7 +51,7 @@ export function SubscriptionsStep({
           onSubmitEditing={submit}
         />
         <View style={styles.amountField}>
-          <Text style={styles.prefix}>₺</Text>
+          <Text style={styles.prefix}>{symbol}</Text>
           <TextInput
             style={styles.amountInput}
             keyboardType="numeric"
@@ -82,7 +84,7 @@ export function SubscriptionsStep({
               transition={{ type: "spring", stiffness: 420, damping: 36 }}
             >
               <Text style={styles.itemName} numberOfLines={1}>{sub.name}</Text>
-              <Text style={styles.itemAmount}>₺{Math.round(sub.amount)}</Text>
+              <Text style={styles.itemAmount}>{fmt(sub.amount)}</Text>
               <TouchableOpacity
                 style={styles.remove}
                 onPress={() => onRemove(sub.id)}

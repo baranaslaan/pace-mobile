@@ -237,6 +237,7 @@ export interface Forecast {
 export function burnForecast(
   snap: PaceSnapshot,
   now: Date = new Date(),
+  fmt: (amount: number) => string = (n) => `₺${Math.round(n)}`,
 ): Forecast {
   const { pool, pace, total } = monthStats(snap, now);
 
@@ -255,7 +256,7 @@ export function burnForecast(
     return {
       endBalance,
       zeroDay: null,
-      message: `Bu hızla ay sonunda elinde ${Math.round(endBalance)} ₺ kalır.`,
+      message: `Bu hızla ay sonunda elinde ${fmt(endBalance)} kalır.`,
     };
   }
 

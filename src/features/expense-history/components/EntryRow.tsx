@@ -5,6 +5,7 @@ import { MotiView } from "moti";
 import { timeLabel } from "../../../shared/lib/date";
 import { TrashIcon } from "../../../shared/ui/icons";
 import { CATEGORIES, categoryById } from "../../../shared/lib/categories";
+import { useCurrency } from "../../../shared/store/useCurrency";
 import { theme } from "../../../shared/styles/theme";
 
 interface EntryRowProps {
@@ -14,13 +15,14 @@ interface EntryRowProps {
 }
 
 export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
-  const [amount, setAmount] = useState(String(entry.amount));
+  const { symbol, toBase, toDisplay } = useCurrency();
+  const [amount, setAmount] = useState(String(Math.round(toDisplay(entry.amount))));
   const [note, setNote] = useState(entry.note ?? "");
 
   const commitAmount = () => {
     const value = Number.parseFloat(amount);
-    if (Number.isFinite(value) && value > 0) onUpdate(entry.id, { amount: value });
-    else setAmount(String(entry.amount));
+    if (Number.isFinite(value) && value > 0) onUpdate(entry.id, { amount: toBase(value) });
+    else setAmount(String(Math.round(toDisplay(entry.amount))));
   };
 
   const commitNote = () => {
@@ -68,7 +70,7 @@ export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
       />
 
       <View style={styles.amountField}>
-        <Text style={styles.prefix}>₺</Text>
+        <Text style={styles.prefix}>{symbol}</Text>
         <TextInput
           style={styles.amountInput}
           keyboardType="decimal-pad"

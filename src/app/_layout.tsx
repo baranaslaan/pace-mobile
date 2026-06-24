@@ -1,16 +1,28 @@
 import { useEffect } from "react";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { 
-  useFonts, 
-  Outfit_400Regular, 
-  Outfit_500Medium, 
-  Outfit_600SemiBold, 
-  Outfit_700Bold, 
-  Outfit_800ExtraBold 
+import {
+  useFonts,
+  Outfit_400Regular,
+  Outfit_500Medium,
+  Outfit_600SemiBold,
+  Outfit_700Bold,
+  Outfit_800ExtraBold
 } from "@expo-google-fonts/outfit";
+import { usePaceStore } from "@/shared/store/usePaceStore";
+import { fetchRates } from "@/shared/lib/rates";
 
 SplashScreen.preventAutoHideAsync();
+
+/** Kur 6 saatten eskiyse canlı kuru çek; başarısızsa son bilinen korunur. */
+const RATES_TTL = 6 * 60 * 60 * 1000;
+function refreshRatesIfStale() {
+  const { ratesUpdatedAt } = usePaceStore.getState();
+  if (Date.now() - ratesUpdatedAt < RATES_TTL) return;
+  fetchRates()
+    .then((rates) => usePaceStore.getState().setRates(rates))
+    .catch(() => {});
+}
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -27,6 +39,17 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
+
+  // Hydration sonrası canlı kuru tazele (persisted son bilinen kurları
+  // ezmemek için hydration'ı bekle).
+  useEffect(() => {
+    if (usePaceStore.persist.hasHydrated()) {
+      refreshRatesIfStale();
+      return;
+    }
+    const unsub = usePaceStore.persist.onFinishHydration(refreshRatesIfStale);
+    return unsub;
+  }, []);
 
   if (!loaded && !error) {
     return null;

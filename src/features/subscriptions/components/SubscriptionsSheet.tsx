@@ -9,6 +9,7 @@ import { PlusIcon } from "../../../shared/ui/icons";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { SubscriptionRow } from "./SubscriptionRow";
 import { BudgetField } from "./BudgetField";
+import { useCurrency } from "../../../shared/store/useCurrency";
 import { theme } from "../../../shared/styles/theme";
 
 const FREE_LIMIT = 3;
@@ -28,6 +29,7 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
   const removeSubscription = usePaceStore((s) => s.removeSubscription);
   const isPro = usePaceStore((s) => s.isPro);
   const { limit } = useLimitLogic();
+  const { symbol, fmt, toBase } = useCurrency();
 
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
@@ -39,7 +41,7 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
 
   const submit = () => {
     if (!canAdd || atFreeLimit) return;
-    addSubscription(name, parsed);
+    addSubscription(name, toBase(parsed));
     setName("");
     setAmount("");
   };
@@ -49,9 +51,9 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
       <BudgetField value={budget} onCommit={setBudget} />
 
       <Text style={styles.sub}>
-        Günlük limitin <Text style={{ fontWeight: "700" }}>₺{Math.round(limit)}</Text>
+        Günlük limitin <Text style={{ fontWeight: "700" }}>{fmt(limit)}</Text>
         <Text style={styles.dot}> • </Text>
-        rezerve <Text style={{ fontWeight: "700" }}>₺{Math.round(total)}</Text>
+        rezerve <Text style={{ fontWeight: "700" }}>{fmt(total)}</Text>
       </Text>
 
       <Text style={styles.listLabel}>Sabit giderler</Text>
@@ -94,7 +96,7 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
             onSubmitEditing={submit}
           />
           <View style={styles.amountField}>
-            <Text style={styles.amountPrefix}>₺</Text>
+            <Text style={styles.amountPrefix}>{symbol}</Text>
             <TextInput
               style={styles.amountInput}
               keyboardType="decimal-pad"

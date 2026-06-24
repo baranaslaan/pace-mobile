@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { StyleSheet, View, TextInput } from "react-native";
 import { Text } from "../../../shared/typography/Text";
+import { useCurrency } from "../../../shared/store/useCurrency";
 import { theme } from "../../../shared/styles/theme";
 
 interface BudgetFieldProps {
@@ -9,6 +10,7 @@ interface BudgetFieldProps {
 }
 
 export function BudgetField({ value, onCommit }: BudgetFieldProps) {
+  const { symbol } = useCurrency();
   const [draft, setDraft] = useState(String(value));
 
   const commit = () => {
@@ -21,7 +23,7 @@ export function BudgetField({ value, onCommit }: BudgetFieldProps) {
     <View style={styles.budget}>
       <Text style={styles.budgetLabel}>Aylık bütçe</Text>
       <View style={styles.budgetField}>
-        <Text style={styles.budgetPrefix}>₺</Text>
+        <Text style={styles.budgetPrefix}>{symbol}</Text>
         <TextInput
           style={styles.budgetInput}
           keyboardType="decimal-pad"

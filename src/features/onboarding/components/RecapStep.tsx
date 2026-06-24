@@ -3,6 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { dailyLimit } from "../../../shared/lib/engine";
 import type { SubDraft } from "../hooks/useOnboardingFlow";
+import { useCurrency } from "../../../shared/store/useCurrency";
 import { theme } from "../../../shared/styles/theme";
 
 interface RecapStepProps {
@@ -18,6 +19,7 @@ const POINTS = [
 ];
 
 export function RecapStep({ budget, subs }: RecapStepProps) {
+  const { symbol } = useCurrency();
   const limit = dailyLimit({
     budget: Number.parseFloat(budget) || 0,
     subscriptions: subs,
@@ -32,7 +34,7 @@ export function RecapStep({ budget, subs }: RecapStepProps) {
       </View>
 
       <View style={styles.limit}>
-        <Text style={styles.prefix}>₺</Text>
+        <Text style={styles.prefix}>{symbol}</Text>
         <Text style={styles.value}>{Math.round(limit)}</Text>
         <Text style={styles.unit}>/gün</Text>
       </View>

@@ -6,12 +6,14 @@ import { getTone } from "../../../shared/lib/tone";
 import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
 import { ArrowUpIcon } from "../../../shared/ui/icons";
 import { CATEGORIES } from "../../../shared/lib/categories";
+import { useCurrency } from "../../../shared/store/useCurrency";
 import { theme } from "../../../shared/styles/theme";
 import { Text } from "../../../shared/typography/Text";
 
 export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
   const addExpense = usePaceStore((s) => s.addExpense);
   const { remaining, limit } = useLimitLogic();
+  const { symbol, toBase } = useCurrency();
   const tone = getTone(remaining, limit);
 
   const [input, setInput] = useState("");
@@ -24,7 +26,8 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
 
   const submit = () => {
     if (!valid) return;
-    addExpense(amount, note, category);
+    // Kullanıcı görüntü biriminde girer; depoya taban birimde yazılır.
+    addExpense(toBase(amount), note, category);
     setInput("");
     setNote("");
     setCategory(undefined);
@@ -51,7 +54,7 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
             onPress={() => inputRef.current?.focus()}
             activeOpacity={1}
           >
-            <Text style={styles.prefix}>₺</Text>
+            <Text style={styles.prefix}>{symbol}</Text>
             <TextInput
               ref={inputRef}
               keyboardType="decimal-pad"

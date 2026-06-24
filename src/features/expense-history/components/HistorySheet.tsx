@@ -7,6 +7,7 @@ import { dayKey } from "../../../shared/lib/date";
 import { RotateCcwIcon } from "../../../shared/ui/icons";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { EntryRow } from "./EntryRow";
+import { useCurrency } from "../../../shared/store/useCurrency";
 import { theme } from "../../../shared/styles/theme";
 
 interface HistorySheetProps {
@@ -19,6 +20,7 @@ export function HistorySheet({ open, onClose }: HistorySheetProps) {
   const updateExpense = usePaceStore((s) => s.updateExpense);
   const removeExpense = usePaceStore((s) => s.removeExpense);
   const resetToday = usePaceStore((s) => s.resetToday);
+  const { fmt } = useCurrency();
 
   const [confirmReset, setConfirmReset] = useState(false);
 
@@ -39,7 +41,7 @@ export function HistorySheet({ open, onClose }: HistorySheetProps) {
   return (
     <BottomSheet open={open} onClose={handleClose} title="Bugünün harcamaları">
       <Text style={styles.summary}>
-        Bugün toplam <Text style={{ fontWeight: "700" }}>₺{Math.round(total)}</Text>
+        Bugün toplam <Text style={{ fontWeight: "700" }}>{fmt(total)}</Text>
         <Text style={styles.dot}> • </Text>
         {today.length} kalem
       </Text>

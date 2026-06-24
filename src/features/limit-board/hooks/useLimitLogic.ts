@@ -13,6 +13,7 @@ import {
   expensesByDay,
   type PaceSnapshot,
 } from "@/shared/lib/engine";
+import { symbolOf } from "@/shared/lib/money";
 
 /**
  * Kurulum/uç durum bayrağı:
@@ -27,6 +28,8 @@ export function useLimitLogic() {
   const budget = usePaceStore((s) => s.budget);
   const subscriptions = usePaceStore((s) => s.subscriptions);
   const entries = usePaceStore((s) => s.entries);
+  const currency = usePaceStore((s) => s.currency);
+  const rates = usePaceStore((s) => s.rates);
 
   return useMemo(() => {
     const snap: PaceSnapshot = {
@@ -43,16 +46,21 @@ export function useLimitLogic() {
     const setup: SetupState =
       budget <= 0 ? "no-budget" : pool <= 0 ? "oversubscribed" : null;
 
+    // Taban tutarı görüntü birimine çevirip biçimlendiren fmt (forecast cümlesi
+    // için). Bileşenler aynısını useCurrency üzerinden kullanır.
+    const rate = rates[currency] && rates[currency] > 0 ? rates[currency] : 1;
+    const fmt = (base: number) => `${symbolOf(currency)}${Math.round(base * rate)}`;
+
     return {
       limit: dailyLimit(snap, now),
       remaining: remainingToday(snap, now),
       spent: spentToday(snap, now),
-      forecast: burnForecast(snap, now),
+      forecast: burnForecast(snap, now, fmt),
       stats: monthStats(snap, now),
       pool,
       subsTotal,
       budget,
       setup,
     };
-  }, [budget, subscriptions, entries]);
+  }, [budget, subscriptions, entries, currency, rates]);
 }

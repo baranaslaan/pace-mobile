@@ -4,6 +4,8 @@ import Constants from "expo-constants";
 import { File, Paths } from "expo-file-system";
 import { Text } from "../../../shared/typography/Text";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
+import { useCurrency } from "../../../shared/store/useCurrency";
+import { CURRENCIES } from "../../../shared/lib/money";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { expensesToCSV } from "../../../shared/lib/csv";
 import {
@@ -36,6 +38,8 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
   const reminderHour = usePaceStore((s) => s.reminderHour);
   const reminderMinute = usePaceStore((s) => s.reminderMinute);
   const setReminder = usePaceStore((s) => s.setReminder);
+  const setCurrency = usePaceStore((s) => s.setCurrency);
+  const { currency, fmt, toDisplay } = useCurrency();
 
   const [confirmReset, setConfirmReset] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -83,7 +87,9 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
     try {
       setExporting(true);
       // UTF-8 BOM → Excel'in Türkçe karakterleri doğru okuması için.
-      const csv = String.fromCharCode(0xfeff) + expensesToCSV(entries);
+      const csv =
+        String.fromCharCode(0xfeff) +
+        expensesToCSV(entries, { convert: toDisplay, currencyCode: currency });
       const file = new File(Paths.cache, "pace-harcamalar.csv");
       file.create({ overwrite: true });
       file.write(csv);
@@ -158,13 +164,36 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
         <View style={styles.rowInfo}>
           <Text style={styles.rowTitle}>Bütçe & sabit giderler</Text>
           <Text style={styles.rowSub}>
-            Aylık ₺{Math.round(budget)} · {subscriptions.length} sabit gider
+            Aylık {fmt(budget)} · {subscriptions.length} sabit gider
           </Text>
         </View>
         <View style={styles.chevron}>
           <ChevronLeftIcon color={theme.colors.textDim} size={18} />
         </View>
       </TouchableOpacity>
+
+      {/* Para birimi */}
+      <Text style={styles.sectionLabel}>Para birimi</Text>
+      <View style={styles.currencyRow}>
+        {CURRENCIES.map((c) => {
+          const active = currency === c.code;
+          return (
+            <TouchableOpacity
+              key={c.code}
+              style={[styles.currencyChip, active && styles.currencyChipActive]}
+              onPress={() => setCurrency(c.code)}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.currencySymbol, active && styles.currencyTextActive]}>
+                {c.symbol}
+              </Text>
+              <Text style={[styles.currencyCode, active && styles.currencyTextActive]}>
+                {c.code}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
 
       {/* Veri / tehlikeli bölge */}
       <Text style={styles.sectionLabel}>Veri</Text>
@@ -353,6 +382,39 @@ const styles = StyleSheet.create({
   },
   chevron: {
     transform: [{ rotate: "180deg" }],
+  },
+  currencyRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  currencyChip: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.06)",
+    backgroundColor: "rgba(255, 255, 255, 0.04)",
+  },
+  currencyChipActive: {
+    borderColor: theme.colors.stateGood,
+    backgroundColor: "rgba(59, 130, 246, 0.12)",
+  },
+  currencySymbol: {
+    fontFamily: theme.fonts.outfitBold,
+    fontSize: 20,
+    fontWeight: "700",
+    color: theme.colors.textSoft,
+  },
+  currencyCode: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: theme.colors.textMute,
+    marginTop: 2,
+    letterSpacing: 0.5,
+  },
+  currencyTextActive: {
+    color: theme.colors.textPrimary,
   },
   proChip: {
     flexDirection: "row",

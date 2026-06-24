@@ -4,6 +4,8 @@ import { createMMKV } from "react-native-mmkv";
 import { dayKey, monthKey, monthOf } from "@/shared/lib/date";
 import { summarizeMonth, expensesByDay } from "@/shared/lib/engine";
 import { isCategoryId } from "@/shared/lib/categories";
+import { isCurrencyCode, DEFAULT_CURRENCY } from "@/shared/lib/money";
+import { FALLBACK_RATES, isRateTable } from "@/shared/lib/rates";
 import type {
   ExpenseEntry,
   MonthSummary,
@@ -73,6 +75,11 @@ interface PaceState {
   activeMonth: string;
   onboarded: boolean;
   isPro: boolean;
+  currency: string;
+  /** Taban birime göre kur tablosu (bkz. rates.ts). Tutarlar taban birimde. */
+  rates: Record<string, number>;
+  /** Kurların son güncellenme zamanı (epoch ms); 0 = hiç çekilmedi. */
+  ratesUpdatedAt: number;
   reminderEnabled: boolean;
   reminderHour: number;
   reminderMinute: number;
@@ -93,6 +100,8 @@ interface PaceState {
   completeOnboarding: () => void;
   unlockPro: () => void;
   lockPro: () => void;
+  setCurrency: (code: string) => void;
+  setRates: (rates: Record<string, number>) => void;
   setReminder: (enabled: boolean, hour: number, minute: number) => void;
   rollIfNewMonth: () => void;
 }
@@ -107,6 +116,9 @@ export const usePaceStore = create<PaceState>()(
       activeMonth: "",
       onboarded: false,
       isPro: false,
+      currency: DEFAULT_CURRENCY,
+      rates: FALLBACK_RATES,
+      ratesUpdatedAt: 0,
       reminderEnabled: false,
       reminderHour: 20,
       reminderMinute: 0,
@@ -202,6 +214,14 @@ export const usePaceStore = create<PaceState>()(
 
       lockPro: () => set({ isPro: false }),
 
+      setCurrency: (code) =>
+        set(() => (isCurrencyCode(code) ? { currency: code } : {})),
+
+      setRates: (rates) =>
+        set(() =>
+          isRateTable(rates) ? { rates, ratesUpdatedAt: Date.now() } : {},
+        ),
+
       setReminder: (enabled, hour, minute) =>
         set({ reminderEnabled: enabled, reminderHour: hour, reminderMinute: minute }),
 
@@ -249,6 +269,9 @@ export const usePaceStore = create<PaceState>()(
         activeMonth,
         onboarded,
         isPro,
+        currency,
+        rates,
+        ratesUpdatedAt,
         reminderEnabled,
         reminderHour,
         reminderMinute,
@@ -260,11 +283,14 @@ export const usePaceStore = create<PaceState>()(
         activeMonth,
         onboarded,
         isPro,
+        currency,
+        rates,
+        ratesUpdatedAt,
         reminderEnabled,
         reminderHour,
         reminderMinute,
       }),
-      version: 3,
+      version: 5,
       migrate: (persisted) => {
         const s = (persisted ?? {}) as Partial<PaceState>;
         return {
@@ -292,6 +318,10 @@ export const usePaceStore = create<PaceState>()(
           activeMonth: typeof s.activeMonth === "string" ? s.activeMonth : "",
           onboarded: Boolean(s.onboarded),
           isPro: Boolean(s.isPro),
+          currency: isCurrencyCode(s.currency) ? s.currency : DEFAULT_CURRENCY,
+          rates: isRateTable(s.rates) ? s.rates : FALLBACK_RATES,
+          ratesUpdatedAt:
+            typeof s.ratesUpdatedAt === "number" ? s.ratesUpdatedAt : 0,
         } as PaceState;
       },
     },

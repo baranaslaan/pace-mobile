@@ -3,6 +3,7 @@ import { StyleSheet, View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import { MotiText } from "moti";
 import { RingAura } from "./RingAura";
+import { useCurrency } from "../../../shared/store/useCurrency";
 import { theme } from "../../../shared/styles/theme";
 import Animated, { useAnimatedProps, withTiming } from "react-native-reanimated";
 
@@ -22,6 +23,7 @@ function fitFontSize(length: number): number {
 }
 
 export function Ring({ remaining, limit, tone }: any) {
+  const { symbol } = useCurrency();
   const over = tone.key === "over";
   const ratio = Math.max(0, Math.min(1, limit > 0 ? remaining / limit : 0));
   const offset = CIRC * (1 - ratio);
@@ -79,7 +81,7 @@ export function Ring({ remaining, limit, tone }: any) {
         >
           {shown}
         </MotiText>
-        <MotiText style={styles.unit}>₺ / gün</MotiText>
+        <MotiText style={styles.unit}>{symbol} / gün</MotiText>
         <MotiText
           style={styles.status}
           animate={{ color: tone.color } as any}

@@ -5,6 +5,7 @@ import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
 import { expensesByDay, weeklyTrend, weekdayBreakdown, categoryBreakdown } from "../../../shared/lib/engine";
 import { categoryById } from "../../../shared/lib/categories";
+import { useCurrency } from "../../../shared/store/useCurrency";
 import { dayKey, monthKey } from "../../../shared/lib/date";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { LockIcon } from "../../../shared/ui/icons";
@@ -58,6 +59,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
   const archive = usePaceStore((s) => s.archive);
   const isPro = usePaceStore((s) => s.isPro);
   const { forecast, stats } = useLimitLogic();
+  const { fmt } = useCurrency();
 
   const expMap = expensesByDay(entries);
   const days = recentDays(expMap, HISTORY_DAYS);
@@ -81,17 +83,17 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
       <ScrollView contentContainerStyle={{ paddingBottom: 0 }} keyboardShouldPersistTaps="handled">
         <View style={styles.stats}>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>₺{Math.round(stats.spent)}</Text>
+            <Text style={styles.statValue}>{fmt(stats.spent)}</Text>
             <Text style={styles.statLabel}>harcanan</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.stat}>
-            <Text style={styles.statValue}>₺{Math.round(stats.pace)}</Text>
+            <Text style={styles.statValue}>{fmt(stats.pace)}</Text>
             <Text style={styles.statLabel}>günlük ort.</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.stat}>
-            <Text style={styles.statValue}>₺{Math.round(stats.pool)}</Text>
+            <Text style={styles.statValue}>{fmt(stats.pool)}</Text>
             <Text style={styles.statLabel}>havuz</Text>
           </View>
         </View>
@@ -102,7 +104,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
             <View style={styles.trendCard}>
               <View style={styles.trendTop}>
                 <View>
-                  <Text style={styles.trendValue}>₺{Math.round(trend.thisWeek)}</Text>
+                  <Text style={styles.trendValue}>{fmt(trend.thisWeek)}</Text>
                   <Text style={styles.trendCaption}>son 7 gün</Text>
                 </View>
                 {trend.deltaPct !== null && (
@@ -129,7 +131,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
               </Text>
               {stats.pace > 0 && (
                 <Text style={styles.forecastSub}>
-                  Tahmini ay sonu harcama ₺{projected} / havuz ₺{Math.round(stats.pool)}
+                  Tahmini ay sonu harcama {fmt(projected)} / havuz {fmt(stats.pool)}
                 </Text>
               )}
             </View>
@@ -144,7 +146,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                   <View style={styles.barTrack}>
                     <View style={[styles.bar, { width: `${(d.amount / maxAmount) * 100}%` }]} />
                   </View>
-                  <Text style={styles.amount}>₺{Math.round(d.amount)}</Text>
+                  <Text style={styles.amount}>{fmt(d.amount)}</Text>
                 </View>
               ))}
             </View>
@@ -175,7 +177,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
             </View>
             <Text style={styles.weekNote}>
               {peak.avg > 0
-                ? `En çok ${WEEKDAY_FULL[peak.weekday]} günleri harcıyorsun · ort ₺${Math.round(peak.avg)}`
+                ? `En çok ${WEEKDAY_FULL[peak.weekday]} günleri harcıyorsun · ort ${fmt(peak.avg)}`
                 : "Haftanın günü dağılımı için biraz daha veri gerek."}
             </Text>
 
@@ -198,7 +200,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                           />
                         </View>
                         <Text style={styles.catPct}>%{Math.round(c.share * 100)}</Text>
-                        <Text style={styles.catAmount}>₺{Math.round(c.total)}</Text>
+                        <Text style={styles.catAmount}>{fmt(c.total)}</Text>
                       </View>
                     );
                   })}
@@ -217,8 +219,8 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                         <View style={[styles.monthDot, within ? styles.monthDotGood : styles.monthDotBad]} />
                         <Text style={styles.monthName}>{monthLabel(mo.month)}</Text>
                         <Text style={styles.monthSpent}>
-                          ₺{Math.round(mo.spent)}
-                          <Text style={styles.monthPool}> / ₺{Math.round(mo.pool)}</Text>
+                          {fmt(mo.spent)}
+                          <Text style={styles.monthPool}> / {fmt(mo.pool)}</Text>
                         </Text>
                       </View>
                     );

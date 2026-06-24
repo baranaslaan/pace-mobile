@@ -4,12 +4,14 @@ import { MotiView, MotiText } from "moti";
 import { getTone } from "../../../shared/lib/tone";
 import { CardIcon } from "../../../shared/ui/icons";
 import { useLimitLogic } from "../hooks/useLimitLogic";
+import { useCurrency } from "../../../shared/store/useCurrency";
 import { Ring } from "./Ring";
 import { theme } from "../../../shared/styles/theme";
 import { Text } from "../../../shared/typography/Text";
 
 export function LimitBoard() {
   const { remaining, limit, spent, setup, budget, subsTotal } = useLimitLogic();
+  const { fmt } = useCurrency();
   const tone = getTone(remaining, limit);
 
   if (setup) {
@@ -30,7 +32,7 @@ export function LimitBoard() {
         </Text>
         <Text style={styles.setupText}>
           {oversubscribed
-            ? `Giderlerin (₺${Math.round(subsTotal)}) bütçenden (₺${Math.round(
+            ? `Giderlerin (${fmt(subsTotal)}) bütçenden (${fmt(
                 budget
               )}) fazla. Günlük limit hesaplanamıyor — bütçeni artır ya da gideri azalt.`
             : "Bütçeni girince günlük harcama limitin otomatik hesaplanır."}
@@ -52,7 +54,7 @@ export function LimitBoard() {
             from={{ opacity: 0.4, translateY: 4 }}
             animate={{ opacity: 1, translateY: 0 }}
           >
-            ₺{Math.round(spent)}
+            {fmt(spent)}
           </MotiText>
           <Text style={styles.statLabel}>harcanan</Text>
         </View>
@@ -60,7 +62,7 @@ export function LimitBoard() {
         <View style={styles.divider} />
 
         <View style={styles.stat}>
-          <Text style={styles.statValue}>₺{Math.round(limit)}</Text>
+          <Text style={styles.statValue}>{fmt(limit)}</Text>
           <Text style={styles.statLabel}>limit</Text>
         </View>
       </View>

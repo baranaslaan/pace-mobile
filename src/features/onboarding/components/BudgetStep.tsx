@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, View, TextInput } from "react-native";
 import { Text } from "../../../shared/typography/Text";
+import { useCurrency } from "../../../shared/store/useCurrency";
 import { theme } from "../../../shared/styles/theme";
 
 interface BudgetStepProps {
@@ -10,6 +11,7 @@ interface BudgetStepProps {
 }
 
 export function BudgetStep({ value, onChange, onSubmit }: BudgetStepProps) {
+  const { symbol } = useCurrency();
   return (
     <View style={styles.step}>
       <View style={styles.heading}>
@@ -18,7 +20,7 @@ export function BudgetStep({ value, onChange, onSubmit }: BudgetStepProps) {
       </View>
 
       <View style={styles.field}>
-        <Text style={styles.prefix}>₺</Text>
+        <Text style={styles.prefix}>{symbol}</Text>
         <TextInput
           autoFocus
           keyboardType="numeric"

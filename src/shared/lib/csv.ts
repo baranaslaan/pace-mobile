@@ -5,6 +5,14 @@
 
 import type { ExpenseEntry } from "./engine";
 import { categoryById } from "./categories";
+import { RATES_BASE } from "./rates";
+
+export interface CSVOptions {
+  /** Taban tutarı görüntü birimine çevirir (varsayılan: kimlik = taban). */
+  convert?: (base: number) => number;
+  /** Tutar sütunu başlığında gösterilecek para birimi kodu. */
+  currencyCode?: string;
+}
 
 /** Virgül, tırnak veya yeni satır içeren alanı CSV kurallarına göre kaçır. */
 function escapeField(value: string): string {
@@ -24,10 +32,16 @@ function timeOf(ts: number): string {
 
 /**
  * Harcama kalemlerini CSV metnine çevirir (tarih artan). Başlık satırı dahil.
- * Sütunlar: Tarih, Saat, Kategori, Tutar, Not.
+ * Sütunlar: Tarih, Saat, Kategori, Tutar (<kod>), Not. Tutarlar `convert` ile
+ * görüntü birimine çevrilip yuvarlanır.
  */
-export function expensesToCSV(entries: ExpenseEntry[]): string {
-  const header = "Tarih,Saat,Kategori,Tutar,Not";
+export function expensesToCSV(
+  entries: ExpenseEntry[],
+  opts: CSVOptions = {},
+): string {
+  const convert = opts.convert ?? ((n) => n);
+  const code = opts.currencyCode ?? RATES_BASE;
+  const header = `Tarih,Saat,Kategori,Tutar (${code}),Not`;
   const rows = [...entries]
     .sort((a, b) => a.ts - b.ts)
     .map((e) =>
@@ -35,7 +49,7 @@ export function expensesToCSV(entries: ExpenseEntry[]): string {
         e.day,
         timeOf(e.ts),
         escapeField(categoryById(e.category).label),
-        String(e.amount),
+        String(Math.round(convert(e.amount))),
         escapeField(e.note ?? ""),
       ].join(","),
     );

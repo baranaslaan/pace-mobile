@@ -3,6 +3,7 @@ import { StyleSheet, View, TextInput, TouchableOpacity } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { MotiView } from "moti";
 import { TrashIcon } from "../../../shared/ui/icons";
+import { useCurrency } from "../../../shared/store/useCurrency";
 import { theme } from "../../../shared/styles/theme";
 
 interface SubscriptionRowProps {
@@ -12,12 +13,13 @@ interface SubscriptionRowProps {
 }
 
 export function SubscriptionRow({ sub, onUpdateAmount, onRemove }: SubscriptionRowProps) {
-  const [draft, setDraft] = useState(String(sub.amount));
+  const { symbol, toBase, toDisplay } = useCurrency();
+  const [draft, setDraft] = useState(String(Math.round(toDisplay(sub.amount))));
 
   const commit = () => {
     const value = Number.parseFloat(draft);
-    if (Number.isFinite(value) && value > 0) onUpdateAmount(sub.id, value);
-    else setDraft(String(sub.amount));
+    if (Number.isFinite(value) && value > 0) onUpdateAmount(sub.id, toBase(value));
+    else setDraft(String(Math.round(toDisplay(sub.amount))));
   };
 
   return (
@@ -31,7 +33,7 @@ export function SubscriptionRow({ sub, onUpdateAmount, onRemove }: SubscriptionR
       <Text style={styles.itemName} numberOfLines={1}>{sub.name}</Text>
 
       <View style={styles.amountField}>
-        <Text style={styles.prefix}>₺</Text>
+        <Text style={styles.prefix}>{symbol}</Text>
         <TextInput
           style={styles.amountInput}
           keyboardType="decimal-pad"
