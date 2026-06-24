@@ -13,6 +13,7 @@ import {
 import { usePaceStore } from "@/shared/store/usePaceStore";
 import { fetchRates } from "@/shared/lib/rates";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
+import { PrivacyShield } from "@/shared/ui/PrivacyShield";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -64,6 +65,8 @@ export default function RootLayout() {
           <Stack.Screen name="index" />
         </Stack>
       </ErrorBoundary>
+      {/* Uygulama değiştirici anlık görüntüsünde finansal veriyi gizler. */}
+      <PrivacyShield />
     </GestureHandlerRootView>
   );
 }
