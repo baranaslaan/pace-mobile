@@ -23,8 +23,25 @@ export const en: Catalog = {
     today: "Today's expenses",
     budget: "Budget & Expenses",
     pace: "Pace",
+    recurring: "Recurring",
     settings: "Settings",
     proSub: "Pace + export",
+  },
+
+  recurring: {
+    title: "Recurring",
+    quickSection: "Quick add",
+    quickHint: "Save frequent expenses to add them in one tap.",
+    quickEmpty: "No templates yet. Coffee, lunch, groceries…",
+    scheduledSection: "Scheduled",
+    scheduledHint: "Auto-added as an expense when due.",
+    scheduledEmpty: "No scheduled expenses yet. Rent, gym…",
+    name: "What for?",
+    weekly: "Weekly",
+    monthly: "Monthly",
+    weeklySummary: "Weekly · {day}",
+    monthlySummary: "Monthly · day {day}",
+    dayOfMonth: "Day of month",
   },
 
   welcome: {

@@ -4,7 +4,7 @@ import { Text } from "../../../shared/typography/Text";
 import { AnimatePresence, MotiView } from "moti";
 import { Easing } from "react-native-reanimated";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
-import { ActivityIcon, CardIcon, ListIcon, SettingsIcon, SparklesIcon } from "../../../shared/ui/icons";
+import { ActivityIcon, CardIcon, ListIcon, RepeatIcon, SettingsIcon, SparklesIcon } from "../../../shared/ui/icons";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
@@ -14,6 +14,7 @@ interface MoreMenuProps {
   onOpenSubscriptions: () => void;
   onOpenAnalytics: () => void;
   onOpenHistory: () => void;
+  onOpenRecurring: () => void;
   onOpenSettings: () => void;
   onOpenPaywall: () => void;
 }
@@ -24,6 +25,7 @@ export function MoreMenu({
   onOpenSubscriptions,
   onOpenAnalytics,
   onOpenHistory,
+  onOpenRecurring,
   onOpenSettings,
   onOpenPaywall,
 }: MoreMenuProps) {
@@ -64,6 +66,11 @@ export function MoreMenu({
             <TouchableOpacity style={styles.item} onPress={onOpenAnalytics} activeOpacity={0.7}>
               <ActivityIcon color={theme.colors.textSoft} />
               <Text style={styles.itemText}>{t("menu.pace")}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.item} onPress={onOpenRecurring} activeOpacity={0.7}>
+              <RepeatIcon color={theme.colors.textSoft} />
+              <Text style={styles.itemText}>{t("menu.recurring")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.item} onPress={onOpenSettings} activeOpacity={0.7}>

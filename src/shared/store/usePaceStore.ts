@@ -7,6 +7,14 @@ import { isCategoryId } from "@/shared/lib/categories";
 import { isCurrencyCode, DEFAULT_CURRENCY } from "@/shared/lib/money";
 import { FALLBACK_RATES, isRateTable } from "@/shared/lib/rates";
 import { isLanguage, DEFAULT_LANGUAGE } from "@/shared/i18n/lang";
+import {
+  dueRecurring,
+  mostRecentDue,
+  isQuickTemplate,
+  isRecurringRule,
+  type QuickTemplate,
+  type RecurringRule,
+} from "@/shared/lib/recurring";
 import type {
   ExpenseEntry,
   MonthSummary,
@@ -72,6 +80,10 @@ interface PaceState {
   budget: number;
   subscriptions: Subscription[];
   entries: ExpenseEntry[];
+  /** Hızlı ekleme şablonları (tek dokunuşla harcama). */
+  templates: QuickTemplate[];
+  /** Zamanlanmış tekrarlayan harcama kuralları. */
+  recurring: RecurringRule[];
   archive: MonthSummary[];
   activeMonth: string;
   onboarded: boolean;
@@ -98,6 +110,17 @@ interface PaceState {
     patch: Partial<Pick<ExpenseEntry, "amount" | "note" | "category">>,
   ) => void;
   removeExpense: (id: string) => void;
+  addTemplate: (label: string, amount: number, category?: string) => void;
+  removeTemplate: (id: string) => void;
+  applyTemplate: (id: string) => void;
+  addRecurring: (rule: Omit<RecurringRule, "id" | "lastPostedDay">) => void;
+  updateRecurring: (
+    id: string,
+    patch: Partial<Omit<RecurringRule, "id" | "lastPostedDay">>,
+  ) => void;
+  removeRecurring: (id: string) => void;
+  /** Vadesi gelen tekrarlayanları otomatik kalem olarak ekler (açılışta çağrılır). */
+  applyRecurring: () => void;
   resetToday: () => void;
   resetAll: () => void;
   completeOnboarding: () => void;
@@ -116,6 +139,8 @@ export const usePaceStore = create<PaceState>()(
       budget: 0,
       subscriptions: [],
       entries: [],
+      templates: [],
+      recurring: [],
       archive: [],
       activeMonth: "",
       onboarded: false,
@@ -193,6 +218,88 @@ export const usePaceStore = create<PaceState>()(
       removeExpense: (id) =>
         set((s) => ({ entries: s.entries.filter((e) => e.id !== id) })),
 
+      addTemplate: (label, amount, category) =>
+        set((s) => {
+          const trimmed = label.trim();
+          if (!trimmed || !Number.isFinite(amount) || amount <= 0) return s;
+          const tpl: QuickTemplate = {
+            id: uid(),
+            label: trimmed,
+            amount,
+            ...(isCategoryId(category) ? { category } : {}),
+          };
+          return { templates: [...s.templates, tpl] };
+        }),
+
+      removeTemplate: (id) =>
+        set((s) => ({ templates: s.templates.filter((t) => t.id !== id) })),
+
+      // Şablonu bugün tarihli bir harcama kalemine çevirir (tek dokunuş).
+      applyTemplate: (id) =>
+        set((s) => {
+          const tpl = s.templates.find((t) => t.id === id);
+          if (!tpl) return s;
+          const entry: ExpenseEntry = {
+            id: uid(),
+            day: dayKey(),
+            amount: tpl.amount,
+            ts: Date.now(),
+            note: tpl.label,
+            ...(tpl.category ? { category: tpl.category } : {}),
+          };
+          return { entries: [...s.entries, entry] };
+        }),
+
+      addRecurring: (rule) =>
+        set((s) => {
+          const candidate: RecurringRule = { ...rule, id: uid() };
+          if (!isRecurringRule(candidate)) return s;
+          // En yakın geçmiş vadeyi "postlanmış" say — kural eklenince geriye
+          // doldurma yapılmaz; bir sonraki vadeden itibaren işler.
+          candidate.lastPostedDay = mostRecentDue(candidate, new Date());
+          return { recurring: [...s.recurring, candidate] };
+        }),
+
+      updateRecurring: (id, patch) =>
+        set((s) => ({
+          recurring: s.recurring.map((r) => {
+            if (r.id !== id) return r;
+            // Tutar/gün/aralık değişiminde lastPostedDay'i koru — yeniden
+            // postlama vade karşılaştırmasıyla doğal olarak yönetilir.
+            const next = { ...r, ...patch };
+            return isRecurringRule(next) ? next : r;
+          }),
+        })),
+
+      removeRecurring: (id) =>
+        set((s) => ({ recurring: s.recurring.filter((r) => r.id !== id) })),
+
+      applyRecurring: () =>
+        set((s) => {
+          const due = dueRecurring(s.recurring, new Date());
+          if (due.length === 0) return s;
+          const byId = new Map(s.recurring.map((r) => [r.id, r]));
+          const newEntries: ExpenseEntry[] = [];
+          for (const { ruleId, day } of due) {
+            const r = byId.get(ruleId);
+            if (!r) continue;
+            newEntries.push({
+              id: uid(),
+              day,
+              amount: r.amount,
+              // Vade gününün öğlesine sabitle — gün içi sıralamada makul yer.
+              ts: Date.parse(`${day}T12:00`),
+              note: r.label,
+              ...(r.category ? { category: r.category } : {}),
+            });
+          }
+          const dueMap = new Map(due.map((d) => [d.ruleId, d.day]));
+          const recurring = s.recurring.map((r) =>
+            dueMap.has(r.id) ? { ...r, lastPostedDay: dueMap.get(r.id) } : r,
+          );
+          return { entries: [...s.entries, ...newEntries], recurring };
+        }),
+
       resetToday: () =>
         set((s) => {
           const key = dayKey();
@@ -210,6 +317,8 @@ export const usePaceStore = create<PaceState>()(
           budget: 0,
           subscriptions: [],
           entries: [],
+          templates: [],
+          recurring: [],
           archive: [],
           activeMonth: "",
           onboarded: false,
@@ -273,6 +382,8 @@ export const usePaceStore = create<PaceState>()(
         budget,
         subscriptions,
         entries,
+        templates,
+        recurring,
         archive,
         activeMonth,
         onboarded,
@@ -288,6 +399,8 @@ export const usePaceStore = create<PaceState>()(
         budget,
         subscriptions,
         entries,
+        templates,
+        recurring,
         archive,
         activeMonth,
         onboarded,
@@ -300,7 +413,7 @@ export const usePaceStore = create<PaceState>()(
         reminderHour,
         reminderMinute,
       }),
-      version: 6,
+      version: 7,
       migrate: (persisted) => {
         const s = (persisted ?? {}) as Partial<PaceState>;
         return {
@@ -317,6 +430,12 @@ export const usePaceStore = create<PaceState>()(
               )
             : [],
           entries: migrateEntries(persisted),
+          templates: Array.isArray(s.templates)
+            ? s.templates.filter(isQuickTemplate)
+            : [],
+          recurring: Array.isArray(s.recurring)
+            ? s.recurring.filter(isRecurringRule)
+            : [],
           archive: Array.isArray(s.archive)
             ? s.archive.filter(
                 (a): a is MonthSummary =>

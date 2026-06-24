@@ -21,8 +21,25 @@ export const tr = {
     today: "Bugünün harcamaları",
     budget: "Bütçe & Giderler",
     pace: "Tempo",
+    recurring: "Tekrarlayanlar",
     settings: "Ayarlar",
     proSub: "Tempo + dışa aktarma",
+  },
+
+  recurring: {
+    title: "Tekrarlayanlar",
+    quickSection: "Hızlı ekleme",
+    quickHint: "Tek dokunuşla eklemek için sık harcamalarını kaydet.",
+    quickEmpty: "Henüz şablon yok. Kahve, öğle yemeği, market…",
+    scheduledSection: "Zamanlanmış",
+    scheduledHint: "Vadesi gelince otomatik harcama olarak eklenir.",
+    scheduledEmpty: "Henüz zamanlanmış harcama yok. Kira, spor salonu…",
+    name: "Ne için?",
+    weekly: "Haftalık",
+    monthly: "Aylık",
+    weeklySummary: "Haftalık · {day}",
+    monthlySummary: "Aylık · {day}. gün",
+    dayOfMonth: "Ayın günü",
   },
 
   welcome: {

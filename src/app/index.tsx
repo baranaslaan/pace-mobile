@@ -17,6 +17,7 @@ import { MoreMenu } from "../features/menu/components/MoreMenu";
 import { SubscriptionsSheet } from "../features/subscriptions/components/SubscriptionsSheet";
 import { HistorySheet } from "../features/expense-history/components/HistorySheet";
 import { AnalyticsSheet } from "../features/analytics/components/AnalyticsSheet";
+import { RecurringSheet } from "../features/recurring/components/RecurringSheet";
 import { SettingsSheet } from "../features/settings/components/SettingsSheet";
 import { Paywall } from "../features/pro/components/Paywall";
 import { scheduleDailyReminder } from "../shared/lib/notifications";
@@ -30,6 +31,7 @@ export default function AppIndex() {
   const onboarded = usePaceStore((s) => s.onboarded);
   const hydrated = usePaceStore((s) => s._hydrated);
   const rollIfNewMonth = usePaceStore((s) => s.rollIfNewMonth);
+  const applyRecurring = usePaceStore((s) => s.applyRecurring);
   const reminderEnabled = usePaceStore((s) => s.reminderEnabled);
   const reminderHour = usePaceStore((s) => s.reminderHour);
   const reminderMinute = usePaceStore((s) => s.reminderMinute);
@@ -50,8 +52,13 @@ export default function AppIndex() {
   const ready = mounted && minElapsed && hydrated;
 
   useEffect(() => {
-    if (hydrated) rollIfNewMonth();
-  }, [hydrated, rollIfNewMonth]);
+    if (hydrated) {
+      rollIfNewMonth();
+      // Ay devrinden SONRA çalışsın: vadesi geçmiş tekrarlayanları bu ayın
+      // kalemleri olarak ekle.
+      applyRecurring();
+    }
+  }, [hydrated, rollIfNewMonth, applyRecurring]);
 
   // Hatırlatma açıksa, OS planı temizlemiş olabilir — açılışta yeniden kur.
   useEffect(() => {
@@ -64,7 +71,7 @@ export default function AppIndex() {
   }, [hydrated, reminderEnabled, reminderHour, reminderMinute, language]);
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeSheet, setActiveSheet] = useState<"none" | "history" | "subs" | "analytics" | "paywall" | "settings">("none");
+  const [activeSheet, setActiveSheet] = useState<"none" | "history" | "subs" | "analytics" | "recurring" | "paywall" | "settings">("none");
 
   const handleUpgrade = () => {
     setActiveSheet("paywall");
@@ -144,6 +151,10 @@ export default function AppIndex() {
               setMenuOpen(false);
               setActiveSheet("analytics");
             }}
+            onOpenRecurring={() => {
+              setMenuOpen(false);
+              setActiveSheet("recurring");
+            }}
             onOpenSettings={() => {
               setMenuOpen(false);
               setActiveSheet("settings");
@@ -169,6 +180,11 @@ export default function AppIndex() {
             open={activeSheet === "analytics"}
             onClose={() => setActiveSheet("none")}
             onUpgrade={handleUpgrade}
+          />
+
+          <RecurringSheet
+            open={activeSheet === "recurring"}
+            onClose={() => setActiveSheet("none")}
           />
 
           <SettingsSheet

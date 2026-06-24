@@ -5,7 +5,7 @@ import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { getTone } from "../../../shared/lib/tone";
 import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
 import { ArrowUpIcon } from "../../../shared/ui/icons";
-import { CATEGORIES } from "../../../shared/lib/categories";
+import { CATEGORIES, categoryById } from "../../../shared/lib/categories";
 import { useCurrency } from "../../../shared/store/useCurrency";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
@@ -13,8 +13,10 @@ import { Text } from "../../../shared/typography/Text";
 
 export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
   const addExpense = usePaceStore((s) => s.addExpense);
+  const templates = usePaceStore((s) => s.templates);
+  const applyTemplate = usePaceStore((s) => s.applyTemplate);
   const { remaining, limit } = useLimitLogic();
-  const { symbol, toBase } = useCurrency();
+  const { symbol, toBase, fmt } = useCurrency();
   const { t } = useT();
   const tone = getTone(remaining, limit);
 
@@ -85,6 +87,43 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
             <ArrowUpIcon color="#fff" />
           </TouchableOpacity>
         </View>
+
+        {/* Dinlenme halinde (tutar boşken) hızlı ekleme şablonları — tek
+            dokunuşla harcama. Yazmaya başlayınca yerini kategori/nota bırakır. */}
+        <AnimatePresence>
+          {input === "" && templates.length > 0 && (
+            <MotiView
+              from={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ type: "timing", duration: 200 }}
+            >
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                style={styles.chips}
+                contentContainerStyle={styles.chipsContent}
+              >
+                {templates.map((tpl) => {
+                  const color = categoryById(tpl.category).color;
+                  return (
+                    <TouchableOpacity
+                      key={tpl.id}
+                      style={styles.quickChip}
+                      onPress={() => applyTemplate(tpl.id)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={[styles.chipDot, { backgroundColor: color }]} />
+                      <Text style={styles.quickLabel}>{tpl.label}</Text>
+                      <Text style={styles.quickAmount}>{fmt(tpl.amount)}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </MotiView>
+          )}
+        </AnimatePresence>
 
         {/* Kategori + not yalnızca tutar girilmeye başlayınca belirir —
             dinlenme halinde alan ferah kalır. */}
@@ -232,6 +271,30 @@ const styles = StyleSheet.create({
   },
   chipTextActive: {
     color: theme.colors.textPrimary,
+  },
+  quickChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    paddingVertical: 8,
+    paddingHorizontal: 13,
+    borderRadius: theme.radius.pill,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    backgroundColor: "rgba(255, 255, 255, 0.04)",
+  },
+  quickLabel: {
+    fontFamily: theme.fonts.outfitMedium,
+    fontSize: 13,
+    fontWeight: "600",
+    color: theme.colors.textPrimary,
+  },
+  quickAmount: {
+    fontFamily: theme.fonts.outfitBold,
+    fontSize: 13,
+    fontWeight: "700",
+    color: theme.colors.textSoft,
+    fontVariant: ["tabular-nums"],
   },
   note: {
     width: "100%",
