@@ -251,6 +251,7 @@ export const en: Catalog = {
     annual: "Annual",
     annualNote: "renews yearly",
     bestValue: "Best value",
+    launchNote: "Launch price — it'll rise as the app grows.",
     processing: "Processing…",
     buy: "Unlock Pace Pro · {price}",
     fine: "Real purchase is in the mobile app (App Store / Google Play).",

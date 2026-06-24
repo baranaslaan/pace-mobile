@@ -150,6 +150,8 @@ export function Paywall({ open, onClose }: PaywallProps) {
               })}
             </View>
 
+            <Text style={styles.launchNote}>{t("paywall.launchNote")}</Text>
+
             <TouchableOpacity
               style={[styles.cta, phase !== "idle" && { opacity: 0.7 }]}
               onPress={handlePurchase}
@@ -239,6 +241,12 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
     flexDirection: "row",
     gap: 10,
+    marginBottom: 12,
+  },
+  launchNote: {
+    fontSize: 12,
+    color: theme.colors.stateWarn,
+    textAlign: "center",
     marginBottom: 16,
   },
   plan: {
