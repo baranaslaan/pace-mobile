@@ -7,6 +7,7 @@ import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
 import { ArrowUpIcon } from "../../../shared/ui/icons";
 import { CATEGORIES } from "../../../shared/lib/categories";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 import { Text } from "../../../shared/typography/Text";
 
@@ -14,6 +15,7 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
   const addExpense = usePaceStore((s) => s.addExpense);
   const { remaining, limit } = useLimitLogic();
   const { symbol, toBase } = useCurrency();
+  const { t } = useT();
   const tone = getTone(remaining, limit);
 
   const [input, setInput] = useState("");
@@ -46,7 +48,7 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
         animate={{ backgroundColor: `rgba(${tone.rgb}, 0.06)` }}
         transition={{ type: "timing", duration: 700 }}
       >
-        <Text style={styles.label}>Bugün ne harcadın?</Text>
+        <Text style={styles.label}>{t("input.prompt")}</Text>
 
         <View style={styles.row}>
           <TouchableOpacity
@@ -115,7 +117,7 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
                     >
                       <View style={[styles.chipDot, { backgroundColor: c.color }]} />
                       <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                        {c.label}
+                        {t(`category.${c.id}`)}
                       </Text>
                     </TouchableOpacity>
                   );
@@ -124,7 +126,7 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
 
               <TextInput
                 style={styles.note}
-                placeholder="Not ekle (opsiyonel)"
+                placeholder={t("input.notePlaceholder")}
                 placeholderTextColor="rgba(255, 255, 255, 0.3)"
                 value={note}
                 onChangeText={setNote}

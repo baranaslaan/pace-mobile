@@ -12,6 +12,10 @@ export interface CSVOptions {
   convert?: (base: number) => number;
   /** Tutar sütunu başlığında gösterilecek para birimi kodu. */
   currencyCode?: string;
+  /** Kategori kimliğini görünen ada çevirir (varsayılan: katalog TR adı). */
+  categoryLabel?: (id: string | undefined) => string;
+  /** Sütun başlıkları (varsayılan: TR). */
+  headers?: { date: string; time: string; category: string; amount: string; note: string };
 }
 
 /** Virgül, tırnak veya yeni satır içeren alanı CSV kurallarına göre kaçır. */
@@ -41,14 +45,22 @@ export function expensesToCSV(
 ): string {
   const convert = opts.convert ?? ((n) => n);
   const code = opts.currencyCode ?? RATES_BASE;
-  const header = `Tarih,Saat,Kategori,Tutar (${code}),Not`;
+  const labelOf = opts.categoryLabel ?? ((id) => categoryById(id).label);
+  const h = opts.headers ?? {
+    date: "Tarih",
+    time: "Saat",
+    category: "Kategori",
+    amount: "Tutar",
+    note: "Not",
+  };
+  const header = `${h.date},${h.time},${h.category},${h.amount} (${code}),${h.note}`;
   const rows = [...entries]
     .sort((a, b) => a.ts - b.ts)
     .map((e) =>
       [
         e.day,
         timeOf(e.ts),
-        escapeField(categoryById(e.category).label),
+        escapeField(labelOf(e.category)),
         String(Math.round(convert(e.amount))),
         escapeField(e.note ?? ""),
       ].join(","),

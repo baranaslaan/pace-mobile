@@ -226,18 +226,23 @@ export interface Forecast {
   endBalance: number;
   /** Bütçe biterse ayın kaçıncı günü (yoksa null). */
   zeroDay: number | null;
-  /** Hazır gösterim cümlesi. */
-  message: string;
+  /**
+   * Öngörü türü — mesaj metni dil katmanında (useLimitLogic) üretilir; motor
+   * dilden bağımsız kalır.
+   * - `"none"`    : henüz harcama yok, tempo belirsiz.
+   * - `"surplus"` : bu hızla ay sonunda artı bakiye.
+   * - `"deficit"` : bütçe ay bitmeden tükeniyor.
+   */
+  kind: "none" | "surplus" | "deficit";
 }
 
 /**
- * Mevcut harcama temposuyla ay sonu öngörüsü.
+ * Mevcut harcama temposuyla ay sonu öngörüsü (saf, dilden bağımsız).
  * Tempo = bu ay (bugün dahil) günlük ortalama harcama.
  */
 export function burnForecast(
   snap: PaceSnapshot,
   now: Date = new Date(),
-  fmt: (amount: number) => string = (n) => `₺${Math.round(n)}`,
 ): Forecast {
   const { pool, pace, total } = monthStats(snap, now);
 
@@ -245,28 +250,16 @@ export function burnForecast(
   const endBalance = pool - projected;
 
   if (pace <= 0) {
-    return {
-      endBalance: pool,
-      zeroDay: null,
-      message: "Henüz harcama yok — tempon belirlenmedi.",
-    };
+    return { endBalance: pool, zeroDay: null, kind: "none" };
   }
 
   if (endBalance >= 0) {
-    return {
-      endBalance,
-      zeroDay: null,
-      message: `Bu hızla ay sonunda elinde ${fmt(endBalance)} kalır.`,
-    };
+    return { endBalance, zeroDay: null, kind: "surplus" };
   }
 
   // Bütçe ay bitmeden tükenir: havuzu tempoya böl.
   const zeroDay = Math.min(total, Math.max(1, Math.ceil(pool / pace)));
-  return {
-    endBalance,
-    zeroDay,
-    message: `Dikkat — bu hızla ayın ${zeroDay}'inde bütçen biter.`,
-  };
+  return { endBalance, zeroDay, kind: "deficit" };
 }
 
 export interface WeeklyTrend {

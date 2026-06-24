@@ -5,14 +5,8 @@ import { MotiView } from "moti";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { CheckIcon, SparklesIcon } from "../../../shared/ui/icons";
+import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
-
-const BENEFITS = [
-  "Ay sonu bütçe öngörüsü",
-  "Geçmiş harcama dökümü",
-  "Tempo analizi ve trendler",
-  "Gelecekteki tüm Pro özellikleri",
-];
 
 const MOCK_PURCHASE_MS = 900;
 
@@ -26,6 +20,13 @@ interface PaywallProps {
 export function Paywall({ open, onClose }: PaywallProps) {
   const isPro = usePaceStore((s) => s.isPro);
   const unlockPro = usePaceStore((s) => s.unlockPro);
+  const { t } = useT();
+  const benefits = [
+    t("paywall.benefit1"),
+    t("paywall.benefit2"),
+    t("paywall.benefit3"),
+    t("paywall.benefit4"),
+  ];
   const [phase, setPhase] = useState<Phase>("idle");
 
   useEffect(() => {
@@ -58,16 +59,16 @@ export function Paywall({ open, onClose }: PaywallProps) {
 
         {unlocked ? (
           <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ alignItems: "center" }}>
-            <Text style={styles.headline}>Pace Pro aktif 🎉</Text>
-            <Text style={styles.sub}>Tüm tempo özellikleri açık. İyi harcamalar.</Text>
+            <Text style={styles.headline}>{t("paywall.activeTitle")}</Text>
+            <Text style={styles.sub}>{t("paywall.activeSub")}</Text>
           </MotiView>
         ) : (
           <>
-            <Text style={styles.headline}>Tempona hâkim ol</Text>
-            <Text style={styles.sub}>Tek seferlik ödeme, ömür boyu erişim.</Text>
+            <Text style={styles.headline}>{t("paywall.headline")}</Text>
+            <Text style={styles.sub}>{t("paywall.sub")}</Text>
 
             <View style={styles.benefits}>
-              {BENEFITS.map((b) => (
+              {benefits.map((b) => (
                 <View key={b} style={styles.benefit}>
                   <View style={styles.check}>
                     <CheckIcon color="#fff" size={14} />
@@ -84,13 +85,11 @@ export function Paywall({ open, onClose }: PaywallProps) {
               activeOpacity={0.9}
             >
               <Text style={styles.ctaText}>
-                {phase === "purchasing" ? "İşleniyor…" : "Pace Pro'yu aç · ₺149"}
+                {phase === "purchasing" ? t("paywall.processing") : t("paywall.buy", { price: "₺149" })}
               </Text>
             </TouchableOpacity>
 
-            <Text style={styles.fine}>
-              Gerçek satın alma mobil uygulamada (App Store / Google Play).
-            </Text>
+            <Text style={styles.fine}>{t("paywall.fine")}</Text>
           </>
         )}
       </View>

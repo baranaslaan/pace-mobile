@@ -10,6 +10,7 @@ import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { SubscriptionRow } from "./SubscriptionRow";
 import { BudgetField } from "./BudgetField";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
 const FREE_LIMIT = 3;
@@ -30,6 +31,7 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
   const isPro = usePaceStore((s) => s.isPro);
   const { limit } = useLimitLogic();
   const { symbol, fmt, toBase } = useCurrency();
+  const { t } = useT();
 
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
@@ -47,16 +49,16 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
   };
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Bütçe & Giderler">
+    <BottomSheet open={open} onClose={onClose} title={t("subs.title")}>
       <BudgetField value={budget} onCommit={setBudget} />
 
       <Text style={styles.sub}>
-        Günlük limitin <Text style={{ fontWeight: "700" }}>{fmt(limit)}</Text>
+        {t("subs.daily")} <Text style={{ fontWeight: "700" }}>{fmt(limit)}</Text>
         <Text style={styles.dot}> • </Text>
-        rezerve <Text style={{ fontWeight: "700" }}>{fmt(total)}</Text>
+        {t("subs.reserved")} <Text style={{ fontWeight: "700" }}>{fmt(total)}</Text>
       </Text>
 
-      <Text style={styles.listLabel}>Sabit giderler</Text>
+      <Text style={styles.listLabel}>{t("subs.listLabel")}</Text>
 
       <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 20 }} keyboardShouldPersistTaps="handled">
         <AnimatePresence>
@@ -71,25 +73,25 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
         </AnimatePresence>
 
         {subscriptions.length === 0 && (
-          <Text style={styles.empty}>Henüz sabit gider yok. Kira, abonelik, kredi…</Text>
+          <Text style={styles.empty}>{t("subs.empty")}</Text>
         )}
       </ScrollView>
 
       {atFreeLimit ? (
         <View style={styles.lock}>
           <Text style={styles.lockText}>
-            Ücretsiz planda en fazla {FREE_LIMIT} sabit gider.
-            <Text style={styles.proSpan}> Pace Pro</Text> ile sınırsız ekle — tek seferlik, ömür boyu.
+            {t("subs.freeLimit", { n: FREE_LIMIT })}
+            <Text style={styles.proSpan}> Pace Pro</Text>{t("subs.freeLimitTail")}
           </Text>
           <TouchableOpacity style={styles.lockCta} onPress={onUpgrade} activeOpacity={0.9}>
-            <Text style={styles.lockCtaText}>Pace Pro'ya geç</Text>
+            <Text style={styles.lockCtaText}>{t("subs.goPro")}</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <View style={styles.addRow}>
           <TextInput
             style={styles.nameInput}
-            placeholder="Ne için?"
+            placeholder={t("subs.whatFor")}
             placeholderTextColor={theme.colors.textDim}
             value={name}
             onChangeText={setName}

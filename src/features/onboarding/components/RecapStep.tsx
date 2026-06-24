@@ -4,6 +4,7 @@ import { Text } from "../../../shared/typography/Text";
 import { dailyLimit } from "../../../shared/lib/engine";
 import type { SubDraft } from "../hooks/useOnboardingFlow";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
 interface RecapStepProps {
@@ -11,15 +12,15 @@ interface RecapStepProps {
   subs: SubDraft[];
 }
 
-const POINTS = [
-  "Her gün ne kadar harcayabileceğini tek bakışta gör.",
-  "Harcadıkça düşer; az harcadığın gün yarına artar.",
-  "Sabit giderlerin baştan ayrıldı, günlük hesaba karışmaz.",
-  "Limiti aşarsan ekran kırmızıya döner ve seni uyarır.",
-];
-
 export function RecapStep({ budget, subs }: RecapStepProps) {
   const { symbol } = useCurrency();
+  const { t } = useT();
+  const points = [
+    t("recap.point1"),
+    t("recap.point2"),
+    t("recap.point3"),
+    t("recap.point4"),
+  ];
   const limit = dailyLimit({
     budget: Number.parseFloat(budget) || 0,
     subscriptions: subs,
@@ -29,18 +30,18 @@ export function RecapStep({ budget, subs }: RecapStepProps) {
   return (
     <View style={styles.step}>
       <View style={styles.heading}>
-        <Text style={styles.title}>Her şey hazır.</Text>
-        <Text style={styles.hint}>Bugünden itibaren günlük limitin:</Text>
+        <Text style={styles.title}>{t("recap.title")}</Text>
+        <Text style={styles.hint}>{t("recap.hint")}</Text>
       </View>
 
       <View style={styles.limit}>
         <Text style={styles.prefix}>{symbol}</Text>
         <Text style={styles.value}>{Math.round(limit)}</Text>
-        <Text style={styles.unit}>/gün</Text>
+        <Text style={styles.unit}>{t("recap.perDay")}</Text>
       </View>
 
       <View style={styles.points}>
-        {POINTS.map((point) => (
+        {points.map((point) => (
           <View key={point} style={styles.point}>
             <View style={styles.bullet} />
             <Text style={styles.pointText}>{point}</Text>

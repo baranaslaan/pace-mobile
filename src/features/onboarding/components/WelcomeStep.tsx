@@ -1,18 +1,15 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Text } from "../../../shared/typography/Text";
+import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
 export function WelcomeStep() {
+  const { t } = useT();
   return (
     <View style={styles.welcome}>
-      <Text style={styles.title}>
-        Günlük harcama{"\n"}tempona hâkim ol.
-      </Text>
-      <Text style={styles.subtitle}>
-        Bütçeni ve sabit giderlerini bir kez gir; pace her gün ne kadar
-        harcayabileceğini senin için hesaplasın.
-      </Text>
+      <Text style={styles.title}>{t("welcome.title")}</Text>
+      <Text style={styles.subtitle}>{t("welcome.subtitle")}</Text>
     </View>
   );
 }

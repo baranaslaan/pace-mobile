@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, View, TextInput } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
 interface BudgetStepProps {
@@ -12,11 +13,12 @@ interface BudgetStepProps {
 
 export function BudgetStep({ value, onChange, onSubmit }: BudgetStepProps) {
   const { symbol } = useCurrency();
+  const { t } = useT();
   return (
     <View style={styles.step}>
       <View style={styles.heading}>
-        <Text style={styles.title}>Bu ay ne kadar bütçen var?</Text>
-        <Text style={styles.hint}>Bu ay harcamak için ayırdığın net tutar.</Text>
+        <Text style={styles.title}>{t("budgetStep.title")}</Text>
+        <Text style={styles.hint}>{t("budgetStep.hint")}</Text>
       </View>
 
       <View style={styles.field}>

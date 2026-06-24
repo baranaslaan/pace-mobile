@@ -5,6 +5,7 @@ import { getTone } from "../../../shared/lib/tone";
 import { CardIcon } from "../../../shared/ui/icons";
 import { useLimitLogic } from "../hooks/useLimitLogic";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { useT } from "../../../shared/i18n";
 import { Ring } from "./Ring";
 import { theme } from "../../../shared/styles/theme";
 import { Text } from "../../../shared/typography/Text";
@@ -12,6 +13,7 @@ import { Text } from "../../../shared/typography/Text";
 export function LimitBoard() {
   const { remaining, limit, spent, setup, budget, subsTotal } = useLimitLogic();
   const { fmt } = useCurrency();
+  const { t } = useT();
   const tone = getTone(remaining, limit);
 
   if (setup) {
@@ -27,17 +29,15 @@ export function LimitBoard() {
         </View>
         <Text style={styles.setupTitle}>
           {oversubscribed
-            ? "Sabit giderlerin bütçeni aşıyor"
-            : "Aylık bütçeni belirle"}
+            ? t("board.setupOverTitle")
+            : t("board.setupBudgetTitle")}
         </Text>
         <Text style={styles.setupText}>
           {oversubscribed
-            ? `Giderlerin (${fmt(subsTotal)}) bütçenden (${fmt(
-                budget
-              )}) fazla. Günlük limit hesaplanamıyor — bütçeni artır ya da gideri azalt.`
-            : "Bütçeni girince günlük harcama limitin otomatik hesaplanır."}
+            ? t("board.setupOverText", { subs: fmt(subsTotal), budget: fmt(budget) })
+            : t("board.setupBudgetText")}
         </Text>
-        <Text style={styles.setupHint}>••• → Bütçe &amp; Giderler</Text>
+        <Text style={styles.setupHint}>{t("board.hint")}</Text>
       </MotiView>
     );
   }
@@ -56,14 +56,14 @@ export function LimitBoard() {
           >
             {fmt(spent)}
           </MotiText>
-          <Text style={styles.statLabel}>harcanan</Text>
+          <Text style={styles.statLabel}>{t("board.spent")}</Text>
         </View>
 
         <View style={styles.divider} />
 
         <View style={styles.stat}>
           <Text style={styles.statValue}>{fmt(limit)}</Text>
-          <Text style={styles.statLabel}>limit</Text>
+          <Text style={styles.statLabel}>{t("board.limit")}</Text>
         </View>
       </View>
     </View>

@@ -20,6 +20,7 @@ import { AnalyticsSheet } from "../features/analytics/components/AnalyticsSheet"
 import { SettingsSheet } from "../features/settings/components/SettingsSheet";
 import { Paywall } from "../features/pro/components/Paywall";
 import { scheduleDailyReminder } from "../shared/lib/notifications";
+import { translate, type Language } from "../shared/i18n";
 
 import { theme } from "../shared/styles/theme";
 
@@ -32,6 +33,7 @@ export default function AppIndex() {
   const reminderEnabled = usePaceStore((s) => s.reminderEnabled);
   const reminderHour = usePaceStore((s) => s.reminderHour);
   const reminderMinute = usePaceStore((s) => s.reminderMinute);
+  const language = usePaceStore((s) => s.language) as Language;
   const { remaining, limit } = useLimitLogic();
   const tone = getTone(remaining, limit);
 
@@ -54,9 +56,12 @@ export default function AppIndex() {
   // Hatırlatma açıksa, OS planı temizlemiş olabilir — açılışta yeniden kur.
   useEffect(() => {
     if (hydrated && reminderEnabled) {
-      scheduleDailyReminder(reminderHour, reminderMinute).catch(() => {});
+      scheduleDailyReminder(reminderHour, reminderMinute, {
+        title: translate(language, "notif.title"),
+        body: translate(language, "notif.body"),
+      }).catch(() => {});
     }
-  }, [hydrated, reminderEnabled, reminderHour, reminderMinute]);
+  }, [hydrated, reminderEnabled, reminderHour, reminderMinute, language]);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSheet, setActiveSheet] = useState<"none" | "history" | "subs" | "analytics" | "paywall" | "settings">("none");

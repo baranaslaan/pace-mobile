@@ -6,6 +6,7 @@ import { Text } from "../../../shared/typography/Text";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { useCurrency } from "../../../shared/store/useCurrency";
 import { CURRENCIES } from "../../../shared/lib/money";
+import { useT, LANGUAGES } from "../../../shared/i18n";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { expensesToCSV } from "../../../shared/lib/csv";
 import {
@@ -39,7 +40,10 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
   const reminderMinute = usePaceStore((s) => s.reminderMinute);
   const setReminder = usePaceStore((s) => s.setReminder);
   const setCurrency = usePaceStore((s) => s.setCurrency);
+  const language = usePaceStore((s) => s.language);
+  const setLanguage = usePaceStore((s) => s.setLanguage);
   const { currency, fmt, toDisplay } = useCurrency();
+  const { t } = useT();
 
   const [confirmReset, setConfirmReset] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -54,13 +58,13 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
     }
     const granted = await ensureNotificationPermission();
     if (!granted) {
-      Alert.alert(
-        "Bildirim izni kapalı",
-        "Hatırlatma için telefon Ayarlar → Bildirimler → pace'ten izin vermen gerekiyor.",
-      );
+      Alert.alert(t("settings.permTitle"), t("settings.permBody"));
       return;
     }
-    await scheduleDailyReminder(reminderHour, reminderMinute);
+    await scheduleDailyReminder(reminderHour, reminderMinute, {
+      title: t("notif.title"),
+      body: t("notif.body"),
+    });
     setReminder(true, reminderHour, reminderMinute);
   };
 
@@ -81,7 +85,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
       return;
     }
     if (entries.length === 0) {
-      Alert.alert("Dışa aktarılacak veri yok", "Önce birkaç harcama gir.");
+      Alert.alert(t("settings.noDataTitle"), t("settings.noDataBody"));
       return;
     }
     try {
@@ -89,20 +93,31 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
       // UTF-8 BOM → Excel'in Türkçe karakterleri doğru okuması için.
       const csv =
         String.fromCharCode(0xfeff) +
-        expensesToCSV(entries, { convert: toDisplay, currencyCode: currency });
-      const file = new File(Paths.cache, "pace-harcamalar.csv");
+        expensesToCSV(entries, {
+          convert: toDisplay,
+          currencyCode: currency,
+          categoryLabel: (id) => t(`category.${id ?? "diger"}`),
+          headers: {
+            date: t("csv.date"),
+            time: t("csv.time"),
+            category: t("csv.category"),
+            amount: t("csv.amount"),
+            note: t("csv.note"),
+          },
+        });
+      const file = new File(Paths.cache, "pace-expenses.csv");
       file.create({ overwrite: true });
       file.write(csv);
-      await Share.share({ url: file.uri, title: "pace harcamalar" });
+      await Share.share({ url: file.uri, title: "pace" });
     } catch (e) {
-      Alert.alert("Dışa aktarma başarısız", "Bir şeyler ters gitti, tekrar dene.");
+      Alert.alert(t("settings.exportFailTitle"), t("settings.exportFailBody"));
     } finally {
       setExporting(false);
     }
   };
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Ayarlar">
+    <BottomSheet open={open} onClose={onClose} title={t("settings.title")}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -115,8 +130,8 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
             <CheckIcon color="#fff" size={16} />
           </View>
           <View style={styles.proInfo}>
-            <Text style={styles.proTitle}>Pace Pro aktif</Text>
-            <Text style={styles.proSub}>Tüm özellikler açık · ömür boyu</Text>
+            <Text style={styles.proTitle}>{t("settings.proActive")}</Text>
+            <Text style={styles.proSub}>{t("settings.proActiveSub")}</Text>
           </View>
         </View>
       ) : (
@@ -126,24 +141,24 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
           </View>
           <View style={styles.proInfo}>
             <Text style={styles.proTitle}>Pace Pro</Text>
-            <Text style={styles.proSub}>Tempo analizi ve fazlası · tek seferlik</Text>
+            <Text style={styles.proSub}>{t("settings.proIdleSub")}</Text>
           </View>
           <TouchableOpacity style={styles.proCta} onPress={onUpgrade} activeOpacity={0.9}>
-            <Text style={styles.proCtaText}>Geç</Text>
+            <Text style={styles.proCtaText}>{t("settings.go")}</Text>
           </TouchableOpacity>
         </View>
       )}
 
       {/* Bildirimler */}
-      <Text style={styles.sectionLabel}>Bildirimler</Text>
+      <Text style={styles.sectionLabel}>{t("settings.notifications")}</Text>
       <View style={styles.row}>
         <View style={styles.rowIcon}>
           <BellIcon color={theme.colors.textSoft} />
         </View>
         <View style={styles.rowInfo}>
-          <Text style={styles.rowTitle}>Günlük hatırlatma</Text>
+          <Text style={styles.rowTitle}>{t("settings.dailyReminder")}</Text>
           <Text style={styles.rowSub}>
-            {reminderEnabled ? `Her gün ${reminderTime}` : "Kapalı"}
+            {reminderEnabled ? t("settings.everyDayAt", { time: reminderTime }) : t("settings.off")}
           </Text>
         </View>
         <Switch
@@ -156,15 +171,15 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
       </View>
 
       {/* Bütçe */}
-      <Text style={styles.sectionLabel}>Bütçe</Text>
+      <Text style={styles.sectionLabel}>{t("settings.budget")}</Text>
       <TouchableOpacity style={styles.row} onPress={onOpenSubscriptions} activeOpacity={0.7}>
         <View style={styles.rowIcon}>
           <CardIcon color={theme.colors.textSoft} />
         </View>
         <View style={styles.rowInfo}>
-          <Text style={styles.rowTitle}>Bütçe & sabit giderler</Text>
+          <Text style={styles.rowTitle}>{t("settings.budgetRow")}</Text>
           <Text style={styles.rowSub}>
-            Aylık {fmt(budget)} · {subscriptions.length} sabit gider
+            {t("settings.budgetSub", { budget: fmt(budget), n: subscriptions.length })}
           </Text>
         </View>
         <View style={styles.chevron}>
@@ -173,7 +188,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
       </TouchableOpacity>
 
       {/* Para birimi */}
-      <Text style={styles.sectionLabel}>Para birimi</Text>
+      <Text style={styles.sectionLabel}>{t("settings.currency")}</Text>
       <View style={styles.currencyRow}>
         {CURRENCIES.map((c) => {
           const active = currency === c.code;
@@ -195,8 +210,28 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
         })}
       </View>
 
+      {/* Dil */}
+      <Text style={styles.sectionLabel}>{t("settings.language")}</Text>
+      <View style={styles.currencyRow}>
+        {LANGUAGES.map((l) => {
+          const active = language === l.code;
+          return (
+            <TouchableOpacity
+              key={l.code}
+              style={[styles.langChip, active && styles.currencyChipActive]}
+              onPress={() => setLanguage(l.code)}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.langLabel, active && styles.currencyTextActive]}>
+                {l.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
       {/* Veri / tehlikeli bölge */}
-      <Text style={styles.sectionLabel}>Veri</Text>
+      <Text style={styles.sectionLabel}>{t("settings.data")}</Text>
 
       <TouchableOpacity
         style={[styles.row, { marginBottom: 8 }]}
@@ -208,9 +243,9 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
           <DownloadIcon color={theme.colors.textSoft} />
         </View>
         <View style={styles.rowInfo}>
-          <Text style={styles.rowTitle}>Harcamaları dışa aktar</Text>
+          <Text style={styles.rowTitle}>{t("settings.export")}</Text>
           <Text style={styles.rowSub}>
-            {exporting ? "Hazırlanıyor…" : "CSV olarak paylaş (Excel, Numbers…)"}
+            {exporting ? t("settings.exportPreparing") : t("settings.exportSub")}
           </Text>
         </View>
         {!isPro && (
@@ -226,19 +261,17 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
           <View style={styles.rowIcon}>
             <TrashIcon color="#f87171" />
           </View>
-          <Text style={styles.dangerText}>Tüm veriyi sıfırla</Text>
+          <Text style={styles.dangerText}>{t("settings.resetAll")}</Text>
         </TouchableOpacity>
       ) : (
         <View style={styles.confirm}>
-          <Text style={styles.confirmText}>
-            Bütçe, sabit giderler ve tüm harcamalar silinir; kurulum baştan başlar. Pro hakkın korunur.
-          </Text>
+          <Text style={styles.confirmText}>{t("settings.confirmResetText")}</Text>
           <View style={styles.confirmBtns}>
             <TouchableOpacity style={styles.cancel} onPress={() => setConfirmReset(false)} activeOpacity={0.7}>
-              <Text style={styles.cancelText}>Vazgeç</Text>
+              <Text style={styles.cancelText}>{t("common.cancel")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.confirmDanger} onPress={handleReset} activeOpacity={0.85}>
-              <Text style={styles.confirmDangerText}>Sıfırla</Text>
+              <Text style={styles.confirmDangerText}>{t("common.reset")}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -246,15 +279,17 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
 
       {__DEV__ && (
         <>
-          <Text style={styles.sectionLabel}>Geliştirici</Text>
+          <Text style={styles.sectionLabel}>{t("settings.dev")}</Text>
           <TouchableOpacity
             style={styles.row}
             onPress={() => (isPro ? lockPro() : unlockPro())}
             activeOpacity={0.7}
           >
             <View style={styles.rowInfo}>
-              <Text style={styles.rowTitle}>Pace Pro (test)</Text>
-              <Text style={styles.rowSub}>Şu an: {isPro ? "açık" : "kapalı"} — dokun değiştir</Text>
+              <Text style={styles.rowTitle}>{t("settings.devPro")}</Text>
+              <Text style={styles.rowSub}>
+                {t("settings.devProSub", { state: isPro ? t("settings.stateOn") : t("settings.stateOff") })}
+              </Text>
             </View>
             <View style={[styles.devToggle, isPro && styles.devToggleOn]}>
               <Text style={[styles.devToggleText, isPro && styles.devToggleTextOn]}>
@@ -268,23 +303,23 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
             onPress={async () => {
               const ok = await ensureNotificationPermission();
               if (!ok) {
-                Alert.alert("Bildirim izni kapalı", "Önce bildirim izni ver.");
+                Alert.alert(t("settings.permTitle"), t("settings.testPermBody"));
                 return;
               }
-              await sendTestNotification();
-              Alert.alert("Gönderildi", "5 saniye içinde bildirim gelecek (uygulamayı arka plana al).");
+              await sendTestNotification({ title: t("notif.title"), body: t("notif.testBody") });
+              Alert.alert(t("settings.testSentTitle"), t("settings.testSentBody"));
             }}
             activeOpacity={0.7}
           >
             <View style={styles.rowInfo}>
-              <Text style={styles.rowTitle}>Test bildirimi gönder</Text>
-              <Text style={styles.rowSub}>5 sn sonra tek seferlik bildirim</Text>
+              <Text style={styles.rowTitle}>{t("settings.testNotif")}</Text>
+              <Text style={styles.rowSub}>{t("settings.testNotifSub")}</Text>
             </View>
           </TouchableOpacity>
         </>
       )}
 
-      <Text style={styles.about}>pace · sürüm {VERSION}</Text>
+      <Text style={styles.about}>{t("settings.version", { version: VERSION })}</Text>
       </ScrollView>
     </BottomSheet>
   );
@@ -415,6 +450,20 @@ const styles = StyleSheet.create({
   },
   currencyTextActive: {
     color: theme.colors.textPrimary,
+  },
+  langChip: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 13,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.06)",
+    backgroundColor: "rgba(255, 255, 255, 0.04)",
+  },
+  langLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: theme.colors.textSoft,
   },
   proChip: {
     flexDirection: "row",

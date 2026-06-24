@@ -8,6 +8,7 @@ import { RotateCcwIcon } from "../../../shared/ui/icons";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { EntryRow } from "./EntryRow";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
 interface HistorySheetProps {
@@ -21,6 +22,7 @@ export function HistorySheet({ open, onClose }: HistorySheetProps) {
   const removeExpense = usePaceStore((s) => s.removeExpense);
   const resetToday = usePaceStore((s) => s.resetToday);
   const { fmt } = useCurrency();
+  const { t } = useT();
 
   const [confirmReset, setConfirmReset] = useState(false);
 
@@ -39,11 +41,11 @@ export function HistorySheet({ open, onClose }: HistorySheetProps) {
   };
 
   return (
-    <BottomSheet open={open} onClose={handleClose} title="Bugünün harcamaları">
+    <BottomSheet open={open} onClose={handleClose} title={t("history.title")}>
       <Text style={styles.summary}>
-        Bugün toplam <Text style={{ fontWeight: "700" }}>{fmt(total)}</Text>
+        {t("history.summaryTotal")} <Text style={{ fontWeight: "700" }}>{fmt(total)}</Text>
         <Text style={styles.dot}> • </Text>
-        {today.length} kalem
+        {t("history.items", { n: today.length })}
       </Text>
 
       <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 20 }} keyboardShouldPersistTaps="handled">
@@ -60,9 +62,7 @@ export function HistorySheet({ open, onClose }: HistorySheetProps) {
 
         {today.length === 0 && (
           <View style={styles.infoBox}>
-            <Text style={styles.infoText}>
-              Bugün henüz harcama yok. Menüyü kapatıp ana ekrandan tutar girdiğinde kalem buraya düşer.
-            </Text>
+            <Text style={styles.infoText}>{t("history.empty")}</Text>
           </View>
         )}
       </ScrollView>
@@ -71,7 +71,7 @@ export function HistorySheet({ open, onClose }: HistorySheetProps) {
         !confirmReset ? (
           <TouchableOpacity style={styles.reset} onPress={() => setConfirmReset(true)} activeOpacity={0.7}>
             <RotateCcwIcon color="#f87171" />
-            <Text style={styles.resetText}>Bugünü sıfırla</Text>
+            <Text style={styles.resetText}>{t("history.resetToday")}</Text>
           </TouchableOpacity>
         ) : (
           <MotiView
@@ -79,14 +79,14 @@ export function HistorySheet({ open, onClose }: HistorySheetProps) {
             from={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <Text style={styles.confirmText}>Bugünün tüm kalemleri silinsin mi?</Text>
+            <Text style={styles.confirmText}>{t("history.confirmReset")}</Text>
             <View style={styles.confirmBtns}>
               <TouchableOpacity
                 style={styles.cancel}
                 onPress={() => setConfirmReset(false)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.cancelText}>Vazgeç</Text>
+                <Text style={styles.cancelText}>{t("common.cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.confirmDanger}
@@ -96,7 +96,7 @@ export function HistorySheet({ open, onClose }: HistorySheetProps) {
                 }}
                 activeOpacity={0.7}
               >
-                <Text style={styles.confirmDangerText}>Sıfırla</Text>
+                <Text style={styles.confirmDangerText}>{t("common.reset")}</Text>
               </TouchableOpacity>
             </View>
           </MotiView>

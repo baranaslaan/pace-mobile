@@ -6,6 +6,7 @@ import { timeLabel } from "../../../shared/lib/date";
 import { TrashIcon } from "../../../shared/ui/icons";
 import { CATEGORIES, categoryById } from "../../../shared/lib/categories";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
 interface EntryRowProps {
@@ -16,6 +17,7 @@ interface EntryRowProps {
 
 export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
   const { symbol, toBase, toDisplay } = useCurrency();
+  const { t } = useT();
   const [amount, setAmount] = useState(String(Math.round(toDisplay(entry.amount))));
   const [note, setNote] = useState(entry.note ?? "");
 
@@ -60,7 +62,7 @@ export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
 
       <TextInput
         style={styles.noteInput}
-        placeholder="Not ekle"
+        placeholder={t("entry.notePlaceholder")}
         placeholderTextColor={theme.colors.textDim}
         value={note}
         maxLength={40}

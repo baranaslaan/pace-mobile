@@ -5,6 +5,7 @@ import { AnimatePresence, MotiView } from "moti";
 import { Easing } from "react-native-reanimated";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { ActivityIcon, CardIcon, ListIcon, SettingsIcon, SparklesIcon } from "../../../shared/ui/icons";
+import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
 interface MoreMenuProps {
@@ -27,6 +28,7 @@ export function MoreMenu({
   onOpenPaywall,
 }: MoreMenuProps) {
   const isPro = usePaceStore((s) => s.isPro);
+  const { t } = useT();
   return (
     <AnimatePresence>
       {open && (
@@ -51,22 +53,22 @@ export function MoreMenu({
           >
             <TouchableOpacity style={styles.item} onPress={onOpenHistory} activeOpacity={0.7}>
               <ListIcon color={theme.colors.textSoft} />
-              <Text style={styles.itemText}>Bugünün harcamaları</Text>
+              <Text style={styles.itemText}>{t("menu.today")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.item} onPress={onOpenSubscriptions} activeOpacity={0.7}>
               <CardIcon color={theme.colors.textSoft} />
-              <Text style={styles.itemText}>Bütçe & Giderler</Text>
+              <Text style={styles.itemText}>{t("menu.budget")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.item} onPress={onOpenAnalytics} activeOpacity={0.7}>
               <ActivityIcon color={theme.colors.textSoft} />
-              <Text style={styles.itemText}>Tempo</Text>
+              <Text style={styles.itemText}>{t("menu.pace")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.item} onPress={onOpenSettings} activeOpacity={0.7}>
               <SettingsIcon color={theme.colors.textSoft} />
-              <Text style={styles.itemText}>Ayarlar</Text>
+              <Text style={styles.itemText}>{t("menu.settings")}</Text>
             </TouchableOpacity>
 
             {!isPro && (
@@ -76,7 +78,7 @@ export function MoreMenu({
                   <SparklesIcon color={theme.colors.stateGood} size={18} />
                   <View style={styles.proInfo}>
                     <Text style={styles.proTitle}>Pace Pro</Text>
-                    <Text style={styles.proSub}>Tempo + dışa aktarma</Text>
+                    <Text style={styles.proSub}>{t("menu.proSub")}</Text>
                   </View>
                 </TouchableOpacity>
               </>

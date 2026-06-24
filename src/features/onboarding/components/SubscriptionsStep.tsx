@@ -4,6 +4,7 @@ import { AnimatePresence, MotiView } from "moti";
 import { PlusIcon, XIcon } from "../../../shared/ui/icons";
 import type { SubDraft } from "../hooks/useOnboardingFlow";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 import { Text } from "../../../shared/typography/Text";
 
@@ -19,6 +20,7 @@ export function SubscriptionsStep({
   onRemove,
 }: SubscriptionsStepProps) {
   const { symbol, fmt } = useCurrency();
+  const { t } = useT();
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
 
@@ -35,16 +37,14 @@ export function SubscriptionsStep({
   return (
     <View style={styles.step}>
       <View style={styles.heading}>
-        <Text style={styles.title}>Sabit giderlerin var mı?</Text>
-        <Text style={styles.hint}>
-          Kira, abonelik, kredi… Bunları bütçenden peşin ayırırız. İstersen boş geçebilirsin.
-        </Text>
+        <Text style={styles.title}>{t("subsStep.title")}</Text>
+        <Text style={styles.hint}>{t("subsStep.hint")}</Text>
       </View>
 
       <View style={styles.addRow}>
         <TextInput
           style={styles.nameInput}
-          placeholder="Ne için?"
+          placeholder={t("subsStep.whatFor")}
           placeholderTextColor={theme.colors.textMute}
           value={name}
           onChangeText={setName}

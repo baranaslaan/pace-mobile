@@ -20,6 +20,12 @@ Notifications.setNotificationHandler({
 const REMINDER_TITLE = "pace";
 const REMINDER_BODY = "Bugün ne harcadın? Günlük tempona bir bak.";
 
+/** Hatırlatma/test bildirim metinleri — çağıran tarafça (dile göre) verilir. */
+export interface NotificationText {
+  title: string;
+  body: string;
+}
+
 /** Bildirim iznini ister (zaten verilmişse tekrar sormaz). Verildi mi döner. */
 export async function ensureNotificationPermission(): Promise<boolean> {
   const current = await Notifications.getPermissionsAsync();
@@ -33,10 +39,14 @@ export async function ensureNotificationPermission(): Promise<boolean> {
  * Her gün belirtilen saatte tekrarlayan tek bir hatırlatma kurar.
  * Önce mevcut tüm zamanlanmışları temizler (uygulama yalnızca bunu kullanır).
  */
-export async function scheduleDailyReminder(hour: number, minute: number): Promise<void> {
+export async function scheduleDailyReminder(
+  hour: number,
+  minute: number,
+  text: NotificationText = { title: REMINDER_TITLE, body: REMINDER_BODY },
+): Promise<void> {
   await Notifications.cancelAllScheduledNotificationsAsync();
   await Notifications.scheduleNotificationAsync({
-    content: { title: REMINDER_TITLE, body: REMINDER_BODY },
+    content: { title: text.title, body: text.body },
     trigger: {
       type: SchedulableTriggerInputTypes.DAILY,
       hour,
@@ -51,9 +61,14 @@ export async function cancelDailyReminder(): Promise<void> {
 }
 
 /** Test amaçlı: birkaç saniye sonra tek seferlik bir bildirim atar. */
-export async function sendTestNotification(): Promise<void> {
+export async function sendTestNotification(
+  text: NotificationText = {
+    title: REMINDER_TITLE,
+    body: "Test bildirimi — her şey çalışıyor 👍",
+  },
+): Promise<void> {
   await Notifications.scheduleNotificationAsync({
-    content: { title: REMINDER_TITLE, body: "Test bildirimi — her şey çalışıyor 👍" },
+    content: { title: text.title, body: text.body },
     trigger: {
       type: SchedulableTriggerInputTypes.TIME_INTERVAL,
       seconds: 5,

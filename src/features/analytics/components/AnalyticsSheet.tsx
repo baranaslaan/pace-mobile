@@ -6,6 +6,7 @@ import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
 import { expensesByDay, weeklyTrend, weekdayBreakdown, categoryBreakdown } from "../../../shared/lib/engine";
 import { categoryById } from "../../../shared/lib/categories";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { useT, monthLabel, weekdaysShort, weekdaysFull } from "../../../shared/i18n";
 import { dayKey, monthKey } from "../../../shared/lib/date";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { LockIcon } from "../../../shared/ui/icons";
@@ -13,20 +14,8 @@ import { theme } from "../../../shared/styles/theme";
 
 const HISTORY_DAYS = 7;
 
-const MONTHS_TR = [
-  "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
-  "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
-];
-
-// Pazartesi-başlangıçlı görüntü sırası (JS getDay indeksi) + etiketleri.
+// Pazartesi-başlangıçlı görüntü sırası (JS getDay indeksi). Etiketler dile göre.
 const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
-const WEEKDAY_LABELS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
-const WEEKDAY_FULL = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
-
-function monthLabel(key: string): string {
-  const [y, m] = key.split("-").map(Number);
-  return `${MONTHS_TR[m - 1] ?? key} ${y}`;
-}
 
 interface DayBar {
   key: string;
@@ -60,6 +49,9 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
   const isPro = usePaceStore((s) => s.isPro);
   const { forecast, stats } = useLimitLogic();
   const { fmt } = useCurrency();
+  const { t, lang } = useT();
+  const wdShort = weekdaysShort(lang);
+  const wdFull = weekdaysFull(lang);
 
   const expMap = expensesByDay(entries);
   const days = recentDays(expMap, HISTORY_DAYS);
@@ -79,33 +71,33 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
   const deltaAbs = trend.deltaPct === null ? 0 : Math.abs(Math.round(trend.deltaPct));
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Tempo">
+    <BottomSheet open={open} onClose={onClose} title={t("analytics.title")}>
       <ScrollView contentContainerStyle={{ paddingBottom: 0 }} keyboardShouldPersistTaps="handled">
         <View style={styles.stats}>
           <View style={styles.stat}>
             <Text style={styles.statValue}>{fmt(stats.spent)}</Text>
-            <Text style={styles.statLabel}>harcanan</Text>
+            <Text style={styles.statLabel}>{t("analytics.spent")}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.stat}>
             <Text style={styles.statValue}>{fmt(stats.pace)}</Text>
-            <Text style={styles.statLabel}>günlük ort.</Text>
+            <Text style={styles.statLabel}>{t("analytics.dailyAvg")}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.stat}>
             <Text style={styles.statValue}>{fmt(stats.pool)}</Text>
-            <Text style={styles.statLabel}>havuz</Text>
+            <Text style={styles.statLabel}>{t("analytics.pool")}</Text>
           </View>
         </View>
 
         <View style={styles.proWrap}>
           <View style={!isPro && { opacity: 0.3, pointerEvents: "none" }}>
-            <Text style={styles.sectionLabel}>Haftalık tempo</Text>
+            <Text style={styles.sectionLabel}>{t("analytics.weeklyPace")}</Text>
             <View style={styles.trendCard}>
               <View style={styles.trendTop}>
                 <View>
                   <Text style={styles.trendValue}>{fmt(trend.thisWeek)}</Text>
-                  <Text style={styles.trendCaption}>son 7 gün</Text>
+                  <Text style={styles.trendCaption}>{t("analytics.last7")}</Text>
                 </View>
                 {trend.deltaPct !== null && (
                   <View style={[styles.trendChip, down ? styles.trendChipDown : styles.trendChipUp]}>
@@ -117,31 +109,31 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
               </View>
               <Text style={styles.trendNote}>
                 {trend.deltaPct === null
-                  ? "Geçen hafta veri yok — kıyas için bir hafta gerek."
+                  ? t("analytics.trendNoData")
                   : down
-                    ? `Geçen haftaya göre %${deltaAbs} daha az harcadın. Tempon yavaşlıyor 👏`
-                    : `Geçen haftaya göre %${deltaAbs} daha fazla harcadın. Tempona dikkat.`}
+                    ? t("analytics.trendDown", { pct: deltaAbs })
+                    : t("analytics.trendUp", { pct: deltaAbs })}
               </Text>
             </View>
 
             <View style={[styles.forecast, surplus ? styles.forecastGood : styles.forecastBad]}>
-              <Text style={styles.forecastLabel}>Ay sonu öngörüsü</Text>
+              <Text style={styles.forecastLabel}>{t("analytics.forecastTitle")}</Text>
               <Text style={[styles.forecastMsg, surplus ? styles.forecastMsgGood : styles.forecastMsgBad]}>
                 {forecast.message}
               </Text>
               {stats.pace > 0 && (
                 <Text style={styles.forecastSub}>
-                  Tahmini ay sonu harcama {fmt(projected)} / havuz {fmt(stats.pool)}
+                  {t("analytics.forecastSub", { projected: fmt(projected), pool: fmt(stats.pool) })}
                 </Text>
               )}
             </View>
 
-            <Text style={styles.sectionLabel}>Son günler</Text>
+            <Text style={styles.sectionLabel}>{t("analytics.recentDays")}</Text>
             <View style={styles.history}>
               {days.map((d) => (
                 <View key={d.key} style={styles.row}>
                   <Text style={[styles.day, d.isToday && styles.dayToday]}>
-                    {d.isToday ? "Bugün" : d.day}
+                    {d.isToday ? t("analytics.today") : d.day}
                   </Text>
                   <View style={styles.barTrack}>
                     <View style={[styles.bar, { width: `${(d.amount / maxAmount) * 100}%` }]} />
@@ -151,7 +143,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
               ))}
             </View>
 
-            <Text style={styles.sectionLabel}>Haftanın günleri</Text>
+            <Text style={styles.sectionLabel}>{t("analytics.weekdays")}</Text>
             <View style={styles.weekChart}>
               {WEEKDAY_ORDER.map((wd) => {
                 const stat = weekdays[wd];
@@ -169,7 +161,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                       />
                     </View>
                     <Text style={[styles.weekLabel, isPeak && styles.weekLabelPeak]}>
-                      {WEEKDAY_LABELS[WEEKDAY_ORDER.indexOf(wd)]}
+                      {wdShort[wd]}
                     </Text>
                   </View>
                 );
@@ -177,20 +169,20 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
             </View>
             <Text style={styles.weekNote}>
               {peak.avg > 0
-                ? `En çok ${WEEKDAY_FULL[peak.weekday]} günleri harcıyorsun · ort ${fmt(peak.avg)}`
-                : "Haftanın günü dağılımı için biraz daha veri gerek."}
+                ? t("analytics.weekNote", { day: wdFull[peak.weekday], avg: fmt(peak.avg) })
+                : t("analytics.weekNoData")}
             </Text>
 
             {categories.length > 0 && (
               <>
-                <Text style={styles.sectionLabel}>Kategori dağılımı</Text>
+                <Text style={styles.sectionLabel}>{t("analytics.categories")}</Text>
                 <View style={styles.cats}>
                   {categories.map((c) => {
                     const cat = categoryById(c.categoryId);
                     return (
                       <View key={c.categoryId} style={styles.catRow}>
                         <View style={[styles.catDot, { backgroundColor: cat.color }]} />
-                        <Text style={styles.catName}>{cat.label}</Text>
+                        <Text style={styles.catName}>{t(`category.${c.categoryId}`)}</Text>
                         <View style={styles.catBarTrack}>
                           <View
                             style={[
@@ -210,14 +202,14 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
 
             {archive.length > 0 && (
               <>
-                <Text style={styles.sectionLabel}>Geçmiş aylar</Text>
+                <Text style={styles.sectionLabel}>{t("analytics.pastMonths")}</Text>
                 <View style={styles.months}>
                   {archive.map((mo) => {
                     const within = mo.spent <= mo.pool;
                     return (
                       <View key={mo.month} style={styles.monthRow}>
                         <View style={[styles.monthDot, within ? styles.monthDotGood : styles.monthDotBad]} />
-                        <Text style={styles.monthName}>{monthLabel(mo.month)}</Text>
+                        <Text style={styles.monthName}>{monthLabel(lang, mo.month)}</Text>
                         <Text style={styles.monthSpent}>
                           {fmt(mo.spent)}
                           <Text style={styles.monthPool}> / {fmt(mo.pool)}</Text>
@@ -235,12 +227,10 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
               <View style={styles.lockIcon}>
                 <LockIcon color="#fff" />
               </View>
-              <Text style={styles.lockTitle}>Tempo analizi Pace Pro'da</Text>
-              <Text style={styles.lockText}>
-                Ay sonu tahminini ve geçmiş harcama dökümünü gör. Tek seferlik ödeme, ömür boyu.
-              </Text>
+              <Text style={styles.lockTitle}>{t("analytics.lockTitle")}</Text>
+              <Text style={styles.lockText}>{t("analytics.lockText")}</Text>
               <TouchableOpacity style={styles.lockCta} onPress={onUpgrade} activeOpacity={0.9}>
-                <Text style={styles.lockCtaText}>Pace Pro'ya geç</Text>
+                <Text style={styles.lockCtaText}>{t("analytics.goPro")}</Text>
               </TouchableOpacity>
             </View>
           )}

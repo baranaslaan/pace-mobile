@@ -6,6 +6,7 @@ import { summarizeMonth, expensesByDay } from "@/shared/lib/engine";
 import { isCategoryId } from "@/shared/lib/categories";
 import { isCurrencyCode, DEFAULT_CURRENCY } from "@/shared/lib/money";
 import { FALLBACK_RATES, isRateTable } from "@/shared/lib/rates";
+import { isLanguage, DEFAULT_LANGUAGE } from "@/shared/i18n/lang";
 import type {
   ExpenseEntry,
   MonthSummary,
@@ -76,6 +77,8 @@ interface PaceState {
   onboarded: boolean;
   isPro: boolean;
   currency: string;
+  /** Arayüz dili ("tr" | "en"). */
+  language: string;
   /** Taban birime göre kur tablosu (bkz. rates.ts). Tutarlar taban birimde. */
   rates: Record<string, number>;
   /** Kurların son güncellenme zamanı (epoch ms); 0 = hiç çekilmedi. */
@@ -101,6 +104,7 @@ interface PaceState {
   unlockPro: () => void;
   lockPro: () => void;
   setCurrency: (code: string) => void;
+  setLanguage: (code: string) => void;
   setRates: (rates: Record<string, number>) => void;
   setReminder: (enabled: boolean, hour: number, minute: number) => void;
   rollIfNewMonth: () => void;
@@ -117,6 +121,7 @@ export const usePaceStore = create<PaceState>()(
       onboarded: false,
       isPro: false,
       currency: DEFAULT_CURRENCY,
+      language: DEFAULT_LANGUAGE,
       rates: FALLBACK_RATES,
       ratesUpdatedAt: 0,
       reminderEnabled: false,
@@ -217,6 +222,9 @@ export const usePaceStore = create<PaceState>()(
       setCurrency: (code) =>
         set(() => (isCurrencyCode(code) ? { currency: code } : {})),
 
+      setLanguage: (code) =>
+        set(() => (isLanguage(code) ? { language: code } : {})),
+
       setRates: (rates) =>
         set(() =>
           isRateTable(rates) ? { rates, ratesUpdatedAt: Date.now() } : {},
@@ -270,6 +278,7 @@ export const usePaceStore = create<PaceState>()(
         onboarded,
         isPro,
         currency,
+        language,
         rates,
         ratesUpdatedAt,
         reminderEnabled,
@@ -284,13 +293,14 @@ export const usePaceStore = create<PaceState>()(
         onboarded,
         isPro,
         currency,
+        language,
         rates,
         ratesUpdatedAt,
         reminderEnabled,
         reminderHour,
         reminderMinute,
       }),
-      version: 5,
+      version: 6,
       migrate: (persisted) => {
         const s = (persisted ?? {}) as Partial<PaceState>;
         return {
@@ -319,6 +329,7 @@ export const usePaceStore = create<PaceState>()(
           onboarded: Boolean(s.onboarded),
           isPro: Boolean(s.isPro),
           currency: isCurrencyCode(s.currency) ? s.currency : DEFAULT_CURRENCY,
+          language: isLanguage(s.language) ? s.language : DEFAULT_LANGUAGE,
           rates: isRateTable(s.rates) ? s.rates : FALLBACK_RATES,
           ratesUpdatedAt:
             typeof s.ratesUpdatedAt === "number" ? s.ratesUpdatedAt : 0,

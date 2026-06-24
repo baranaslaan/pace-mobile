@@ -9,6 +9,7 @@ import { BudgetStep } from "./BudgetStep";
 import { SubscriptionsStep } from "./SubscriptionsStep";
 import { RecapStep } from "./RecapStep";
 import { StepDots } from "./StepDots";
+import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
 const ACCENT = theme.colors.stateGood;
@@ -16,6 +17,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export function Onboarding() {
   const flow = useOnboardingFlow();
+  const { t } = useT();
   const { step, direction } = flow;
 
   const parsedBudget = Number.parseFloat(flow.budget);
@@ -24,12 +26,12 @@ export function Onboarding() {
 
   const cta =
     step === 0
-      ? { label: "Başla", disabled: false, onClick: flow.goNext }
+      ? { label: t("common.start"), disabled: false, onClick: flow.goNext }
       : step === 1
-        ? { label: "Devam", disabled: !budgetValid, onClick: advanceBudget }
+        ? { label: t("common.continue"), disabled: !budgetValid, onClick: advanceBudget }
         : step === 2
-          ? { label: "Devam", disabled: false, onClick: flow.goNext }
-          : { label: "Bitir", disabled: false, onClick: flow.finish };
+          ? { label: t("common.continue"), disabled: false, onClick: flow.goNext }
+          : { label: t("common.finish"), disabled: false, onClick: flow.finish };
 
   return (
     <SafeAreaView style={styles.screen}>

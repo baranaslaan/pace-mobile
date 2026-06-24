@@ -4,6 +4,7 @@ import Svg, { Circle } from "react-native-svg";
 import { MotiText } from "moti";
 import { RingAura } from "./RingAura";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 import Animated, { useAnimatedProps, withTiming } from "react-native-reanimated";
 
@@ -24,6 +25,7 @@ function fitFontSize(length: number): number {
 
 export function Ring({ remaining, limit, tone }: any) {
   const { symbol } = useCurrency();
+  const { t } = useT();
   const over = tone.key === "over";
   const ratio = Math.max(0, Math.min(1, limit > 0 ? remaining / limit : 0));
   const offset = CIRC * (1 - ratio);
@@ -71,7 +73,7 @@ export function Ring({ remaining, limit, tone }: any) {
       </Svg>
 
       <View style={styles.center}>
-        <MotiText style={styles.kalan}>kalan</MotiText>
+        <MotiText style={styles.kalan}>{t("ring.left")}</MotiText>
         <MotiText
           key={shown}
           style={[styles.value, { fontSize: valueSize }]}
@@ -81,13 +83,13 @@ export function Ring({ remaining, limit, tone }: any) {
         >
           {shown}
         </MotiText>
-        <MotiText style={styles.unit}>{symbol} / gün</MotiText>
+        <MotiText style={styles.unit}>{symbol} {t("ring.perDay")}</MotiText>
         <MotiText
           style={styles.status}
           animate={{ color: tone.color } as any}
           transition={{ type: "timing", duration: 700 }}
         >
-          {tone.label}
+          {t(`tone.${tone.key}`)}
         </MotiText>
       </View>
     </View>
