@@ -24,6 +24,17 @@ describe("expensesToCSV", () => {
     expect(csv.split("\n")[1]).toContain('"a,b""c"');
   });
 
+  it("formülle başlayan notu etkisizleştirir (CSV injection)", () => {
+    const csv = expensesToCSV([entry("2026-06-01", 8, 10, { note: "=2+5" })]);
+    // Başına tek tırnak gelir, böylece Excel formül olarak çalıştırmaz.
+    expect(csv.split("\n")[1]).toBe("2026-06-01,08:00,Diğer,10,'=2+5");
+  });
+
+  it("formül + virgül birlikte: önce etkisizleştir, sonra alanı kaçır", () => {
+    const csv = expensesToCSV([entry("2026-06-01", 8, 10, { note: "@cmd,evil" })]);
+    expect(csv.split("\n")[1]).toBe(`2026-06-01,08:00,Diğer,10,"'@cmd,evil"`);
+  });
+
   it("convert ile görüntü birimine çevirir ve başlığa kodu yazar", () => {
     const csv = expensesToCSV([entry("2026-06-01", 8, 1000)], {
       convert: (n) => n * 0.02,

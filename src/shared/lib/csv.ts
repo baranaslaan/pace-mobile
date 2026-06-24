@@ -18,12 +18,22 @@ export interface CSVOptions {
   headers?: { date: string; time: string; category: string; amount: string; note: string };
 }
 
-/** Virgül, tırnak veya yeni satır içeren alanı CSV kurallarına göre kaçır. */
+/**
+ * Formül enjeksiyonunu etkisizleştirir: bir alan "=", "+", "-", "@", tab ya da
+ * CR ile başlıyorsa, Excel/Numbers bunu formül olarak çalıştırabilir. Başına tek
+ * tırnak koyup düz metin olarak yorumlanmasını sağlarız.
+ */
+function neutralizeFormula(value: string): string {
+  return /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+}
+
+/** Önce formülü etkisizleştir, sonra virgül/tırnak/yeni satırı CSV'ye göre kaçır. */
 function escapeField(value: string): string {
-  if (/[",\n]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
+  const safe = neutralizeFormula(value);
+  if (/[",\n]/.test(safe)) {
+    return `"${safe.replace(/"/g, '""')}"`;
   }
-  return value;
+  return safe;
 }
 
 /** Epoch ms → "HH:MM" (yerel). */
