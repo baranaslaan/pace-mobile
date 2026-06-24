@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 10,
     paddingBottom: 40,
-    backgroundColor: "#11141c",
+    backgroundColor: theme.colors.sheetBg,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     shadowColor: "#000",

@@ -3,7 +3,13 @@ export const theme = {
     bgPage: '#07090e',
     bgShell: '#090b11',
     surfaceInput: '#13161f',
-    
+    /** Kart/satır yüzeyi — uygulama genelinde dinlenme yüzeyi. */
+    surface: 'rgba(255, 255, 255, 0.04)',
+    /** Bottom sheet gövde arka planı. */
+    sheetBg: '#11141c',
+    /** Pro upsell kartının koyu arka planı. */
+    upsellBg: '#0e1422',
+
     textPrimary: '#ffffff',
     textSoft: 'rgba(255, 255, 255, 0.55)',
     textDim: 'rgba(255, 255, 255, 0.28)',
@@ -11,11 +17,13 @@ export const theme = {
     textFaint: 'rgba(255, 255, 255, 0.2)',
     hairline: 'rgba(255, 255, 255, 0.06)',
     track: 'rgba(255, 255, 255, 0.05)',
-    
+
     stateGood: '#3b82f6',
     stateWarn: '#f59e0b',
     stateCrit: '#ef4444',
     stateOver: '#dc2626',
+    /** Tehlikeli eylem metni/ikonu (sil, sıfırla). Dolu buton: stateOver. */
+    danger: '#f87171',
   },
   spacing: {
     s1: 4,

@@ -303,7 +303,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
       {!confirmReset ? (
         <TouchableOpacity style={styles.dangerRow} onPress={() => setConfirmReset(true)} activeOpacity={0.7}>
           <View style={styles.rowIcon}>
-            <TrashIcon color="#f87171" />
+            <TrashIcon color={theme.colors.danger} />
           </View>
           <Text style={styles.dangerText}>{t("settings.resetAll")}</Text>
         </TouchableOpacity>
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
   dangerText: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#f87171",
+    color: theme.colors.danger,
   },
   confirm: {
     padding: 16,
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 11,
     borderRadius: 12,
-    backgroundColor: "#dc2626",
+    backgroundColor: theme.colors.stateOver,
     alignItems: "center",
   },
   confirmDangerText: {

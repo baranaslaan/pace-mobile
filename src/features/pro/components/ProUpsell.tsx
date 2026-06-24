@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     // Opak koyu-mavi (translucent 0.08'in koyu zemindeki karşılığı) — overlay'de
     // de altı sızdırmaz.
-    backgroundColor: "#0e1422",
+    backgroundColor: theme.colors.upsellBg,
     borderWidth: 1,
     borderColor: "rgba(59, 130, 246, 0.25)",
   },
