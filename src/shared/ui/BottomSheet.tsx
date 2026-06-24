@@ -1,7 +1,15 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { StyleSheet, View, TouchableOpacity, Dimensions } from "react-native";
-import { AnimatePresence, MotiView } from "moti";
-import { Easing } from "react-native-reanimated";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  interpolate,
+  Extrapolation,
+  runOnJS,
+  Easing,
+} from "react-native-reanimated";
 import { XIcon } from "./icons";
 import { theme } from "../styles/theme";
 import { Text } from "../typography/Text";
@@ -14,53 +22,90 @@ interface BottomSheetProps {
 }
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+// Aşağı sürükleme kapatma eşiği: bu mesafeyi ya da hızı aşınca sheet kapanır.
+const CLOSE_DISTANCE = 120;
+const CLOSE_VELOCITY = 800;
 
 export function BottomSheet({ open, onClose, title, children }: BottomSheetProps) {
+  // Çıkış animasyonu bitene kadar DOM'da kalsın diye iç "mounted" durumu.
+  const [mounted, setMounted] = useState(open);
+  const translateY = useSharedValue(SCREEN_HEIGHT);
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      translateY.value = withTiming(0, {
+        duration: 300,
+        easing: Easing.out(Easing.cubic),
+      });
+    } else {
+      translateY.value = withTiming(
+        SCREEN_HEIGHT,
+        { duration: 260, easing: Easing.in(Easing.cubic) },
+        (finished) => {
+          if (finished) runOnJS(setMounted)(false);
+        },
+      );
+    }
+  }, [open]);
+
+  // Grabber/başlık bölgesinden aşağı sürükleme — bounce yok, kısa timing.
+  const pan = Gesture.Pan()
+    .onUpdate((e) => {
+      translateY.value = Math.max(0, e.translationY);
+    })
+    .onEnd((e) => {
+      if (e.translationY > CLOSE_DISTANCE || e.velocityY > CLOSE_VELOCITY) {
+        // Mevcut konumdan kapanış animasyonunu effect yürütsün.
+        runOnJS(onClose)();
+      } else {
+        translateY.value = withTiming(0, {
+          duration: 200,
+          easing: Easing.out(Easing.cubic),
+        });
+      }
+    });
+
+  const sheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  const backdropStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      translateY.value,
+      [0, SCREEN_HEIGHT],
+      [1, 0],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  if (!mounted) return null;
+
   return (
-    <AnimatePresence>
-      {open && (
-        <View style={[StyleSheet.absoluteFill, { zIndex: 30 }]} pointerEvents="box-none">
-          {/* Backdrop */}
-          <MotiView
-            style={styles.backdrop}
-            from={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ type: "timing", duration: 250 }}
-          >
-            <TouchableOpacity 
-              style={StyleSheet.absoluteFill} 
-              activeOpacity={1} 
-              onPress={onClose} 
-            />
-          </MotiView>
+    <View style={[StyleSheet.absoluteFill, { zIndex: 30 }]} pointerEvents="box-none">
+      {/* Backdrop — sürükledikçe sönen */}
+      <Animated.View style={[styles.backdrop, backdropStyle]}>
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
+      </Animated.View>
 
-          {/* Sheet */}
-          <MotiView
-            style={styles.sheet}
-            from={{ translateY: SCREEN_HEIGHT }}
-            animate={{ translateY: 0 }}
-            exit={{ translateY: SCREEN_HEIGHT }}
-            transition={{ type: "timing", duration: 300, easing: Easing.out(Easing.cubic) }}
-          >
+      {/* Sheet */}
+      <Animated.View style={[styles.sheet, sheetStyle]}>
+        {/* Sürükleme bölgesi: grabber + başlık. İçerideki ScrollView'a karışmaz. */}
+        <GestureDetector gesture={pan}>
+          <View style={styles.dragZone}>
             <View style={styles.grabber} />
-
             <View style={styles.head}>
               <Text style={styles.title}>{title}</Text>
-              <TouchableOpacity
-                style={styles.close}
-                onPress={onClose}
-                activeOpacity={0.7}
-              >
+              <TouchableOpacity style={styles.close} onPress={onClose} activeOpacity={0.7}>
                 <XIcon size={16} color={theme.colors.textSoft} />
               </TouchableOpacity>
             </View>
+          </View>
+        </GestureDetector>
 
-            {children}
-          </MotiView>
-        </View>
-      )}
-    </AnimatePresence>
+        {children}
+      </Animated.View>
+    </View>
   );
 }
 
@@ -87,6 +132,10 @@ const styles = StyleSheet.create({
     shadowRadius: 56,
     elevation: 24,
   },
+  dragZone: {
+    // Sürükleme alanını genişletmek için başlığa kadar uzanır.
+    marginBottom: 20,
+  },
   grabber: {
     width: 40,
     height: 4,
@@ -100,7 +149,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 20,
   },
   title: {
     fontSize: 20,

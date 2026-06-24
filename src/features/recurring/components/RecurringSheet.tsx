@@ -293,7 +293,8 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
 
 const styles = StyleSheet.create({
   scroll: {
-    maxHeight: 460,
+    // Sheet'in 88%'ine kadar uzar, ondan sonra scroll devreye girer (sabit cap yok).
+    flexShrink: 1,
   },
   sectionLabel: {
     fontSize: 14,

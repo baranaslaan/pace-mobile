@@ -116,7 +116,9 @@ const styles = StyleSheet.create({
     color: theme.colors.textMute,
   },
   list: {
-    maxHeight: 300,
+    // Sabit 300 cap yerine: sheet'in 88%'ine kadar uzar (başlık + alt eylem
+    // sabit kalır), taşınca liste içinde scroll eder.
+    flexShrink: 1,
     marginHorizontal: -4,
     paddingHorizontal: 4,
   },

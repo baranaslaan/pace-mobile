@@ -86,7 +86,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
 
   return (
     <BottomSheet open={open} onClose={onClose} title={t("analytics.title")}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 0 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scroll} contentContainerStyle={{ paddingBottom: 0 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <View style={styles.stats}>
           <View style={styles.stat}>
             <Text style={styles.statValue}>{fmt(stats.spent)}</Text>
@@ -311,6 +311,10 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
 }
 
 const styles = StyleSheet.create({
+  // Sheet'in 88%'ine kadar uzar, ondan sonra içerik scroll eder.
+  scroll: {
+    flexShrink: 1,
+  },
   stats: {
     flexDirection: "row",
     alignItems: "center",

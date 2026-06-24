@@ -139,7 +139,9 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   list: {
-    maxHeight: 300,
+    // Sabit cap yerine sheet'in 88%'ine kadar uzar; bütçe alanı + alt eylem
+    // sabit kalır, liste taşınca scroll eder.
+    flexShrink: 1,
   },
   empty: {
     fontSize: 15,
