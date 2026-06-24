@@ -1,10 +1,11 @@
 import React, { useRef, useState } from "react";
-import { StyleSheet, View, TextInput, TouchableOpacity } from "react-native";
-import { MotiView } from "moti";
+import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import { MotiView, AnimatePresence } from "moti";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { getTone } from "../../../shared/lib/tone";
 import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
 import { ArrowUpIcon } from "../../../shared/ui/icons";
+import { CATEGORIES } from "../../../shared/lib/categories";
 import { theme } from "../../../shared/styles/theme";
 import { Text } from "../../../shared/typography/Text";
 
@@ -15,6 +16,7 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
 
   const [input, setInput] = useState("");
   const [note, setNote] = useState("");
+  const [category, setCategory] = useState<string | undefined>(undefined);
   const inputRef = useRef<TextInput>(null);
 
   const amount = Number.parseFloat(input);
@@ -22,9 +24,10 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
 
   const submit = () => {
     if (!valid) return;
-    addExpense(amount, note);
+    addExpense(amount, note, category);
     setInput("");
     setNote("");
+    setCategory(undefined);
   };
 
   return (
@@ -78,15 +81,56 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
           </TouchableOpacity>
         </View>
 
-        <TextInput
-          style={styles.note}
-          placeholder="Not ekle (opsiyonel) — kahve, market…"
-          placeholderTextColor="rgba(255, 255, 255, 0.3)"
-          value={note}
-          onChangeText={setNote}
-          onSubmitEditing={submit}
-          maxLength={40}
-        />
+        {/* Kategori + not yalnızca tutar girilmeye başlayınca belirir —
+            dinlenme halinde alan ferah kalır. */}
+        <AnimatePresence>
+          {input !== "" && (
+            <MotiView
+              from={{ opacity: 0, translateY: -6 }}
+              animate={{ opacity: 1, translateY: 0 }}
+              exit={{ opacity: 0, translateY: -6 }}
+              transition={{ type: "timing", duration: 200 }}
+            >
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                style={styles.chips}
+                contentContainerStyle={styles.chipsContent}
+              >
+                {CATEGORIES.map((c) => {
+                  const active = category === c.id;
+                  return (
+                    <TouchableOpacity
+                      key={c.id}
+                      style={[
+                        styles.chip,
+                        active && { borderColor: c.color, backgroundColor: `${c.color}1f` },
+                      ]}
+                      onPress={() => setCategory(active ? undefined : c.id)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={[styles.chipDot, { backgroundColor: c.color }]} />
+                      <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                        {c.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+
+              <TextInput
+                style={styles.note}
+                placeholder="Not ekle (opsiyonel)"
+                placeholderTextColor="rgba(255, 255, 255, 0.3)"
+                value={note}
+                onChangeText={setNote}
+                onSubmitEditing={submit}
+                maxLength={40}
+              />
+            </MotiView>
+          )}
+        </AnimatePresence>
       </MotiView>
     </View>
   );
@@ -151,6 +195,38 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 24,
     elevation: 8,
+  },
+  chips: {
+    marginHorizontal: -24, // kart kenarına kadar taşır
+  },
+  chipsContent: {
+    paddingHorizontal: 24,
+    gap: 8,
+  },
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    paddingVertical: 8,
+    paddingHorizontal: 13,
+    borderRadius: theme.radius.pill,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    backgroundColor: "rgba(255, 255, 255, 0.04)",
+  },
+  chipDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  chipText: {
+    fontFamily: theme.fonts.outfitMedium,
+    fontSize: 13,
+    fontWeight: "600",
+    color: theme.colors.textSoft,
+  },
+  chipTextActive: {
+    color: theme.colors.textPrimary,
   },
   note: {
     width: "100%",

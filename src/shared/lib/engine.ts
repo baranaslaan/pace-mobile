@@ -19,6 +19,7 @@ import {
   daysInMonth,
   dayOfMonth,
 } from "./date";
+import { DEFAULT_CATEGORY_ID } from "./categories";
 
 export interface Subscription {
   id: string;
@@ -37,6 +38,8 @@ export interface ExpenseEntry {
   amount: number;
   /** Opsiyonel etiket/not (ör. "kahve", "market"). */
   note?: string;
+  /** Opsiyonel kategori kimliği (bkz. shared/lib/categories). Eksikse "Diğer". */
+  category?: string;
   /** Oluşturulma zamanı (epoch ms) — gün içi sıralama için. */
   ts: number;
 }
@@ -51,6 +54,46 @@ export function expensesByDay(entries: ExpenseEntry[]): Record<string, number> {
     if (e.amount > 0) map[e.day] = (map[e.day] ?? 0) + e.amount;
   }
   return map;
+}
+
+export interface CategorySlice {
+  /** Kategori kimliği (eksik/bilinmeyen → "diger"). */
+  categoryId: string;
+  /** Bu kategorideki toplam harcama. */
+  total: number;
+  /** Bu kategorideki kalem sayısı. */
+  count: number;
+  /** Toplam içindeki pay (0–1); toplam 0 ise 0. */
+  share: number;
+}
+
+/**
+ * Verilen ayın harcama kalemlerini kategoriye göre gruplar (saf). Tutarı azalan
+ * sırada döner; harcaması olmayan kategoriler dışlanır. Kategorisiz kalemler
+ * {@link DEFAULT_CATEGORY_ID} altında toplanır.
+ */
+export function categoryBreakdown(
+  entries: ExpenseEntry[],
+  month: string,
+): CategorySlice[] {
+  const totals: Record<string, number> = {};
+  const counts: Record<string, number> = {};
+  let grand = 0;
+  for (const e of entries) {
+    if (e.amount <= 0 || monthOf(e.day) !== month) continue;
+    const id = e.category || DEFAULT_CATEGORY_ID;
+    totals[id] = (totals[id] ?? 0) + e.amount;
+    counts[id] = (counts[id] ?? 0) + 1;
+    grand += e.amount;
+  }
+  return Object.keys(totals)
+    .map((categoryId) => ({
+      categoryId,
+      total: totals[categoryId],
+      count: counts[categoryId],
+      share: grand > 0 ? totals[categoryId] / grand : 0,
+    }))
+    .sort((a, b) => b.total - a.total);
 }
 
 export interface PaceSnapshot {

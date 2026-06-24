@@ -4,6 +4,7 @@ import { Text } from "../../../shared/typography/Text";
 import { MotiView } from "moti";
 import { timeLabel } from "../../../shared/lib/date";
 import { TrashIcon } from "../../../shared/ui/icons";
+import { CATEGORIES, categoryById } from "../../../shared/lib/categories";
 import { theme } from "../../../shared/styles/theme";
 
 interface EntryRowProps {
@@ -28,6 +29,14 @@ export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
     setNote(trimmed);
   };
 
+  // Dokununca sıradaki kategoriye geç (listede sırayla döner).
+  const cat = categoryById(entry.category);
+  const cycleCategory = () => {
+    const idx = CATEGORIES.findIndex((c) => c.id === entry.category);
+    const next = CATEGORIES[(idx + 1) % CATEGORIES.length];
+    onUpdate(entry.id, { category: next.id });
+  };
+
   return (
     <MotiView
       style={styles.item}
@@ -37,6 +46,15 @@ export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
       transition={{ type: "spring", stiffness: 420, damping: 36 }}
     >
       <Text style={styles.time}>{timeLabel(entry.ts)}</Text>
+
+      <TouchableOpacity
+        style={styles.catBtn}
+        onPress={cycleCategory}
+        activeOpacity={0.6}
+        hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
+      >
+        <View style={[styles.catDot, { backgroundColor: cat.color }]} />
+      </TouchableOpacity>
 
       <TextInput
         style={styles.noteInput}
@@ -90,6 +108,17 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: theme.colors.textDim,
     fontVariant: ["tabular-nums"],
+  },
+  catBtn: {
+    width: 18,
+    height: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  catDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
   noteInput: {
     flex: 1,

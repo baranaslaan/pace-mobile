@@ -3,6 +3,7 @@ import { persist, createJSONStorage, StateStorage } from "zustand/middleware";
 import { createMMKV } from "react-native-mmkv";
 import { dayKey, monthKey, monthOf } from "@/shared/lib/date";
 import { summarizeMonth, expensesByDay } from "@/shared/lib/engine";
+import { isCategoryId } from "@/shared/lib/categories";
 import type {
   ExpenseEntry,
   MonthSummary,
@@ -40,15 +41,18 @@ function isDayKey(k: unknown): k is string {
 function migrateEntries(persisted: unknown): ExpenseEntry[] {
   const s = (persisted ?? {}) as Record<string, unknown>;
   if (Array.isArray(s.entries)) {
-    return s.entries.filter(
-      (e): e is ExpenseEntry =>
-        !!e &&
-        typeof e === "object" &&
-        typeof (e as ExpenseEntry).id === "string" &&
-        isDayKey((e as ExpenseEntry).day) &&
-        typeof (e as ExpenseEntry).amount === "number" &&
-        (e as ExpenseEntry).amount > 0,
-    );
+    return s.entries
+      .filter(
+        (e): e is ExpenseEntry =>
+          !!e &&
+          typeof e === "object" &&
+          typeof (e as ExpenseEntry).id === "string" &&
+          isDayKey((e as ExpenseEntry).day) &&
+          typeof (e as ExpenseEntry).amount === "number" &&
+          (e as ExpenseEntry).amount > 0,
+      )
+      // Bilinmeyen kategori kimliklerini at — analitik "Diğer"e düşürür.
+      .map((e) => (isCategoryId(e.category) ? e : { ...e, category: undefined }));
   }
 
   const expenses = s.expenses;
@@ -78,10 +82,10 @@ interface PaceState {
   addSubscription: (name: string, amount: number) => void;
   updateSubscription: (id: string, patch: Partial<Omit<Subscription, "id">>) => void;
   removeSubscription: (id: string) => void;
-  addExpense: (amount: number, note?: string) => void;
+  addExpense: (amount: number, note?: string, category?: string) => void;
   updateExpense: (
     id: string,
-    patch: Partial<Pick<ExpenseEntry, "amount" | "note">>,
+    patch: Partial<Pick<ExpenseEntry, "amount" | "note" | "category">>,
   ) => void;
   removeExpense: (id: string) => void;
   resetToday: () => void;
@@ -132,7 +136,7 @@ export const usePaceStore = create<PaceState>()(
           subscriptions: s.subscriptions.filter((sub) => sub.id !== id),
         })),
 
-      addExpense: (amount, note) =>
+      addExpense: (amount, note, category) =>
         set((s) => {
           if (!Number.isFinite(amount) || amount <= 0) return s;
           const trimmed = note?.trim();
@@ -142,6 +146,7 @@ export const usePaceStore = create<PaceState>()(
             amount,
             ts: Date.now(),
             ...(trimmed ? { note: trimmed } : {}),
+            ...(isCategoryId(category) ? { category } : {}),
           };
           return { entries: [...s.entries, entry] };
         }),
@@ -159,6 +164,10 @@ export const usePaceStore = create<PaceState>()(
               const trimmed = patch.note.trim();
               if (trimmed) next.note = trimmed;
               else delete next.note;
+            }
+            if (patch.category !== undefined) {
+              if (isCategoryId(patch.category)) next.category = patch.category;
+              else delete next.category;
             }
             return next;
           }),

@@ -3,8 +3,9 @@ import { StyleSheet, View, TouchableOpacity, ScrollView } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
-import { expensesByDay, weeklyTrend, weekdayBreakdown } from "../../../shared/lib/engine";
-import { dayKey } from "../../../shared/lib/date";
+import { expensesByDay, weeklyTrend, weekdayBreakdown, categoryBreakdown } from "../../../shared/lib/engine";
+import { categoryById } from "../../../shared/lib/categories";
+import { dayKey, monthKey } from "../../../shared/lib/date";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { LockIcon } from "../../../shared/ui/icons";
 import { theme } from "../../../shared/styles/theme";
@@ -64,6 +65,8 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
   const surplus = forecast.endBalance >= 0;
 
   const trend = weeklyTrend(expMap);
+  const categories = categoryBreakdown(entries, monthKey());
+  const maxCategory = Math.max(1, ...categories.map((c) => c.total));
   const weekdays = weekdayBreakdown(expMap);
   const maxWeekdayAvg = Math.max(1, ...weekdays.map((w) => w.avg));
   const peak = weekdays.reduce((a, b) => (b.avg > a.avg ? b : a), weekdays[0]);
@@ -175,6 +178,33 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                 ? `En çok ${WEEKDAY_FULL[peak.weekday]} günleri harcıyorsun · ort ₺${Math.round(peak.avg)}`
                 : "Haftanın günü dağılımı için biraz daha veri gerek."}
             </Text>
+
+            {categories.length > 0 && (
+              <>
+                <Text style={styles.sectionLabel}>Kategori dağılımı</Text>
+                <View style={styles.cats}>
+                  {categories.map((c) => {
+                    const cat = categoryById(c.categoryId);
+                    return (
+                      <View key={c.categoryId} style={styles.catRow}>
+                        <View style={[styles.catDot, { backgroundColor: cat.color }]} />
+                        <Text style={styles.catName}>{cat.label}</Text>
+                        <View style={styles.catBarTrack}>
+                          <View
+                            style={[
+                              styles.catBar,
+                              { width: `${(c.total / maxCategory) * 100}%`, backgroundColor: cat.color },
+                            ]}
+                          />
+                        </View>
+                        <Text style={styles.catPct}>%{Math.round(c.share * 100)}</Text>
+                        <Text style={styles.catAmount}>₺{Math.round(c.total)}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </>
+            )}
 
             {archive.length > 0 && (
               <>
@@ -426,6 +456,55 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: theme.colors.textPrimary,
+  },
+  cats: {
+    marginBottom: 32,
+  },
+  catRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  catDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 10,
+  },
+  catName: {
+    width: 64,
+    fontSize: 13,
+    fontWeight: "600",
+    color: theme.colors.textSoft,
+  },
+  catBarTrack: {
+    flex: 1,
+    height: 8,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderRadius: 4,
+    marginRight: 10,
+    overflow: "hidden",
+  },
+  catBar: {
+    height: "100%",
+    borderRadius: 4,
+    minWidth: 4,
+  },
+  catPct: {
+    width: 38,
+    textAlign: "right",
+    fontSize: 12,
+    fontWeight: "600",
+    color: theme.colors.textMute,
+    fontVariant: ["tabular-nums"],
+  },
+  catAmount: {
+    width: 56,
+    textAlign: "right",
+    fontSize: 13,
+    fontWeight: "700",
+    color: theme.colors.textPrimary,
+    fontVariant: ["tabular-nums"],
   },
   months: {
     marginBottom: 32,

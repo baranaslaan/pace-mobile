@@ -4,6 +4,7 @@
    ============================================================= */
 
 import type { ExpenseEntry } from "./engine";
+import { categoryById } from "./categories";
 
 /** Virgül, tırnak veya yeni satır içeren alanı CSV kurallarına göre kaçır. */
 function escapeField(value: string): string {
@@ -23,14 +24,20 @@ function timeOf(ts: number): string {
 
 /**
  * Harcama kalemlerini CSV metnine çevirir (tarih artan). Başlık satırı dahil.
- * Sütunlar: Tarih, Saat, Tutar, Not.
+ * Sütunlar: Tarih, Saat, Kategori, Tutar, Not.
  */
 export function expensesToCSV(entries: ExpenseEntry[]): string {
-  const header = "Tarih,Saat,Tutar,Not";
+  const header = "Tarih,Saat,Kategori,Tutar,Not";
   const rows = [...entries]
     .sort((a, b) => a.ts - b.ts)
     .map((e) =>
-      [e.day, timeOf(e.ts), String(e.amount), escapeField(e.note ?? "")].join(","),
+      [
+        e.day,
+        timeOf(e.ts),
+        escapeField(categoryById(e.category).label),
+        String(e.amount),
+        escapeField(e.note ?? ""),
+      ].join(","),
     );
   return [header, ...rows].join("\n");
 }
