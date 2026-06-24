@@ -132,7 +132,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                 {trend.deltaPct !== null && (
                   <View style={[styles.trendChip, down ? styles.trendChipDown : styles.trendChipUp]}>
                     <Text style={[styles.trendChipText, down ? styles.trendChipTextDown : styles.trendChipTextUp]}>
-                      {down ? "↓" : "↑"} %{deltaAbs}
+                      {down ? "↓" : "↑"} {t("common.pct", { n: deltaAbs })}
                     </Text>
                   </View>
                 )}
@@ -221,7 +221,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                             ]}
                           />
                         </View>
-                        <Text style={styles.catPct}>%{Math.round(c.share * 100)}</Text>
+                        <Text style={styles.catPct}>{t("common.pct", { n: Math.round(c.share * 100) })}</Text>
                         <Text style={styles.catAmount}>{fmt(c.total)}</Text>
                       </View>
                     );

@@ -7,6 +7,8 @@ export const tr = {
     finish: "Bitir",
     cancel: "Vazgeç",
     reset: "Sıfırla",
+    // Yüzde biçimi — TR önek (%23), EN sonek (23%).
+    pct: "%{n}",
   },
 
   tone: {

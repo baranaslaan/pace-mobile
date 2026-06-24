@@ -208,6 +208,57 @@ export function summarizeMonth(snap: PaceSnapshot, month: string): MonthSummary 
   };
 }
 
+export interface RollInput {
+  /** Şu an aktif kabul edilen ay anahtarı ("YYYY-MM"); ilk açılışta "". */
+  activeMonth: string;
+  budget: number;
+  subscriptions: Subscription[];
+  entries: ExpenseEntry[];
+  archive: MonthSummary[];
+}
+
+export interface RollResult {
+  activeMonth: string;
+  archive: MonthSummary[];
+  entries: ExpenseEntry[];
+}
+
+/**
+ * Ay devri (saf): aktif ay `nowMonth`'tan farklıysa, henüz arşivlenmemiş geçmiş
+ * ayları özetleyip arşive ekler ve kalemleri yalnızca güncel aya indirger.
+ * Devre gerek yoksa (aynı ay) `null` döner — çağıran state'i değiştirmez.
+ *
+ * Geçmiş ay `pool`'u güncel bütçe/aboneliğe dayanır (en iyi tahmin) — bkz.
+ * {@link MonthSummary.pool}. Arşiv ay anahtarına göre azalan sıralanır.
+ */
+export function rollMonth(input: RollInput, nowMonth: string): RollResult | null {
+  if (input.activeMonth === nowMonth) return null;
+
+  const snap: PaceSnapshot = {
+    budget: input.budget,
+    subscriptions: input.subscriptions,
+    expenses: expensesByDay(input.entries),
+  };
+
+  const archived = new Set(input.archive.map((a) => a.month));
+  const pastMonths = new Set<string>();
+  for (const e of input.entries) {
+    const mo = monthOf(e.day);
+    if (mo < nowMonth && !archived.has(mo)) pastMonths.add(mo);
+  }
+
+  const additions = [...pastMonths].map((mo) => summarizeMonth(snap, mo));
+  const entries = input.entries.filter((e) => monthOf(e.day) === nowMonth);
+
+  return {
+    activeMonth: nowMonth,
+    archive: [...input.archive, ...additions].sort((a, b) =>
+      a.month < b.month ? 1 : -1,
+    ),
+    entries,
+  };
+}
+
 /** Bu ayın özet istatistikleri (forecast ve analitik bunun üstüne kurulur). */
 export function monthStats(
   snap: PaceSnapshot,

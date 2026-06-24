@@ -14,8 +14,10 @@ import {
   categoryBreakdown,
   disciplineStreak,
   topExpenses,
+  rollMonth,
   type PaceSnapshot,
   type ExpenseEntry,
+  type RollInput,
 } from "../engine";
 
 // Sabit referans: 15 Haziran 2026, öğlen (Haziran = 30 gün).
@@ -222,5 +224,54 @@ describe("topExpenses", () => {
     const newer: ExpenseEntry = { id: "b", day: "2026-06-02", amount: 200, ts: 2000 };
     const out = topExpenses([older, newer], "2026-06", 2);
     expect(out.map((e) => e.id)).toEqual(["b", "a"]);
+  });
+});
+
+describe("rollMonth", () => {
+  function rollInput(over: Partial<RollInput> = {}): RollInput {
+    return { activeMonth: "2026-05", budget: 3000, subscriptions: [], entries: [], archive: [], ...over };
+  }
+
+  it("aktif ay zaten güncelse null döner (state'e dokunma)", () => {
+    expect(rollMonth(rollInput({ activeMonth: "2026-06" }), "2026-06")).toBeNull();
+  });
+
+  it("geçmiş ayı arşivler ve kalemleri güncel aya indirger", () => {
+    const entries: ExpenseEntry[] = [
+      entry("2026-05-20", 100),
+      entry("2026-05-25", 200),
+      entry("2026-06-02", 50),
+    ];
+    const out = rollMonth(rollInput({ entries }), "2026-06")!;
+    expect(out).not.toBeNull();
+    expect(out.activeMonth).toBe("2026-06");
+    expect(out.archive.map((a) => a.month)).toEqual(["2026-05"]);
+    expect(out.archive[0].spent).toBe(300);
+    expect(out.entries.map((e) => e.day)).toEqual(["2026-06-02"]);
+  });
+
+  it("birden çok geçmiş ayı arşivler, azalan sıralar", () => {
+    const entries: ExpenseEntry[] = [
+      entry("2026-04-10", 80),
+      entry("2026-05-10", 120),
+      entry("2026-06-01", 30),
+    ];
+    const out = rollMonth(rollInput({ activeMonth: "2026-04", entries }), "2026-06")!;
+    expect(out.archive.map((a) => a.month)).toEqual(["2026-05", "2026-04"]);
+  });
+
+  it("zaten arşivlenmiş ayı tekrar eklemez", () => {
+    const entries: ExpenseEntry[] = [entry("2026-05-20", 100), entry("2026-06-02", 50)];
+    const archive = [{ month: "2026-05", spent: 999, pool: 3000, pace: 0, days: 31 }];
+    const out = rollMonth(rollInput({ entries, archive }), "2026-06")!;
+    expect(out.archive.filter((a) => a.month === "2026-05")).toHaveLength(1);
+    expect(out.archive[0].spent).toBe(999); // mevcut arşiv korunur
+  });
+
+  it("ilk açılış (activeMonth boş) geçmiş kalem yoksa sadece ayı işaretler", () => {
+    const out = rollMonth(rollInput({ activeMonth: "", entries: [entry("2026-06-05", 40)] }), "2026-06")!;
+    expect(out.activeMonth).toBe("2026-06");
+    expect(out.archive).toEqual([]);
+    expect(out.entries).toHaveLength(1);
   });
 });

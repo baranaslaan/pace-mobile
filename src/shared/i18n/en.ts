@@ -9,6 +9,7 @@ export const en: Catalog = {
     finish: "Finish",
     cancel: "Cancel",
     reset: "Reset",
+    pct: "{n}%",
   },
 
   tone: {

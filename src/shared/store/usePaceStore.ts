@@ -1,8 +1,9 @@
 import { create } from "zustand";
 import { persist, createJSONStorage, StateStorage } from "zustand/middleware";
 import { createMMKV } from "react-native-mmkv";
-import { dayKey, monthKey, monthOf } from "@/shared/lib/date";
-import { summarizeMonth, expensesByDay } from "@/shared/lib/engine";
+import { dayKey, monthKey } from "@/shared/lib/date";
+import { rollMonth } from "@/shared/lib/engine";
+import { migrateEntries } from "@/shared/lib/migrate";
 import { isCategoryId } from "@/shared/lib/categories";
 import { isCurrencyCode, DEFAULT_CURRENCY } from "@/shared/lib/money";
 import { FALLBACK_RATES, isRateTable } from "@/shared/lib/rates";
@@ -42,38 +43,6 @@ function uid(): string {
     return crypto.randomUUID();
   }
   return Math.random().toString(36).slice(2);
-}
-
-/** "YYYY-MM-DD" gün anahtarı mı? (migrate güvenliği için.) */
-function isDayKey(k: unknown): k is string {
-  return typeof k === "string" && /^\d{4}-\d{2}-\d{2}$/.test(k);
-}
-
-function migrateEntries(persisted: unknown): ExpenseEntry[] {
-  const s = (persisted ?? {}) as Record<string, unknown>;
-  if (Array.isArray(s.entries)) {
-    return s.entries
-      .filter(
-        (e): e is ExpenseEntry =>
-          !!e &&
-          typeof e === "object" &&
-          typeof (e as ExpenseEntry).id === "string" &&
-          isDayKey((e as ExpenseEntry).day) &&
-          typeof (e as ExpenseEntry).amount === "number" &&
-          (e as ExpenseEntry).amount > 0,
-      )
-      // Bilinmeyen kategori kimliklerini at — analitik "Diğer"e düşürür.
-      .map((e) => (isCategoryId(e.category) ? e : { ...e, category: undefined }));
-  }
-
-  const expenses = s.expenses;
-  if (!expenses || typeof expenses !== "object") return [];
-  const entries: ExpenseEntry[] = [];
-  for (const [day, value] of Object.entries(expenses)) {
-    if (!isDayKey(day) || typeof value !== "number" || value <= 0) continue;
-    entries.push({ id: uid(), day, amount: value, ts: Date.parse(`${day}T12:00`) });
-  }
-  return entries;
 }
 
 interface PaceState {
@@ -276,6 +245,10 @@ export const usePaceStore = create<PaceState>()(
 
       applyRecurring: () =>
         set((s) => {
+          // Zamanlanmış otomatik posting bir Pro özelliği. Pro düşen kullanıcının
+          // kuralları store'da kalır (UI'da gizli) ama otomatik postlama durur —
+          // aksi halde göremediği/silemediği hayalet harcamalar oluşurdu.
+          if (!s.isPro) return s;
           const due = dueRecurring(s.recurring, new Date());
           if (due.length === 0) return s;
           const byId = new Map(s.recurring.map((r) => [r.id, r]));
@@ -343,37 +316,7 @@ export const usePaceStore = create<PaceState>()(
         set({ reminderEnabled: enabled, reminderHour: hour, reminderMinute: minute }),
 
       rollIfNewMonth: () =>
-        set((s) => {
-          const now = monthKey();
-          if (s.activeMonth === now) return s;
-
-          const snap = {
-            budget: s.budget,
-            subscriptions: s.subscriptions,
-            expenses: expensesByDay(s.entries),
-          };
-
-          const archived = new Set(s.archive.map((a) => a.month));
-          const pastMonths = new Set<string>();
-          for (const e of s.entries) {
-            const mo = monthOf(e.day);
-            if (mo < now && !archived.has(mo)) pastMonths.add(mo);
-          }
-
-          const additions = [...pastMonths].map((mo) =>
-            summarizeMonth(snap, mo),
-          );
-
-          const entries = s.entries.filter((e) => monthOf(e.day) === now);
-
-          return {
-            activeMonth: now,
-            archive: [...s.archive, ...additions].sort((a, b) =>
-              a.month < b.month ? 1 : -1,
-            ),
-            entries,
-          };
-        }),
+        set((s) => rollMonth(s, monthKey()) ?? s),
     }),
     {
       name: "pace-v1",
