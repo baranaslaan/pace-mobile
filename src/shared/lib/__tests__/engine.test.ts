@@ -12,6 +12,8 @@ import {
   weeklyTrend,
   weekdayBreakdown,
   categoryBreakdown,
+  disciplineStreak,
+  topExpenses,
   type PaceSnapshot,
   type ExpenseEntry,
 } from "../engine";
@@ -174,5 +176,51 @@ describe("categoryBreakdown", () => {
 
   it("boş girişte boş dizi", () => {
     expect(categoryBreakdown([], "2026-06")).toEqual([]);
+  });
+});
+
+describe("disciplineStreak", () => {
+  // Havuz 3200 / 30 gün → günlük hedef ≈ 106.67. NOW = 15 Haziran (1–14 tamam).
+  it("hedef altı ardışık günleri sayar; bugün hariç", () => {
+    const expenses = { "2026-06-10": 500 }; // gün 10 hedefi aşar, diğerleri 0
+    const out = disciplineStreak(expenses, 3200, NOW);
+    expect(out.target).toBeCloseTo(3200 / 30, 5);
+    expect(out.best).toBe(9); // 1–9 arası kesintisiz
+    expect(out.current).toBe(4); // 11–14 (düne kadar)
+  });
+
+  it("ayın ilk günü → tamamlanmış gün yok, seri sıfır", () => {
+    const out = disciplineStreak({ "2026-06-01": 999 }, 3200, new Date(2026, 5, 1, 12));
+    expect(out.current).toBe(0);
+    expect(out.best).toBe(0);
+  });
+
+  it("harcanmayan gün disiplinli sayılır", () => {
+    const out = disciplineStreak({}, 3200, NOW);
+    expect(out.current).toBe(14);
+    expect(out.best).toBe(14);
+  });
+});
+
+describe("topExpenses", () => {
+  it("aydaki en büyük kalemler, tutara göre azalan", () => {
+    const out = topExpenses(
+      [
+        entry("2026-06-01", 100, "market"),
+        entry("2026-06-02", 300, "yemek"),
+        entry("2026-06-03", 50),
+        entry("2026-05-20", 999, "market"), // başka ay → hariç
+      ],
+      "2026-06",
+      2,
+    );
+    expect(out.map((e) => e.amount)).toEqual([300, 100]);
+  });
+
+  it("eşit tutarda daha yeni kalem önce gelir", () => {
+    const older: ExpenseEntry = { id: "a", day: "2026-06-01", amount: 200, ts: 1000 };
+    const newer: ExpenseEntry = { id: "b", day: "2026-06-02", amount: 200, ts: 2000 };
+    const out = topExpenses([older, newer], "2026-06", 2);
+    expect(out.map((e) => e.id)).toEqual(["b", "a"]);
   });
 });

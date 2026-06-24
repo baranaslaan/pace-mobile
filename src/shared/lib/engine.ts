@@ -301,6 +301,61 @@ export function weeklyTrend(
   return { thisWeek, lastWeek, thisAvg, lastAvg, deltaPct };
 }
 
+export interface DisciplineStreak {
+  /** Günlük hedef (havuz / aydaki gün) — bu tutarın altı "disiplinli" sayılır. */
+  target: number;
+  /** Düne kadar uzanan güncel ardışık disiplinli gün (bugün hariç). */
+  current: number;
+  /** Bu ay içindeki en uzun ardışık disiplinli gün serisi. */
+  best: number;
+}
+
+/**
+ * Disiplin serisi (saf): günlük hedefin altında kalınan ardışık gün sayısı.
+ * Hedef = havuz / aydaki toplam gün (düz tempo). Bugün TAMAMLANMADIĞI için
+ * sayıma katılmaz; sayım ayın 1'inden düne kadar işler. Harcanmayan gün (0)
+ * disiplinli sayılır. `current` düne kadar uzanan son seri, `best` aydaki en
+ * uzun seridir.
+ */
+export function disciplineStreak(
+  expenses: Record<string, number>,
+  pool: number,
+  now: Date = new Date(),
+): DisciplineStreak {
+  const total = daysInMonth(now);
+  const target = total > 0 ? pool / total : 0;
+  const today = dayOfMonth(now);
+
+  let best = 0;
+  let run = 0;
+  for (let d = 1; d < today; d++) {
+    const date = new Date(now.getFullYear(), now.getMonth(), d);
+    const spent = expenses[dayKey(date)] ?? 0;
+    if (spent <= target) {
+      run += 1;
+      if (run > best) best = run;
+    } else {
+      run = 0;
+    }
+  }
+  return { target, current: run, best };
+}
+
+/**
+ * Verilen ayın en büyük harcama kalemleri (saf). Tutara göre azalan; eşitlikte
+ * daha yeni kalem (ts büyük) önce. En fazla {@link n} kalem döner.
+ */
+export function topExpenses(
+  entries: ExpenseEntry[],
+  month: string,
+  n: number,
+): ExpenseEntry[] {
+  return entries
+    .filter((e) => e.amount > 0 && monthOf(e.day) === month)
+    .sort((a, b) => b.amount - a.amount || b.ts - a.ts)
+    .slice(0, n);
+}
+
 export interface WeekdayStat {
   /** 0=Pazar … 6=Cumartesi (JS getDay). */
   weekday: number;

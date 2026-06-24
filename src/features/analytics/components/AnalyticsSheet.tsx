@@ -3,7 +3,7 @@ import { StyleSheet, View, TouchableOpacity, ScrollView } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
-import { expensesByDay, weeklyTrend, weekdayBreakdown, categoryBreakdown } from "../../../shared/lib/engine";
+import { expensesByDay, weeklyTrend, weekdayBreakdown, categoryBreakdown, disciplineStreak, topExpenses } from "../../../shared/lib/engine";
 import { categoryById } from "../../../shared/lib/categories";
 import { useCurrency } from "../../../shared/store/useCurrency";
 import { useT, monthLabel, weekdaysShort, weekdaysFull } from "../../../shared/i18n";
@@ -66,6 +66,10 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
   const peak = weekdays.reduce((a, b) => (b.avg > a.avg ? b : a), weekdays[0]);
   const projected = Math.round(stats.pace * stats.total);
 
+  const streak = disciplineStreak(expMap, stats.pool);
+  const top = topExpenses(entries, monthKey(), 3);
+  const maxTop = Math.max(1, ...top.map((e) => e.amount));
+
   // Trend yönü: harcama azaldıysa "iyi" (mavi), arttıysa "uyarı" (amber).
   const down = trend.deltaPct !== null && trend.deltaPct < 0;
   const deltaAbs = trend.deltaPct === null ? 0 : Math.abs(Math.round(trend.deltaPct));
@@ -92,6 +96,32 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
 
         <View style={styles.proWrap}>
           <View style={!isPro && { opacity: 0.3, pointerEvents: "none" }}>
+            {stats.pool > 0 && (
+              <>
+                <Text style={styles.sectionLabel}>{t("analytics.streak")}</Text>
+                <View style={styles.streakCard}>
+                  <View style={styles.streakCol}>
+                    <View style={styles.streakValueRow}>
+                      <Text style={styles.streakValue}>{streak.current}</Text>
+                      <Text style={styles.streakUnit}>{t("analytics.streakDaysLabel")}</Text>
+                    </View>
+                    <Text style={styles.streakCaption}>{t("analytics.streakCurrent")}</Text>
+                  </View>
+                  <View style={styles.streakSep} />
+                  <View style={styles.streakCol}>
+                    <View style={styles.streakValueRow}>
+                      <Text style={styles.streakBestValue}>{streak.best}</Text>
+                      <Text style={styles.streakUnit}>{t("analytics.streakDaysLabel")}</Text>
+                    </View>
+                    <Text style={styles.streakCaption}>{t("analytics.streakBest")}</Text>
+                  </View>
+                </View>
+                <Text style={styles.streakNote}>
+                  {t("analytics.streakNote", { target: fmt(streak.target) })}
+                </Text>
+              </>
+            )}
+
             <Text style={styles.sectionLabel}>{t("analytics.weeklyPace")}</Text>
             <View style={styles.trendCard}>
               <View style={styles.trendTop}>
@@ -193,6 +223,39 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                         </View>
                         <Text style={styles.catPct}>%{Math.round(c.share * 100)}</Text>
                         <Text style={styles.catAmount}>{fmt(c.total)}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </>
+            )}
+
+            {top.length > 0 && (
+              <>
+                <Text style={styles.sectionLabel}>{t("analytics.biggest")}</Text>
+                <View style={styles.tops}>
+                  {top.map((e) => {
+                    const cat = categoryById(e.category);
+                    const note = e.note?.trim();
+                    const label = t(`category.${cat.id}`);
+                    return (
+                      <View key={e.id} style={styles.topRow}>
+                        <View style={[styles.catDot, { backgroundColor: cat.color }]} />
+                        <View style={styles.topMeta}>
+                          <Text style={styles.topName} numberOfLines={1}>
+                            {note || label}
+                          </Text>
+                          {note ? <Text style={styles.topSub}>{label}</Text> : null}
+                        </View>
+                        <View style={styles.topBarTrack}>
+                          <View
+                            style={[
+                              styles.topBar,
+                              { width: `${(e.amount / maxTop) * 100}%`, backgroundColor: cat.color },
+                            ]}
+                          />
+                        </View>
+                        <Text style={styles.topAmount}>{fmt(e.amount)}</Text>
                       </View>
                     );
                   })}
@@ -445,6 +508,103 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: theme.colors.textPrimary,
+  },
+  streakCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.04)",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+  },
+  streakCol: {
+    flex: 1,
+    alignItems: "center",
+  },
+  streakSep: {
+    width: 1,
+    height: 36,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+  },
+  streakValueRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+  },
+  streakValue: {
+    fontSize: 30,
+    fontWeight: "800",
+    color: theme.colors.stateGood,
+    fontVariant: ["tabular-nums"],
+  },
+  streakBestValue: {
+    fontSize: 30,
+    fontWeight: "800",
+    color: theme.colors.textPrimary,
+    fontVariant: ["tabular-nums"],
+  },
+  streakUnit: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: theme.colors.textMute,
+    marginLeft: 4,
+  },
+  streakCaption: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: theme.colors.textMute,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginTop: 4,
+  },
+  streakNote: {
+    fontSize: 13,
+    color: theme.colors.textSoft,
+    lineHeight: 19,
+    marginBottom: 32,
+  },
+  tops: {
+    marginBottom: 32,
+  },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+  topMeta: {
+    width: 96,
+    marginRight: 10,
+  },
+  topName: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: theme.colors.textPrimary,
+  },
+  topSub: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: theme.colors.textMute,
+    marginTop: 2,
+  },
+  topBarTrack: {
+    flex: 1,
+    height: 8,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderRadius: 4,
+    marginRight: 10,
+    overflow: "hidden",
+  },
+  topBar: {
+    height: "100%",
+    borderRadius: 4,
+    minWidth: 4,
+  },
+  topAmount: {
+    width: 56,
+    textAlign: "right",
+    fontSize: 13,
+    fontWeight: "700",
+    color: theme.colors.textPrimary,
+    fontVariant: ["tabular-nums"],
   },
   cats: {
     marginBottom: 32,
