@@ -9,7 +9,7 @@ import { useCurrency } from "../../../shared/store/useCurrency";
 import { useT, monthLabel, weekdaysShort, weekdaysFull } from "../../../shared/i18n";
 import { dayKey, monthKey } from "../../../shared/lib/date";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
-import { LockIcon } from "../../../shared/ui/icons";
+import { ProUpsell } from "../../pro/components/ProUpsell";
 import { theme } from "../../../shared/styles/theme";
 
 const HISTORY_DAYS = 7;
@@ -223,16 +223,13 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
           </View>
 
           {!isPro && (
-            <View style={styles.lockCard} pointerEvents="box-none">
-              <View style={styles.lockIcon}>
-                <LockIcon color="#fff" />
-              </View>
-              <Text style={styles.lockTitle}>{t("analytics.lockTitle")}</Text>
-              <Text style={styles.lockText}>{t("analytics.lockText")}</Text>
-              <TouchableOpacity style={styles.lockCta} onPress={onUpgrade} activeOpacity={0.9}>
-                <Text style={styles.lockCtaText}>{t("analytics.goPro")}</Text>
-              </TouchableOpacity>
-            </View>
+            <ProUpsell
+              title={t("analytics.lockTitle")}
+              text={t("analytics.lockText")}
+              cta={t("analytics.goPro")}
+              onUpgrade={onUpgrade}
+              style={styles.lockPos}
+            />
           )}
         </View>
       </ScrollView>
@@ -535,57 +532,17 @@ const styles = StyleSheet.create({
     color: theme.colors.textMute,
     fontWeight: "500",
   },
-  lockCard: {
+  // Yalnızca konumlandırma — kartın görseli paylaşılan ProUpsell'den gelir.
+  lockPos: {
     position: "absolute",
     top: 60,
     left: 0,
     right: 0,
-    alignItems: "center",
-    padding: 24,
-    backgroundColor: "#161922",
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.1)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 16 },
     shadowOpacity: 0.6,
     shadowRadius: 32,
     elevation: 20,
     zIndex: 10,
-  },
-  lockIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  lockTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: theme.colors.textPrimary,
-    marginBottom: 8,
-  },
-  lockText: {
-    fontSize: 14,
-    color: theme.colors.textSoft,
-    textAlign: "center",
-    lineHeight: 20,
-    marginBottom: 24,
-  },
-  lockCta: {
-    alignSelf: "stretch",
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: theme.colors.textPrimary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  lockCtaText: {
-    color: "#000",
-    fontSize: 15,
-    fontWeight: "700",
   },
 });

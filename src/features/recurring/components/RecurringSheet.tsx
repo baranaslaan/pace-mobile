@@ -9,6 +9,7 @@ import { CATEGORIES, categoryById } from "../../../shared/lib/categories";
 import type { Cadence } from "../../../shared/lib/recurring";
 import { PlusIcon, TrashIcon } from "../../../shared/ui/icons";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
+import { ProUpsell } from "../../pro/components/ProUpsell";
 import { theme } from "../../../shared/styles/theme";
 
 // Pazartesi-başlangıçlı görüntü sırası (JS getDay indeksi).
@@ -17,6 +18,7 @@ const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 interface RecurringSheetProps {
   open: boolean;
   onClose: () => void;
+  onUpgrade: () => void;
 }
 
 /** Kategori seçici (yatay chip) — boş seçim "Diğer"e düşer. */
@@ -55,9 +57,10 @@ function CategoryPicker({
   );
 }
 
-export function RecurringSheet({ open, onClose }: RecurringSheetProps) {
+export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps) {
   const templates = usePaceStore((s) => s.templates);
   const recurring = usePaceStore((s) => s.recurring);
+  const isPro = usePaceStore((s) => s.isPro);
   const addTemplate = usePaceStore((s) => s.addTemplate);
   const removeTemplate = usePaceStore((s) => s.removeTemplate);
   const addRecurring = usePaceStore((s) => s.addRecurring);
@@ -168,6 +171,8 @@ export function RecurringSheet({ open, onClose }: RecurringSheetProps) {
         <Text style={[styles.sectionLabel, { marginTop: 28 }]}>{t("recurring.scheduledSection")}</Text>
         <Text style={styles.hint}>{t("recurring.scheduledHint")}</Text>
 
+        {isPro ? (
+        <>
         <AnimatePresence>
           {recurring.map((r) => (
             <MotiView
@@ -271,6 +276,15 @@ export function RecurringSheet({ open, onClose }: RecurringSheetProps) {
               maxLength={2}
             />
           </View>
+        )}
+        </>
+        ) : (
+          <ProUpsell
+            title={t("recurring.proTitle")}
+            text={t("recurring.proText")}
+            cta={t("recurring.goPro")}
+            onUpgrade={onUpgrade}
+          />
         )}
       </ScrollView>
     </BottomSheet>

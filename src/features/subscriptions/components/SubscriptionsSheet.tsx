@@ -10,6 +10,7 @@ import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { SubscriptionRow } from "./SubscriptionRow";
 import { BudgetField } from "./BudgetField";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { ProUpsell } from "../../pro/components/ProUpsell";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
@@ -78,15 +79,12 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
       </ScrollView>
 
       {atFreeLimit ? (
-        <View style={styles.lock}>
-          <Text style={styles.lockText}>
-            {t("subs.freeLimit", { n: FREE_LIMIT })}
-            <Text style={styles.proSpan}> Pace Pro</Text>{t("subs.freeLimitTail")}
-          </Text>
-          <TouchableOpacity style={styles.lockCta} onPress={onUpgrade} activeOpacity={0.9}>
-            <Text style={styles.lockCtaText}>{t("subs.goPro")}</Text>
-          </TouchableOpacity>
-        </View>
+        <ProUpsell
+          title={t("subs.proTitle")}
+          text={t("subs.proText", { n: FREE_LIMIT })}
+          cta={t("subs.goPro")}
+          onUpgrade={onUpgrade}
+        />
       ) : (
         <View style={styles.addRow}>
           <TextInput
@@ -148,35 +146,6 @@ const styles = StyleSheet.create({
     color: theme.colors.textSoft,
     fontStyle: "italic",
     paddingVertical: 16,
-  },
-  lock: {
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.04)",
-    marginTop: 16,
-  },
-  lockText: {
-    fontSize: 14,
-    color: theme.colors.textSoft,
-    lineHeight: 20,
-    textAlign: "center",
-  },
-  proSpan: {
-    color: theme.colors.stateGood,
-    fontWeight: "700",
-  },
-  lockCta: {
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: theme.colors.stateGood,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 14,
-  },
-  lockCtaText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#fff",
   },
   addRow: {
     flexDirection: "row",

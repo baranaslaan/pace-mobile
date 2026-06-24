@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, TouchableOpacity } from "react-native";
+import { StyleSheet, View, TouchableOpacity, ScrollView } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { MotiView } from "moti";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
@@ -9,6 +9,13 @@ import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
 const MOCK_PURCHASE_MS = 900;
+
+// Placeholder fiyatlar — gerçek satın almada RevenueCat `localizedPriceString`
+// ile mağaza para birimine göre değişir. Lifetime kahraman, yıllık çapa.
+const PLANS = [
+  { id: "lifetime", price: "₺249" },
+  { id: "annual", price: "₺129/yıl" },
+] as const;
 
 type Phase = "idle" | "purchasing" | "done";
 
@@ -26,8 +33,11 @@ export function Paywall({ open, onClose }: PaywallProps) {
     t("paywall.benefit2"),
     t("paywall.benefit3"),
     t("paywall.benefit4"),
+    t("paywall.benefit5"),
   ];
   const [phase, setPhase] = useState<Phase>("idle");
+  const [plan, setPlan] = useState<string>("lifetime");
+  const selected = PLANS.find((p) => p.id === plan) ?? PLANS[0];
 
   useEffect(() => {
     if (!open) setPhase("idle");
@@ -52,7 +62,11 @@ export function Paywall({ open, onClose }: PaywallProps) {
 
   return (
     <BottomSheet open={open} onClose={onClose} title="Pace Pro">
-      <View style={styles.body}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.body}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.badge}>
           <SparklesIcon color="#fff" />
         </View>
@@ -78,6 +92,34 @@ export function Paywall({ open, onClose }: PaywallProps) {
               ))}
             </View>
 
+            {/* Plan seçici — Lifetime kahraman, yıllık çapa. */}
+            <View style={styles.plans}>
+              {PLANS.map((p) => {
+                const active = plan === p.id;
+                return (
+                  <TouchableOpacity
+                    key={p.id}
+                    style={[styles.plan, active && styles.planActive]}
+                    onPress={() => setPlan(p.id)}
+                    activeOpacity={0.85}
+                  >
+                    {p.id === "lifetime" && (
+                      <View style={styles.bestBadge}>
+                        <Text style={styles.bestBadgeText}>{t("paywall.bestValue")}</Text>
+                      </View>
+                    )}
+                    <Text style={[styles.planTitle, active && styles.planTitleActive]}>
+                      {t(`paywall.${p.id}`)}
+                    </Text>
+                    <Text style={[styles.planPrice, active && styles.planPriceActive]}>
+                      {p.price}
+                    </Text>
+                    <Text style={styles.planNote}>{t(`paywall.${p.id}Note`)}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
             <TouchableOpacity
               style={[styles.cta, phase !== "idle" && { opacity: 0.7 }]}
               onPress={handlePurchase}
@@ -85,19 +127,22 @@ export function Paywall({ open, onClose }: PaywallProps) {
               activeOpacity={0.9}
             >
               <Text style={styles.ctaText}>
-                {phase === "purchasing" ? t("paywall.processing") : t("paywall.buy", { price: "₺149" })}
+                {phase === "purchasing" ? t("paywall.processing") : t("paywall.buy", { price: selected.price })}
               </Text>
             </TouchableOpacity>
 
             <Text style={styles.fine}>{t("paywall.fine")}</Text>
           </>
         )}
-      </View>
+      </ScrollView>
     </BottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
+  scroll: {
+    flexShrink: 1,
+  },
   body: {
     alignItems: "center",
     paddingTop: 16,
@@ -154,6 +199,64 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: theme.colors.textPrimary,
     fontWeight: "500",
+  },
+  plans: {
+    alignSelf: "stretch",
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 16,
+  },
+  plan: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgba(255, 255, 255, 0.04)",
+  },
+  planActive: {
+    borderColor: theme.colors.stateGood,
+    backgroundColor: "rgba(59, 130, 246, 0.1)",
+  },
+  bestBadge: {
+    position: "absolute",
+    top: -9,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.colors.stateGood,
+  },
+  bestBadgeText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#fff",
+    letterSpacing: 0.3,
+    textTransform: "uppercase",
+  },
+  planTitle: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: theme.colors.textSoft,
+    marginBottom: 6,
+  },
+  planTitleActive: {
+    color: theme.colors.textPrimary,
+  },
+  planPrice: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: theme.colors.textPrimary,
+    fontVariant: ["tabular-nums"],
+  },
+  planPriceActive: {
+    color: theme.colors.stateGood,
+  },
+  planNote: {
+    fontSize: 11,
+    color: theme.colors.textMute,
+    marginTop: 4,
   },
   cta: {
     alignSelf: "stretch",

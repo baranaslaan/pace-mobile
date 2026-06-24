@@ -189,6 +189,7 @@ export default function AppIndex() {
           <RecurringSheet
             open={activeSheet === "recurring"}
             onClose={() => setActiveSheet("none")}
+            onUpgrade={handleUpgrade}
           />
 
           <SettingsSheet
