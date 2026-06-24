@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, TouchableOpacity, Share, Alert, Switch, ScrollView } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Share, Alert, Switch, ScrollView, Linking } from "react-native";
 import Constants from "expo-constants";
 import { File, Paths } from "expo-file-system";
 import { Text } from "../../../shared/typography/Text";
@@ -15,8 +15,12 @@ import {
   cancelDailyReminder,
   sendTestNotification,
 } from "../../../shared/lib/notifications";
-import { CardIcon, ChevronLeftIcon, SparklesIcon, TrashIcon, CheckIcon, DownloadIcon, LockIcon, BellIcon } from "../../../shared/ui/icons";
+import { CardIcon, ChevronLeftIcon, SparklesIcon, TrashIcon, CheckIcon, DownloadIcon, LockIcon, BellIcon, RotateCcwIcon, ListIcon } from "../../../shared/ui/icons";
 import { theme } from "../../../shared/styles/theme";
+
+// TODO(revenuecat): gerçek barındırılan URL'lerle değiştir (App Store zorunlu).
+const PRIVACY_URL = "https://pace.app/privacy";
+const TERMS_URL = "https://pace.app/terms";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -47,6 +51,27 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
 
   const [confirmReset, setConfirmReset] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+
+  const handleRestore = async () => {
+    if (restoring) return;
+    setRestoring(true);
+    try {
+      // TODO(revenuecat): const info = await Purchases.restorePurchases();
+      // const active = !!info.entitlements.active["pro"]; → unlockPro()
+      const restored = false; // mock: gerçek satın alma henüz entegre değil
+      if (restored) {
+        unlockPro();
+        Alert.alert(t("settings.restoredTitle"), t("settings.restoredBody"));
+      } else {
+        Alert.alert(t("settings.restoreNoneTitle"), t("settings.restoreNoneBody"));
+      }
+    } finally {
+      setRestoring(false);
+    }
+  };
+
+  const openURL = (url: string) => Linking.openURL(url).catch(() => {});
 
   const reminderTime = `${String(reminderHour).padStart(2, "0")}:${String(reminderMinute).padStart(2, "0")}`;
 
@@ -148,6 +173,25 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
           </TouchableOpacity>
         </View>
       )}
+
+      {/* Hesap — satın almaları geri yükle (App Store zorunlu) */}
+      <Text style={styles.sectionLabel}>{t("settings.account")}</Text>
+      <TouchableOpacity
+        style={styles.row}
+        onPress={handleRestore}
+        disabled={restoring}
+        activeOpacity={0.7}
+      >
+        <View style={styles.rowIcon}>
+          <RotateCcwIcon color={theme.colors.textSoft} size={18} />
+        </View>
+        <View style={styles.rowInfo}>
+          <Text style={styles.rowTitle}>{t("settings.restore")}</Text>
+          <Text style={styles.rowSub}>
+            {restoring ? t("settings.restoring") : t("settings.restoreSub")}
+          </Text>
+        </View>
+      </TouchableOpacity>
 
       {/* Bildirimler */}
       <Text style={styles.sectionLabel}>{t("settings.notifications")}</Text>
@@ -318,6 +362,35 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
           </TouchableOpacity>
         </>
       )}
+
+      {/* Yasal */}
+      <Text style={styles.sectionLabel}>{t("settings.legal")}</Text>
+      <TouchableOpacity
+        style={[styles.row, { marginBottom: 8 }]}
+        onPress={() => openURL(PRIVACY_URL)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.rowIcon}>
+          <LockIcon color={theme.colors.textSoft} size={16} />
+        </View>
+        <View style={styles.rowInfo}>
+          <Text style={styles.rowTitle}>{t("settings.privacy")}</Text>
+        </View>
+        <View style={styles.chevron}>
+          <ChevronLeftIcon color={theme.colors.textDim} size={18} />
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.row} onPress={() => openURL(TERMS_URL)} activeOpacity={0.7}>
+        <View style={styles.rowIcon}>
+          <ListIcon color={theme.colors.textSoft} size={18} />
+        </View>
+        <View style={styles.rowInfo}>
+          <Text style={styles.rowTitle}>{t("settings.terms")}</Text>
+        </View>
+        <View style={styles.chevron}>
+          <ChevronLeftIcon color={theme.colors.textDim} size={18} />
+        </View>
+      </TouchableOpacity>
 
       <Text style={styles.about}>{t("settings.version", { version: VERSION })}</Text>
       </ScrollView>

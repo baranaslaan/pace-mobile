@@ -212,6 +212,18 @@ export const tr = {
     testSentBody:
       "5 saniye içinde bildirim gelecek (uygulamayı arka plana al).",
     testPermBody: "Önce bildirim izni ver.",
+    account: "Hesap",
+    restore: "Satın almaları geri yükle",
+    restoreSub: "Daha önce Pro aldıysan buradan geri yükle",
+    restoring: "Geri yükleniyor…",
+    restoreNoneTitle: "Satın alma bulunamadı",
+    restoreNoneBody:
+      "Bu Apple kimliğinde geri yüklenecek bir Pace Pro satın alması yok.",
+    restoredTitle: "Pace Pro geri yüklendi 🎉",
+    restoredBody: "Tüm Pro özellikleri tekrar açık.",
+    legal: "Yasal",
+    privacy: "Gizlilik Politikası",
+    terms: "Kullanım Şartları",
     version: "pace · sürüm {version}",
   },
 
@@ -220,7 +232,7 @@ export const tr = {
     activeTitle: "Pace Pro aktif 🎉",
     activeSub: "Tüm tempo özellikleri açık. İyi harcamalar.",
     headline: "Tempona hâkim ol",
-    sub: "Tek seferlik ödeme, ömür boyu erişim.",
+    sub: "Ömür boyu tek ödeme ya da yıllık — sana uygun olanı seç.",
     benefit1: "Ay sonu öngörüsü & tempo trendleri",
     benefit2: "Kategori dağılımı & geçmiş ay dökümü",
     benefit3: "Zamanlanmış otomatik harcamalar",

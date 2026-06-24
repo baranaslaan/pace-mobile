@@ -14,7 +14,7 @@ const MOCK_PURCHASE_MS = 900;
 // Placeholder fiyatlar — gerçek satın almada RevenueCat `localizedPriceString`
 // ile mağaza para birimine göre değişir. Lifetime kahraman, yıllık çapa.
 const PLANS = [
-  { id: "lifetime", price: "₺249" },
+  { id: "lifetime", price: "₺329" },
   { id: "annual", price: "₺129/yıl" },
 ] as const;
 
