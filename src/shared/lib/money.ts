@@ -2,8 +2,9 @@
    Para birimi — saf, tek doğruluk kaynağı.
 
    Sembol ön ekli, tam sayıya yuvarlanmış biçim (mevcut "₺123" stiliyle
-   uyumlu). Tutar dönüşümü YOK — kullanıcı bütçeyi seçtiği para biriminde
-   girer; uygulama yalnızca sembolü değiştirir.
+   uyumlu). Bu modül yalnızca BİÇİMLENDİRME yapar; tutarlar tek taban
+   birimde saklanır, görünüm birimine dönüşüm useCurrency + rates katmanında
+   yapılır (bkz. shared/store/useCurrency, shared/lib/rates).
    ============================================================= */
 
 export interface Currency {

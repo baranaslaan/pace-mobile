@@ -1,5 +1,3 @@
-"use client";
-
 import { useCallback, useState } from "react";
 import { usePaceStore } from "@/shared/store/usePaceStore";
 
