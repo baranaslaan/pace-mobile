@@ -10,8 +10,11 @@ export interface SubDraft {
   amount: number;
 }
 
-/** Adımlar: 0 = hoş geldin, 1 = bütçe, 2 = sabit giderler, 3 = özet/nasıl çalışır. */
-export const STEP_COUNT = 4;
+/**
+ * Adımlar: 0 = hoş geldin (+ dil/para birimi), 1 = bütçe, 2 = sabit giderler,
+ * 3 = özellikler turu, 4 = özet/nasıl çalışır.
+ */
+export const STEP_COUNT = 5;
 
 function uid(): string {
   return Math.random().toString(36).slice(2);

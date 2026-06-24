@@ -67,6 +67,19 @@ export const tr = {
     point2: "Harcadıkça düşer; az harcadığın gün yarına artar.",
     point3: "Sabit giderlerin baştan ayrıldı, günlük hesaba karışmaz.",
     point4: "Limiti aşarsan ekran kırmızıya döner ve seni uyarır.",
+    point5: "Harcamalarını kategorilere ayır, dağılımı tempoda gör.",
+    point6: "Sık ve düzenli harcamaları tek dokunuşla ya da otomatik ekle.",
+  },
+
+  features: {
+    title: "Bir de şunlar var",
+    subtitle: "Pace'i sana göre ayarlayan birkaç şey daha.",
+    categoriesTitle: "Kategoriler",
+    categoriesDesc: "Her harcamayı etiketle; nereye gittiğini tempoda gör.",
+    recurringTitle: "Tekrarlayanlar",
+    recurringDesc: "Sık harcamalar için şablon, düzenli olanlar için otomatik kayıt.",
+    localeTitle: "Dil & para birimi",
+    localeDesc: "Türkçe/İngilizce ve istediğin para birimi — istediğin an değiştir.",
   },
 
   board: {

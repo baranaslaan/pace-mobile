@@ -7,6 +7,7 @@ import { useOnboardingFlow } from "../hooks/useOnboardingFlow";
 import { WelcomeStep } from "./WelcomeStep";
 import { BudgetStep } from "./BudgetStep";
 import { SubscriptionsStep } from "./SubscriptionsStep";
+import { FeaturesStep } from "./FeaturesStep";
 import { RecapStep } from "./RecapStep";
 import { StepDots } from "./StepDots";
 import { useT } from "../../../shared/i18n";
@@ -29,9 +30,9 @@ export function Onboarding() {
       ? { label: t("common.start"), disabled: false, onClick: flow.goNext }
       : step === 1
         ? { label: t("common.continue"), disabled: !budgetValid, onClick: advanceBudget }
-        : step === 2
-          ? { label: t("common.continue"), disabled: false, onClick: flow.goNext }
-          : { label: t("common.finish"), disabled: false, onClick: flow.finish };
+        : step === 4
+          ? { label: t("common.finish"), disabled: false, onClick: flow.finish }
+          : { label: t("common.continue"), disabled: false, onClick: flow.goNext };
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -53,7 +54,7 @@ export function Onboarding() {
         {step === 0 ? (
           <Text style={[styles.logo, { color: ACCENT }]}>pace.</Text>
         ) : (
-          <StepDots total={3} active={step - 1} accent={ACCENT} />
+          <StepDots total={4} active={step - 1} accent={ACCENT} />
         )}
 
         <View style={styles.slot} />
@@ -85,7 +86,8 @@ export function Onboarding() {
                 onRemove={flow.removeSub}
               />
             )}
-            {step === 3 && <RecapStep budget={flow.budget} subs={flow.subs} />}
+            {step === 3 && <FeaturesStep />}
+            {step === 4 && <RecapStep budget={flow.budget} subs={flow.subs} />}
           </MotiView>
         </AnimatePresence>
         </View>

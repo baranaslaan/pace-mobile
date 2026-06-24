@@ -69,6 +69,19 @@ export const en: Catalog = {
     point2: "It drops as you spend; spend less and tomorrow grows.",
     point3: "Fixed expenses are reserved up front, out of the daily math.",
     point4: "Go over the limit and the screen turns red to warn you.",
+    point5: "Tag expenses by category and see the breakdown in Pace.",
+    point6: "Add frequent or regular expenses in one tap, or automatically.",
+  },
+
+  features: {
+    title: "A few more things",
+    subtitle: "Some extras that make Pace yours.",
+    categoriesTitle: "Categories",
+    categoriesDesc: "Tag every expense; see where your money goes in Pace.",
+    recurringTitle: "Recurring",
+    recurringDesc: "Templates for frequent spends, auto-posting for regular ones.",
+    localeTitle: "Language & currency",
+    localeDesc: "Turkish/English and any currency — change it anytime.",
   },
 
   board: {

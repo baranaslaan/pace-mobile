@@ -20,6 +20,8 @@ export function RecapStep({ budget, subs }: RecapStepProps) {
     t("recap.point2"),
     t("recap.point3"),
     t("recap.point4"),
+    t("recap.point5"),
+    t("recap.point6"),
   ];
   const limit = dailyLimit({
     budget: Number.parseFloat(budget) || 0,
