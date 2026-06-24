@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { MotiView } from "moti";
@@ -39,10 +39,25 @@ export function Paywall({ open, onClose }: PaywallProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [plan, setPlan] = useState<string>("lifetime");
   const selected = PLANS.find((p) => p.id === plan) ?? PLANS[0];
+  const purchaseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const clearPurchase = () => {
+    if (purchaseTimer.current) {
+      clearTimeout(purchaseTimer.current);
+      purchaseTimer.current = null;
+    }
+  };
+
+  // Sheet kapanınca durumu sıfırla ve bekleyen mock satın alma timer'ını iptal et.
   useEffect(() => {
-    if (!open) setPhase("idle");
+    if (!open) {
+      clearPurchase();
+      setPhase("idle");
+    }
   }, [open]);
+
+  // Unmount güvenliği — bekleyen timer unmount sonrası setState etmesin.
+  useEffect(() => clearPurchase, []);
 
   useEffect(() => {
     if (phase !== "done") return;
@@ -59,7 +74,8 @@ export function Paywall({ open, onClose }: PaywallProps) {
   const handlePurchase = () => {
     if (phase !== "idle") return;
     setPhase("purchasing");
-    setTimeout(() => {
+    purchaseTimer.current = setTimeout(() => {
+      purchaseTimer.current = null;
       unlockPro();
       tapSuccess();
       setPhase("done");

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { StyleSheet, View, TouchableOpacity, ScrollView } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
@@ -53,22 +53,32 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
   const wdShort = weekdaysShort(lang);
   const wdFull = weekdaysFull(lang);
 
-  const expMap = expensesByDay(entries);
-  const days = recentDays(expMap, HISTORY_DAYS);
-  const maxAmount = Math.max(1, ...days.map((d) => d.amount));
+  // Engine türetmelerini tek seferde memoize et — açık sheet'te her render'da
+  // entries üzerinden tekrar tarama yapılmasını önler.
+  const a = useMemo(() => {
+    const expMap = expensesByDay(entries);
+    const days = recentDays(expMap, HISTORY_DAYS);
+    const categories = categoryBreakdown(entries, monthKey());
+    const weekdays = weekdayBreakdown(expMap);
+    const top = topExpenses(entries, monthKey(), 3);
+    return {
+      days,
+      maxAmount: Math.max(1, ...days.map((d) => d.amount)),
+      trend: weeklyTrend(expMap),
+      categories,
+      maxCategory: Math.max(1, ...categories.map((c) => c.total)),
+      weekdays,
+      maxWeekdayAvg: Math.max(1, ...weekdays.map((w) => w.avg)),
+      peak: weekdays.reduce((x, y) => (y.avg > x.avg ? y : x), weekdays[0]),
+      streak: disciplineStreak(expMap, stats.pool),
+      top,
+      maxTop: Math.max(1, ...top.map((e) => e.amount)),
+    };
+  }, [entries, stats.pool]);
+
+  const { days, maxAmount, trend, categories, maxCategory, weekdays, maxWeekdayAvg, peak, streak, top, maxTop } = a;
   const surplus = forecast.endBalance >= 0;
-
-  const trend = weeklyTrend(expMap);
-  const categories = categoryBreakdown(entries, monthKey());
-  const maxCategory = Math.max(1, ...categories.map((c) => c.total));
-  const weekdays = weekdayBreakdown(expMap);
-  const maxWeekdayAvg = Math.max(1, ...weekdays.map((w) => w.avg));
-  const peak = weekdays.reduce((a, b) => (b.avg > a.avg ? b : a), weekdays[0]);
   const projected = Math.round(stats.pace * stats.total);
-
-  const streak = disciplineStreak(expMap, stats.pool);
-  const top = topExpenses(entries, monthKey(), 3);
-  const maxTop = Math.max(1, ...top.map((e) => e.amount));
 
   // Trend yönü: harcama azaldıysa "iyi" (mavi), arttıysa "uyarı" (amber).
   const down = trend.deltaPct !== null && trend.deltaPct < 0;

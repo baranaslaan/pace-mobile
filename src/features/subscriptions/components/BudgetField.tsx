@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, TextInput } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { useCurrency } from "../../../shared/store/useCurrency";
@@ -13,12 +13,21 @@ interface BudgetFieldProps {
 export function BudgetField({ value, onCommit }: BudgetFieldProps) {
   const { symbol, toBase, toDisplay } = useCurrency();
   const { t } = useT();
-  const [draft, setDraft] = useState(String(Math.round(toDisplay(value))));
+  const display = String(Math.round(toDisplay(value)));
+  const [draft, setDraft] = useState(display);
+  const focused = useRef(false);
+
+  // Para birimi veya değer dışarıdan değişince (ör. Ayarlar'dan kur seçimi)
+  // gösterimi tazele — ama kullanıcı yazarken üzerine yazma.
+  useEffect(() => {
+    if (!focused.current) setDraft(display);
+  }, [display]);
 
   const commit = () => {
+    focused.current = false;
     const next = Number.parseFloat(draft);
     if (Number.isFinite(next) && next > 0) onCommit(toBase(next));
-    else setDraft(String(Math.round(toDisplay(value))));
+    else setDraft(display);
   };
 
   return (
@@ -31,6 +40,7 @@ export function BudgetField({ value, onCommit }: BudgetFieldProps) {
           keyboardType="decimal-pad"
           value={draft}
           onChangeText={setDraft}
+          onFocus={() => (focused.current = true)}
           onBlur={commit}
           onSubmitEditing={commit}
         />
