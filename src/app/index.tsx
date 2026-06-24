@@ -13,13 +13,7 @@ import { Splash } from "../features/splash/components/Splash";
 import { Onboarding } from "../features/onboarding/components/Onboarding";
 import { LimitBoard } from "../features/limit-board/components/LimitBoard";
 import { ExpenseInput } from "../features/expense-input/components/ExpenseInput";
-import { MoreMenu } from "../features/menu/components/MoreMenu";
-import { SubscriptionsSheet } from "../features/subscriptions/components/SubscriptionsSheet";
-import { HistorySheet } from "../features/expense-history/components/HistorySheet";
-import { AnalyticsSheet } from "../features/analytics/components/AnalyticsSheet";
-import { RecurringSheet } from "../features/recurring/components/RecurringSheet";
-import { SettingsSheet } from "../features/settings/components/SettingsSheet";
-import { Paywall } from "../features/pro/components/Paywall";
+import { AppSheets } from "./AppSheets";
 import { scheduleDailyReminder } from "../shared/lib/notifications";
 import { translate, type Language } from "../shared/i18n";
 import { useWidgetSync } from "../widgets/useWidgetSync";
@@ -75,11 +69,6 @@ export default function AppIndex() {
   }, [hydrated, reminderEnabled, reminderHour, reminderMinute, language]);
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeSheet, setActiveSheet] = useState<"none" | "history" | "subs" | "analytics" | "recurring" | "paywall" | "settings">("none");
-
-  const handleUpgrade = () => {
-    setActiveSheet("paywall");
-  };
 
   return (
     <AnimatePresence>
@@ -140,66 +129,7 @@ export default function AppIndex() {
             <ExpenseInput bottomInset={insets.bottom} />
           </KeyboardAvoidingView>
 
-          <MoreMenu
-            open={menuOpen}
-            onClose={() => setMenuOpen(false)}
-            onOpenHistory={() => {
-              setMenuOpen(false);
-              setActiveSheet("history");
-            }}
-            onOpenSubscriptions={() => {
-              setMenuOpen(false);
-              setActiveSheet("subs");
-            }}
-            onOpenAnalytics={() => {
-              setMenuOpen(false);
-              setActiveSheet("analytics");
-            }}
-            onOpenRecurring={() => {
-              setMenuOpen(false);
-              setActiveSheet("recurring");
-            }}
-            onOpenSettings={() => {
-              setMenuOpen(false);
-              setActiveSheet("settings");
-            }}
-            onOpenPaywall={() => {
-              setMenuOpen(false);
-              setActiveSheet("paywall");
-            }}
-          />
-
-          <HistorySheet
-            open={activeSheet === "history"}
-            onClose={() => setActiveSheet("none")}
-          />
-
-          <SubscriptionsSheet
-            open={activeSheet === "subs"}
-            onClose={() => setActiveSheet("none")}
-            onUpgrade={handleUpgrade}
-          />
-
-          <AnalyticsSheet
-            open={activeSheet === "analytics"}
-            onClose={() => setActiveSheet("none")}
-            onUpgrade={handleUpgrade}
-          />
-
-          <RecurringSheet
-            open={activeSheet === "recurring"}
-            onClose={() => setActiveSheet("none")}
-            onUpgrade={handleUpgrade}
-          />
-
-          <SettingsSheet
-            open={activeSheet === "settings"}
-            onClose={() => setActiveSheet("none")}
-            onUpgrade={handleUpgrade}
-            onOpenSubscriptions={() => setActiveSheet("subs")}
-          />
-
-          <Paywall open={activeSheet === "paywall"} onClose={() => setActiveSheet("none")} />
+          <AppSheets menuOpen={menuOpen} onCloseMenu={() => setMenuOpen(false)} />
         </MotiView>
       )}
     </AnimatePresence>
