@@ -72,7 +72,7 @@ export function SubscriptionsStep({
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 40, gap: 8 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 40, gap: 8 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets showsVerticalScrollIndicator={false}>
         <AnimatePresence>
           {subs.map((sub) => (
             <MotiView
@@ -128,7 +128,9 @@ const styles = StyleSheet.create({
   },
   nameInput: {
     flex: 1,
-    height: 52,
+    // Sabit height yerine eşit dikey padding: Outfit'in uzun metrikleriyle
+    // sabit-yükseklik tek satır metni alta itiyordu; padding metni ortalar.
+    paddingVertical: 16,
     borderRadius: 16,
     backgroundColor: "rgba(255, 255, 255, 0.05)",
     paddingHorizontal: 16,

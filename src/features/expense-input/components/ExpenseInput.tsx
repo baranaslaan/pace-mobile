@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react";
-import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView, Keyboard, Platform } from "react-native";
 import { MotiView, AnimatePresence } from "moti";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { getTone } from "../../../shared/lib/tone";
@@ -26,6 +26,24 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
   const [category, setCategory] = useState<string | undefined>(undefined);
   const inputRef = useRef<TextInput>(null);
 
+  // Klavye açılınca yalnızca giriş çubuğunu klavyenin üstüne kaydır — layout'u
+  // (Ring dahil) itmeden. Güvenli alan alt boşluğu klavyeyle örtüştüğü için
+  // kaldırma miktarından düşülür.
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  useEffect(() => {
+    const showEvt = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvt = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const show = Keyboard.addListener(showEvt, (e) =>
+      setKeyboardHeight(e.endCoordinates.height),
+    );
+    const hide = Keyboard.addListener(hideEvt, () => setKeyboardHeight(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+  const lift = keyboardHeight > 0 ? Math.max(0, keyboardHeight - bottomInset) : 0;
+
   const amount = Number.parseFloat(input);
   const valid = !Number.isNaN(amount) && amount > 0;
 
@@ -43,7 +61,11 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
   };
 
   return (
-    <View style={styles.bar}>
+    <MotiView
+      style={styles.bar}
+      animate={{ translateY: -lift }}
+      transition={{ type: "timing", duration: Platform.OS === "ios" ? 240 : 160 }}
+    >
       <MotiView
         style={[
           styles.card,
@@ -184,7 +206,7 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
           )}
         </AnimatePresence>
       </MotiView>
-    </View>
+    </MotiView>
   );
 }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, TouchableOpacity, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { StyleSheet, View, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { AnimatePresence, MotiView } from "moti";
@@ -93,10 +93,7 @@ export default function AppIndex() {
           animate={{ opacity: 1 }}
           transition={{ type: "timing", duration: 500 }}
         >
-          <KeyboardAvoidingView 
-            style={styles.safe} 
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-          >
+          <View style={styles.safe}>
             <View style={StyleSheet.absoluteFill} pointerEvents="none">
               <Svg width="100%" height="100%">
                 <Defs>
@@ -113,7 +110,10 @@ export default function AppIndex() {
               <Logo color={tone.color} />
               <TouchableOpacity
                 style={styles.more}
-                onPress={() => setMenuOpen(!menuOpen)}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setMenuOpen(!menuOpen);
+                }}
                 activeOpacity={0.7}
               >
                 <MoreIcon color={theme.colors.textPrimary} />
@@ -127,7 +127,7 @@ export default function AppIndex() {
             </TouchableWithoutFeedback>
 
             <ExpenseInput bottomInset={insets.bottom} />
-          </KeyboardAvoidingView>
+          </View>
 
           <AppSheets menuOpen={menuOpen} onCloseMenu={() => setMenuOpen(false)} />
         </MotiView>
