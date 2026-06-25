@@ -144,8 +144,7 @@ export function Paywall({ open, onClose }: PaywallProps) {
                     <Text
                       style={[styles.planPrice, active && styles.planPriceActive]}
                       numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.5}
+                      ellipsizeMode="tail"
                     >
                       {p.price}
                     </Text>

@@ -57,8 +57,7 @@ export function LimitBoard() {
             key={Math.round(spent)}
             style={styles.statValue}
             numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.5}
+            ellipsizeMode="tail"
             from={{ opacity: 0.4, translateY: 4 }}
             animate={{ opacity: 1, translateY: 0 }}
           >
@@ -70,7 +69,7 @@ export function LimitBoard() {
         <View style={styles.divider} />
 
         <View style={styles.stat}>
-          <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
+          <Text style={styles.statValue} numberOfLines={1} ellipsizeMode="tail">
             {fmt(limit)}
           </Text>
           <Text style={styles.statLabel}>{tu("board.limit")}</Text>

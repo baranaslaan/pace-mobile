@@ -44,7 +44,7 @@ export function RecapStep({ budget, subs }: RecapStepProps) {
 
       <View style={styles.limit}>
         <Text style={styles.prefix}>{symbol}</Text>
-        <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
+        <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">
           {fmtNum(limit)}
         </Text>
         <Text style={styles.unit}>{t("recap.perDay")}</Text>
