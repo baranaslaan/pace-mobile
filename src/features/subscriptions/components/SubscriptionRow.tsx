@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, TextInput, TouchableOpacity } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { MotiView } from "moti";
@@ -13,13 +13,22 @@ interface SubscriptionRowProps {
 }
 
 export function SubscriptionRow({ sub, onUpdateAmount, onRemove }: SubscriptionRowProps) {
-  const { symbol, toBase, toDisplay } = useCurrency();
-  const [draft, setDraft] = useState(String(Math.round(toDisplay(sub.amount))));
+  const { symbol, toBase, toDisplay, fmtNum } = useCurrency();
+  // Blur'da gruplu göster; düzenleme için focus'ta ham say.
+  const grouped = fmtNum(sub.amount);
+  const raw = String(Math.round(toDisplay(sub.amount)));
+  const [draft, setDraft] = useState(grouped);
+  const focused = useRef(false);
+
+  useEffect(() => {
+    if (!focused.current) setDraft(grouped);
+  }, [grouped]);
 
   const commit = () => {
+    focused.current = false;
     const value = Number.parseFloat(draft);
     if (Number.isFinite(value) && value > 0) onUpdateAmount(sub.id, toBase(value));
-    else setDraft(String(Math.round(toDisplay(sub.amount))));
+    else setDraft(grouped);
   };
 
   return (
@@ -39,6 +48,10 @@ export function SubscriptionRow({ sub, onUpdateAmount, onRemove }: SubscriptionR
           keyboardType="decimal-pad"
           value={draft}
           onChangeText={setDraft}
+          onFocus={() => {
+            focused.current = true;
+            setDraft(raw);
+          }}
           onBlur={commit}
           onSubmitEditing={commit}
         />

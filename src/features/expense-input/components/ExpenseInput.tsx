@@ -227,6 +227,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: theme.fonts.outfitExtra,
     fontSize: 40,
+    lineHeight: 46, // büyük punto rakamların üst/alt kırpılmasını önle
     fontWeight: "800",
     color: "rgba(255, 255, 255, 0.18)",
     letterSpacing: -1,

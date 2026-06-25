@@ -11,23 +11,25 @@ interface BudgetFieldProps {
 }
 
 export function BudgetField({ value, onCommit }: BudgetFieldProps) {
-  const { symbol, toBase, toDisplay } = useCurrency();
+  const { symbol, toBase, toDisplay, fmtNum } = useCurrency();
   const { t, tu } = useT();
-  const display = String(Math.round(toDisplay(value)));
-  const [draft, setDraft] = useState(display);
+  // Blur'da binlik ayıraçlı (gruplu) göster; düzenleme için focus'ta ham say.
+  const grouped = fmtNum(value);
+  const raw = String(Math.round(toDisplay(value)));
+  const [draft, setDraft] = useState(grouped);
   const focused = useRef(false);
 
   // Para birimi veya değer dışarıdan değişince (ör. Ayarlar'dan kur seçimi)
   // gösterimi tazele — ama kullanıcı yazarken üzerine yazma.
   useEffect(() => {
-    if (!focused.current) setDraft(display);
-  }, [display]);
+    if (!focused.current) setDraft(grouped);
+  }, [grouped]);
 
   const commit = () => {
     focused.current = false;
     const next = Number.parseFloat(draft);
     if (Number.isFinite(next) && next > 0) onCommit(toBase(next));
-    else setDraft(display);
+    else setDraft(grouped);
   };
 
   return (
@@ -40,7 +42,10 @@ export function BudgetField({ value, onCommit }: BudgetFieldProps) {
           keyboardType="decimal-pad"
           value={draft}
           onChangeText={setDraft}
-          onFocus={() => (focused.current = true)}
+          onFocus={() => {
+            focused.current = true;
+            setDraft(raw);
+          }}
           onBlur={commit}
           onSubmitEditing={commit}
         />

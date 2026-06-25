@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, TextInput, TouchableOpacity } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { MotiView } from "moti";
@@ -16,15 +16,24 @@ interface EntryRowProps {
 }
 
 export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
-  const { symbol, toBase, toDisplay } = useCurrency();
+  const { symbol, toBase, toDisplay, fmtNum } = useCurrency();
   const { t } = useT();
-  const [amount, setAmount] = useState(String(Math.round(toDisplay(entry.amount))));
+  // Blur'da gruplu göster; düzenleme için focus'ta ham say.
+  const grouped = fmtNum(entry.amount);
+  const raw = String(Math.round(toDisplay(entry.amount)));
+  const [amount, setAmount] = useState(grouped);
   const [note, setNote] = useState(entry.note ?? "");
+  const focused = useRef(false);
+
+  useEffect(() => {
+    if (!focused.current) setAmount(grouped);
+  }, [grouped]);
 
   const commitAmount = () => {
+    focused.current = false;
     const value = Number.parseFloat(amount);
     if (Number.isFinite(value) && value > 0) onUpdate(entry.id, { amount: toBase(value) });
-    else setAmount(String(Math.round(toDisplay(entry.amount))));
+    else setAmount(grouped);
   };
 
   const commitNote = () => {
@@ -78,6 +87,10 @@ export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
           keyboardType="decimal-pad"
           value={amount}
           onChangeText={setAmount}
+          onFocus={() => {
+            focused.current = true;
+            setAmount(raw);
+          }}
           onBlur={commitAmount}
           onSubmitEditing={commitAmount}
         />

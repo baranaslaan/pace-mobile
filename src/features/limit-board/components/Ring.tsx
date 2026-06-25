@@ -78,7 +78,7 @@ export function Ring({ remaining, limit, tone }: any) {
         <MotiText style={styles.kalan}>{tu("ring.left")}</MotiText>
         <MotiText
           key={shownNum}
-          style={[styles.value, { fontSize: valueSize }]}
+          style={[styles.value, { fontSize: valueSize, lineHeight: Math.round(valueSize * 1.12) }]}
           from={{ opacity: 0.3, scale: 0.88 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "timing", duration: 280 }}

@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { dailyLimit } from "../../../shared/lib/engine";
+import { remainingDaysInclusive, daysInMonth } from "../../../shared/lib/date";
 import type { SubDraft } from "../hooks/useOnboardingFlow";
 import { useCurrency } from "../../../shared/store/useCurrency";
 import { useT } from "../../../shared/i18n";
@@ -28,6 +29,10 @@ export function RecapStep({ budget, subs }: RecapStepProps) {
     subscriptions: subs,
     expenses: {},
   });
+  // Ay ortasında kuruluyorsa, limitin ayın KALAN günlerine bölündüğünü açıkça
+  // söyle (1'inde başlamış gibi değil) — yoksa şişkin görünen limit kafa karıştırır.
+  const remainingDays = remainingDaysInclusive();
+  const prorated = remainingDays < daysInMonth();
 
   return (
     <View style={styles.step}>
@@ -41,6 +46,12 @@ export function RecapStep({ budget, subs }: RecapStepProps) {
         <Text style={styles.value}>{fmtNum(limit)}</Text>
         <Text style={styles.unit}>{t("recap.perDay")}</Text>
       </View>
+
+      {prorated && (
+        <Text style={styles.proratedNote}>
+          {t("recap.proratedNote", { days: remainingDays })}
+        </Text>
+      )}
 
       <View style={styles.points}>
         {points.map((point) => (
@@ -87,16 +98,24 @@ const styles = StyleSheet.create({
   value: {
     fontFamily: theme.fonts.outfitExtra,
     fontSize: 56,
+    lineHeight: 62, // Outfit Extra üst/alt kırpmasını önle
     fontWeight: "800",
     color: theme.colors.textPrimary,
     letterSpacing: -2,
     fontVariant: ["tabular-nums"],
+    paddingHorizontal: 2, // negatif letterSpacing'in son haneyi kırpmasını önle
   },
   unit: {
     fontFamily: theme.fonts.outfitMedium,
     fontSize: 16,
     fontWeight: "500",
     color: theme.colors.textSoft,
+  },
+  proratedNote: {
+    marginTop: -16,
+    fontSize: 13,
+    lineHeight: 18,
+    color: theme.colors.textDim,
   },
   points: {
     gap: 16,
