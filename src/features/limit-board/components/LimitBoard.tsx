@@ -142,16 +142,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 40,
-    alignSelf: "stretch",
   },
   stats: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "stretch",
-    gap: 24,
-    // Aşırı geniş ekranlarda istatistikler ortada toplansın.
-    maxWidth: 360,
+    // Sabit genişlik + üst container'da ortala (alignSelf:stretch + maxWidth
+    // kombinasyonu sola yapıştırıyordu). flex:1 sütunlar bunu eşit böler.
+    width: 280,
+    gap: 16,
   },
   stat: {
     flex: 1,
