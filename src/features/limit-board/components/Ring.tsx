@@ -25,7 +25,7 @@ function fitFontSize(length: number): number {
 
 export function Ring({ remaining, limit, tone }: any) {
   const { symbol, fmtNum, toDisplay } = useCurrency();
-  const { t } = useT();
+  const { t, tu } = useT();
   const over = tone.key === "over";
   const ratio = Math.max(0, Math.min(1, limit > 0 ? remaining / limit : 0));
   const offset = CIRC * (1 - ratio);
@@ -75,7 +75,7 @@ export function Ring({ remaining, limit, tone }: any) {
       </Svg>
 
       <View style={styles.center}>
-        <MotiText style={styles.kalan}>{t("ring.left")}</MotiText>
+        <MotiText style={styles.kalan}>{tu("ring.left")}</MotiText>
         <MotiText
           key={shownNum}
           style={[styles.value, { fontSize: valueSize }]}
@@ -91,7 +91,7 @@ export function Ring({ remaining, limit, tone }: any) {
           animate={{ color: tone.color } as any}
           transition={{ type: "timing", duration: 700 }}
         >
-          {t(`tone.${tone.key}`)}
+          {tu(`tone.${tone.key}`)}
         </MotiText>
       </View>
     </View>
@@ -118,7 +118,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "600",
     letterSpacing: 1.4,
-    textTransform: "uppercase",
   },
   value: {
     fontFamily: theme.fonts.outfitExtra,
@@ -140,7 +139,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 0.88,
-    textTransform: "uppercase",
     marginTop: 8,
   },
 });

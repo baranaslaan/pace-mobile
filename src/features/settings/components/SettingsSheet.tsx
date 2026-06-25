@@ -47,7 +47,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
   const language = usePaceStore((s) => s.language);
   const setLanguage = usePaceStore((s) => s.setLanguage);
   const { currency, fmt, toDisplay } = useCurrency();
-  const { t } = useT();
+  const { t, tu } = useT();
 
   const [confirmReset, setConfirmReset] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -175,7 +175,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
       )}
 
       {/* Hesap — satın almaları geri yükle (App Store zorunlu) */}
-      <Text style={styles.sectionLabel}>{t("settings.account")}</Text>
+      <Text style={styles.sectionLabel}>{tu("settings.account")}</Text>
       <TouchableOpacity
         style={styles.row}
         onPress={handleRestore}
@@ -194,7 +194,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
       </TouchableOpacity>
 
       {/* Bildirimler */}
-      <Text style={styles.sectionLabel}>{t("settings.notifications")}</Text>
+      <Text style={styles.sectionLabel}>{tu("settings.notifications")}</Text>
       <View style={styles.row}>
         <View style={styles.rowIcon}>
           <BellIcon color={theme.colors.textSoft} />
@@ -215,7 +215,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
       </View>
 
       {/* Bütçe */}
-      <Text style={styles.sectionLabel}>{t("settings.budget")}</Text>
+      <Text style={styles.sectionLabel}>{tu("settings.budget")}</Text>
       <TouchableOpacity style={styles.row} onPress={onOpenSubscriptions} activeOpacity={0.7}>
         <View style={styles.rowIcon}>
           <CardIcon color={theme.colors.textSoft} />
@@ -232,7 +232,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
       </TouchableOpacity>
 
       {/* Para birimi */}
-      <Text style={styles.sectionLabel}>{t("settings.currency")}</Text>
+      <Text style={styles.sectionLabel}>{tu("settings.currency")}</Text>
       <View style={styles.currencyRow}>
         {CURRENCIES.map((c) => {
           const active = currency === c.code;
@@ -255,7 +255,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
       </View>
 
       {/* Dil */}
-      <Text style={styles.sectionLabel}>{t("settings.language")}</Text>
+      <Text style={styles.sectionLabel}>{tu("settings.language")}</Text>
       <View style={styles.currencyRow}>
         {LANGUAGES.map((l) => {
           const active = language === l.code;
@@ -275,7 +275,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
       </View>
 
       {/* Veri / tehlikeli bölge */}
-      <Text style={styles.sectionLabel}>{t("settings.data")}</Text>
+      <Text style={styles.sectionLabel}>{tu("settings.data")}</Text>
 
       <TouchableOpacity
         style={[styles.row, { marginBottom: 8 }]}
@@ -323,7 +323,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
 
       {__DEV__ && (
         <>
-          <Text style={styles.sectionLabel}>{t("settings.dev")}</Text>
+          <Text style={styles.sectionLabel}>{tu("settings.dev")}</Text>
           <TouchableOpacity
             style={styles.row}
             onPress={() => (isPro ? lockPro() : unlockPro())}
@@ -364,7 +364,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
       )}
 
       {/* Yasal */}
-      <Text style={styles.sectionLabel}>{t("settings.legal")}</Text>
+      <Text style={styles.sectionLabel}>{tu("settings.legal")}</Text>
       <TouchableOpacity
         style={[styles.row, { marginBottom: 8 }]}
         onPress={() => openURL(PRIVACY_URL)}
@@ -459,7 +459,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: theme.colors.textDim,
     letterSpacing: 0.5,
-    textTransform: "uppercase",
     marginTop: 24,
     marginBottom: 10,
   },

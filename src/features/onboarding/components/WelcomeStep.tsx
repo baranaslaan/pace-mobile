@@ -7,7 +7,7 @@ import { CURRENCIES } from "../../../shared/lib/money";
 import { theme } from "../../../shared/styles/theme";
 
 export function WelcomeStep() {
-  const { t } = useT();
+  const { t, tu } = useT();
   const language = usePaceStore((s) => s.language);
   const setLanguage = usePaceStore((s) => s.setLanguage);
   const currency = usePaceStore((s) => s.currency);
@@ -22,7 +22,7 @@ export function WelcomeStep() {
           dilinde ve para biriminde geçer. */}
       <View style={styles.pickers}>
         <View style={styles.pickerGroup}>
-          <Text style={styles.pickerLabel}>{t("settings.language")}</Text>
+          <Text style={styles.pickerLabel}>{tu("settings.language")}</Text>
           <View style={styles.row}>
             {LANGUAGES.map((l) => {
               const active = language === l.code;
@@ -43,7 +43,7 @@ export function WelcomeStep() {
         </View>
 
         <View style={styles.pickerGroup}>
-          <Text style={styles.pickerLabel}>{t("settings.currency")}</Text>
+          <Text style={styles.pickerLabel}>{tu("settings.currency")}</Text>
           <View style={styles.row}>
             {CURRENCIES.map((c) => {
               const active = currency === c.code;
@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     letterSpacing: 0.8,
-    textTransform: "uppercase",
     color: theme.colors.textDim,
   },
   row: {

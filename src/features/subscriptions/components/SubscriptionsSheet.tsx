@@ -32,7 +32,7 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
   const isPro = usePaceStore((s) => s.isPro);
   const { limit } = useLimitLogic();
   const { symbol, fmt, toBase } = useCurrency();
-  const { t } = useT();
+  const { t, tu } = useT();
 
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
@@ -59,7 +59,7 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
         {t("subs.reserved")} <Text style={{ fontWeight: "700" }}>{fmt(total)}</Text>
       </Text>
 
-      <Text style={styles.listLabel}>{t("subs.listLabel")}</Text>
+      <Text style={styles.listLabel}>{tu("subs.listLabel")}</Text>
 
       <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 20 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <AnimatePresence>
@@ -136,7 +136,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: theme.colors.textDim,
     marginBottom: 8,
-    textTransform: "uppercase",
   },
   list: {
     // Sabit cap yerine sheet'in 88%'ine kadar uzar; bütçe alanı + alt eylem

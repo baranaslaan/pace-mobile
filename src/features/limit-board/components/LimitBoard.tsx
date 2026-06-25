@@ -14,7 +14,7 @@ import { Text } from "../../../shared/typography/Text";
 export function LimitBoard() {
   const { remaining, limit, spent, setup, budget, subsTotal, rolloverActive } = useLimitLogic();
   const { fmt } = useCurrency();
-  const { t } = useT();
+  const { t, tu } = useT();
   const tone = getTone(remaining, limit);
   const rolloverTipSeen = usePaceStore((s) => s.rolloverTipSeen);
   const markRolloverTipSeen = usePaceStore((s) => s.markRolloverTipSeen);
@@ -61,14 +61,14 @@ export function LimitBoard() {
           >
             {fmt(spent)}
           </MotiText>
-          <Text style={styles.statLabel}>{t("board.spent")}</Text>
+          <Text style={styles.statLabel}>{tu("board.spent")}</Text>
         </View>
 
         <View style={styles.divider} />
 
         <View style={styles.stat}>
           <Text style={styles.statValue}>{fmt(limit)}</Text>
-          <Text style={styles.statLabel}>{t("board.limit")}</Text>
+          <Text style={styles.statLabel}>{tu("board.limit")}</Text>
         </View>
       </View>
 
@@ -163,7 +163,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontWeight: "600",
     letterSpacing: 1,
-    textTransform: "uppercase",
   },
   divider: {
     width: 1,

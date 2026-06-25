@@ -12,7 +12,7 @@ interface BudgetFieldProps {
 
 export function BudgetField({ value, onCommit }: BudgetFieldProps) {
   const { symbol, toBase, toDisplay } = useCurrency();
-  const { t } = useT();
+  const { t, tu } = useT();
   const display = String(Math.round(toDisplay(value)));
   const [draft, setDraft] = useState(display);
   const focused = useRef(false);
@@ -32,7 +32,7 @@ export function BudgetField({ value, onCommit }: BudgetFieldProps) {
 
   return (
     <View style={styles.budget}>
-      <Text style={styles.budgetLabel}>{t("budgetField.label")}</Text>
+      <Text style={styles.budgetLabel}>{tu("budgetField.label")}</Text>
       <View style={styles.budgetField}>
         <Text style={styles.budgetPrefix}>{symbol}</Text>
         <TextInput
@@ -59,7 +59,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     letterSpacing: 0.8,
-    textTransform: "uppercase",
   },
   budgetField: {
     flexDirection: "row",

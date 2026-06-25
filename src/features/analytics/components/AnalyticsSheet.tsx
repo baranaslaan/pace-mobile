@@ -49,7 +49,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
   const isPro = usePaceStore((s) => s.isPro);
   const { forecast, stats } = useLimitLogic();
   const { fmt } = useCurrency();
-  const { t, lang } = useT();
+  const { t, tu, lang } = useT();
   const wdShort = weekdaysShort(lang);
   const wdFull = weekdaysFull(lang);
 
@@ -90,17 +90,17 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
         <View style={styles.stats}>
           <View style={styles.stat}>
             <Text style={styles.statValue}>{fmt(stats.spent)}</Text>
-            <Text style={styles.statLabel}>{t("analytics.spent")}</Text>
+            <Text style={styles.statLabel}>{tu("analytics.spent")}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.stat}>
             <Text style={styles.statValue}>{fmt(stats.pace)}</Text>
-            <Text style={styles.statLabel}>{t("analytics.dailyAvg")}</Text>
+            <Text style={styles.statLabel}>{tu("analytics.dailyAvg")}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.stat}>
             <Text style={styles.statValue}>{fmt(stats.pool)}</Text>
-            <Text style={styles.statLabel}>{t("analytics.pool")}</Text>
+            <Text style={styles.statLabel}>{tu("analytics.pool")}</Text>
           </View>
         </View>
 
@@ -115,7 +115,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                       <Text style={styles.streakValue}>{streak.current}</Text>
                       <Text style={styles.streakUnit}>{t("analytics.streakDaysLabel")}</Text>
                     </View>
-                    <Text style={styles.streakCaption}>{t("analytics.streakCurrent")}</Text>
+                    <Text style={styles.streakCaption}>{tu("analytics.streakCurrent")}</Text>
                   </View>
                   <View style={styles.streakSep} />
                   <View style={styles.streakCol}>
@@ -123,7 +123,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                       <Text style={styles.streakBestValue}>{streak.best}</Text>
                       <Text style={styles.streakUnit}>{t("analytics.streakDaysLabel")}</Text>
                     </View>
-                    <Text style={styles.streakCaption}>{t("analytics.streakBest")}</Text>
+                    <Text style={styles.streakCaption}>{tu("analytics.streakBest")}</Text>
                   </View>
                 </View>
                 <Text style={styles.streakNote}>
@@ -137,7 +137,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
               <View style={styles.trendTop}>
                 <View>
                   <Text style={styles.trendValue}>{fmt(trend.thisWeek)}</Text>
-                  <Text style={styles.trendCaption}>{t("analytics.last7")}</Text>
+                  <Text style={styles.trendCaption}>{tu("analytics.last7")}</Text>
                 </View>
                 {trend.deltaPct !== null && (
                   <View style={[styles.trendChip, down ? styles.trendChipDown : styles.trendChipUp]}>
@@ -343,7 +343,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: theme.colors.textMute,
-    textTransform: "uppercase",
   },
   proWrap: {
     position: "relative",
@@ -406,7 +405,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: theme.colors.textMute,
-    textTransform: "uppercase",
     letterSpacing: 0.5,
     marginTop: 2,
   },
@@ -566,7 +564,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: theme.colors.textMute,
-    textTransform: "uppercase",
     letterSpacing: 0.5,
     marginTop: 4,
   },

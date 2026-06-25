@@ -47,6 +47,15 @@ export function translate(lang: Language, key: string, params?: TParams): string
   return typeof raw === "string" ? interpolate(raw, params) : key;
 }
 
+/**
+ * Locale-aware büyük harf. RN'in `textTransform: "uppercase"`'ı locale-bağımsız
+ * `toUpperCase()` çağırır; Türkçede `i → I` (noktasız) üretir, beklenen `İ`
+ * değil. Bu yüzden büyük harfli etiketleri stil yerine burada üretiyoruz.
+ */
+export function upper(lang: Language, text: string): string {
+  return lang === "tr" ? text.toLocaleUpperCase("tr-TR") : text.toLocaleUpperCase();
+}
+
 /** Aktif dile göre ay adı, "YYYY-MM" → "Haziran 2026". */
 export function monthLabel(lang: Language, key: string): string {
   const [y, m] = key.split("-").map(Number);
@@ -64,13 +73,15 @@ export function weekdaysFull(lang: Language): readonly string[] {
 
 export type TFn = (key: string, params?: TParams) => string;
 
-/** Aktif dile bağlı t fonksiyonu + dil bilgisi (reaktif). */
-export function useT(): { t: TFn; lang: Language } {
+/** Aktif dile bağlı t fonksiyonu + dil bilgisi (reaktif). `tu` = locale-aware
+ *  büyük harfli çeviri (eyebrow/etiket başlıkları için; bkz. {@link upper}). */
+export function useT(): { t: TFn; tu: TFn; lang: Language } {
   const lang = usePaceStore((s) => s.language) as Language;
   return useMemo(
     () => ({
       lang,
       t: (key: string, params?: TParams) => translate(lang, key, params),
+      tu: (key: string, params?: TParams) => upper(lang, translate(lang, key, params)),
     }),
     [lang],
   );

@@ -28,7 +28,7 @@ interface PaywallProps {
 export function Paywall({ open, onClose }: PaywallProps) {
   const isPro = usePaceStore((s) => s.isPro);
   const unlockPro = usePaceStore((s) => s.unlockPro);
-  const { t } = useT();
+  const { t, tu } = useT();
   const benefits = [
     t("paywall.benefit1"),
     t("paywall.benefit2"),
@@ -135,7 +135,7 @@ export function Paywall({ open, onClose }: PaywallProps) {
                   >
                     {p.id === "lifetime" && (
                       <View style={styles.bestBadge}>
-                        <Text style={styles.bestBadgeText}>{t("paywall.bestValue")}</Text>
+                        <Text style={styles.bestBadgeText}>{tu("paywall.bestValue")}</Text>
                       </View>
                     )}
                     <Text style={[styles.planTitle, active && styles.planTitleActive]}>
@@ -276,7 +276,6 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#fff",
     letterSpacing: 0.3,
-    textTransform: "uppercase",
   },
   planTitle: {
     fontSize: 13,

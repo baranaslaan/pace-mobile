@@ -72,7 +72,7 @@ export function SubscriptionsStep({
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 40, gap: 8 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 40, gap: 8 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false}>
         <AnimatePresence>
           {subs.map((sub) => (
             <MotiView

@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, SafeAreaView, Dimensions, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { StyleSheet, View, SafeAreaView, Dimensions, TouchableOpacity } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { AnimatePresence, MotiView } from "moti";
 import { ChevronLeftIcon } from "../../../shared/ui/icons";
@@ -67,8 +67,7 @@ export function Onboarding() {
         <View style={styles.slot} />
       </View>
 
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.body}>
+      <View style={styles.body}>
         <AnimatePresence exitBeforeEnter custom={direction}>
           <MotiView
             key={step}
@@ -97,8 +96,7 @@ export function Onboarding() {
             {step === 4 && <RecapStep budget={flow.budget} subs={flow.subs} />}
           </MotiView>
         </AnimatePresence>
-        </View>
-      </TouchableWithoutFeedback>
+      </View>
 
       <View style={styles.footer}>
         <TouchableOpacity
