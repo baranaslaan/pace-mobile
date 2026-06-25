@@ -95,7 +95,7 @@ export function SubscriptionsStep({
               transition={{ type: "timing", duration: 220 }}
             >
               <Text style={styles.itemName} numberOfLines={1}>{sub.name}</Text>
-              <Text style={styles.itemAmount}>{fmt(sub.amount)}</Text>
+              <Text style={styles.itemAmount} numberOfLines={1}>{fmt(sub.amount)}</Text>
               <TouchableOpacity
                 style={styles.remove}
                 onPress={() => onRemove(sub.id)}

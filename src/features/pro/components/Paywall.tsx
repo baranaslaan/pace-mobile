@@ -141,7 +141,12 @@ export function Paywall({ open, onClose }: PaywallProps) {
                     <Text style={[styles.planTitle, active && styles.planTitleActive]}>
                       {t(`paywall.${p.id}`)}
                     </Text>
-                    <Text style={[styles.planPrice, active && styles.planPriceActive]}>
+                    <Text
+                      style={[styles.planPrice, active && styles.planPriceActive]}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.5}
+                    >
                       {p.price}
                     </Text>
                     <Text style={styles.planNote}>{t(`paywall.${p.id}Note`)}</Text>
@@ -291,6 +296,9 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: theme.colors.textPrimary,
     fontVariant: ["tabular-nums"],
+    // Genişliği karta sabitle: uzun para birimi fiyatı sarmasın, küçülsün.
+    alignSelf: "stretch",
+    textAlign: "center",
   },
   planPriceActive: {
     color: theme.colors.stateGood,

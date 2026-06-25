@@ -56,6 +56,9 @@ export function LimitBoard() {
           <MotiText
             key={Math.round(spent)}
             style={styles.statValue}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.5}
             from={{ opacity: 0.4, translateY: 4 }}
             animate={{ opacity: 1, translateY: 0 }}
           >
@@ -67,7 +70,9 @@ export function LimitBoard() {
         <View style={styles.divider} />
 
         <View style={styles.stat}>
-          <Text style={styles.statValue}>{fmt(limit)}</Text>
+          <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
+            {fmt(limit)}
+          </Text>
           <Text style={styles.statLabel}>{tu("board.limit")}</Text>
         </View>
       </View>
@@ -138,14 +143,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 40,
+    alignSelf: "stretch",
   },
   stats: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 48,
+    alignSelf: "stretch",
+    gap: 24,
+    // Aşırı geniş ekranlarda istatistikler ortada toplansın.
+    maxWidth: 360,
   },
   stat: {
+    flex: 1,
     alignItems: "center",
   },
   statValue: {
@@ -155,6 +165,9 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     color: theme.colors.textPrimary,
     fontVariant: ["tabular-nums"],
+    // Genişliği stat'a sabitle: tek satıra sığsın, taşarsa font küçülsün.
+    alignSelf: "stretch",
+    textAlign: "center",
   },
   statLabel: {
     fontFamily: theme.fonts.outfitSemi,

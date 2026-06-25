@@ -89,17 +89,17 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
       <ScrollView style={styles.scroll} contentContainerStyle={{ paddingBottom: 0 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <View style={styles.stats}>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{fmt(stats.spent)}</Text>
+            <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>{fmt(stats.spent)}</Text>
             <Text style={styles.statLabel}>{tu("analytics.spent")}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{fmt(stats.pace)}</Text>
+            <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>{fmt(stats.pace)}</Text>
             <Text style={styles.statLabel}>{tu("analytics.dailyAvg")}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{fmt(stats.pool)}</Text>
+            <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>{fmt(stats.pool)}</Text>
             <Text style={styles.statLabel}>{tu("analytics.pool")}</Text>
           </View>
         </View>
@@ -136,7 +136,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
             <View style={styles.trendCard}>
               <View style={styles.trendTop}>
                 <View>
-                  <Text style={styles.trendValue}>{fmt(trend.thisWeek)}</Text>
+                  <Text style={styles.trendValue} numberOfLines={1}>{fmt(trend.thisWeek)}</Text>
                   <Text style={styles.trendCaption}>{tu("analytics.last7")}</Text>
                 </View>
                 {trend.deltaPct !== null && (
@@ -178,7 +178,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                   <View style={styles.barTrack}>
                     <View style={[styles.bar, { width: `${(d.amount / maxAmount) * 100}%` }]} />
                   </View>
-                  <Text style={styles.amount}>{fmt(d.amount)}</Text>
+                  <Text style={styles.amount} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>{fmt(d.amount)}</Text>
                 </View>
               ))}
             </View>
@@ -232,7 +232,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                           />
                         </View>
                         <Text style={styles.catPct}>{t("common.pct", { n: Math.round(c.share * 100) })}</Text>
-                        <Text style={styles.catAmount}>{fmt(c.total)}</Text>
+                        <Text style={styles.catAmount} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>{fmt(c.total)}</Text>
                       </View>
                     );
                   })}
@@ -265,7 +265,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                             ]}
                           />
                         </View>
-                        <Text style={styles.topAmount}>{fmt(e.amount)}</Text>
+                        <Text style={styles.topAmount} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>{fmt(e.amount)}</Text>
                       </View>
                     );
                   })}
@@ -282,8 +282,8 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                     return (
                       <View key={mo.month} style={styles.monthRow}>
                         <View style={[styles.monthDot, within ? styles.monthDotGood : styles.monthDotBad]} />
-                        <Text style={styles.monthName}>{monthLabel(lang, mo.month)}</Text>
-                        <Text style={styles.monthSpent}>
+                        <Text style={styles.monthName} numberOfLines={1}>{monthLabel(lang, mo.month)}</Text>
+                        <Text style={styles.monthSpent} numberOfLines={1}>
                           {fmt(mo.spent)}
                           <Text style={styles.monthPool}> / {fmt(mo.pool)}</Text>
                         </Text>
@@ -327,6 +327,7 @@ const styles = StyleSheet.create({
   stat: {
     flex: 1,
     alignItems: "center",
+    paddingHorizontal: 8,
   },
   divider: {
     width: 1,
@@ -338,6 +339,9 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: theme.colors.textPrimary,
     marginBottom: 4,
+    // Genişliği stat'a sabitle: tek satıra sığsın, taşarsa font küçülsün.
+    alignSelf: "stretch",
+    textAlign: "center",
   },
   statLabel: {
     fontSize: 12,

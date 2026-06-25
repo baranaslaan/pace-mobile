@@ -131,7 +131,7 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
             >
               <View style={[styles.dot, { backgroundColor: categoryById(tpl.category).color }]} />
               <Text style={styles.itemName} numberOfLines={1}>{tpl.label}</Text>
-              <Text style={styles.itemAmount}>{fmt(tpl.amount)}</Text>
+              <Text style={styles.itemAmount} numberOfLines={1}>{fmt(tpl.amount)}</Text>
               <TouchableOpacity style={styles.remove} onPress={() => removeTemplate(tpl.id)} activeOpacity={0.7}>
                 <TrashIcon color={theme.colors.textSoft} />
               </TouchableOpacity>
@@ -203,7 +203,7 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
                 <Text style={styles.itemName} numberOfLines={1}>{r.label}</Text>
                 <Text style={styles.ruleSummary}>{ruleSummary(r.cadence, r.day)}</Text>
               </View>
-              <Text style={styles.itemAmount}>{fmt(r.amount)}</Text>
+              <Text style={styles.itemAmount} numberOfLines={1}>{fmt(r.amount)}</Text>
               <TouchableOpacity style={styles.remove} onPress={() => removeRecurring(r.id)} activeOpacity={0.7}>
                 <TrashIcon color={theme.colors.textSoft} />
               </TouchableOpacity>
