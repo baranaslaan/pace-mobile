@@ -6,6 +6,7 @@ import { timeLabel } from "../../../shared/lib/date";
 import { TrashIcon } from "../../../shared/ui/icons";
 import { CATEGORIES, categoryById } from "../../../shared/lib/categories";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { parseGrouped } from "../../../shared/lib/money";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
@@ -16,11 +17,10 @@ interface EntryRowProps {
 }
 
 export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
-  const { symbol, toBase, toDisplay, fmtNum } = useCurrency();
+  const { symbol, toBase, groupLive, toGroupedInput } = useCurrency();
   const { t } = useT();
-  // Blur'da gruplu göster; düzenleme için focus'ta ham say.
-  const grouped = fmtNum(entry.amount);
-  const raw = String(Math.round(toDisplay(entry.amount)));
+  // Yazarken de blur'da da binlik ayıraçlı — tek tutarlı biçim.
+  const grouped = toGroupedInput(entry.amount);
   const [amount, setAmount] = useState(grouped);
   const [note, setNote] = useState(entry.note ?? "");
   const focused = useRef(false);
@@ -31,7 +31,7 @@ export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
 
   const commitAmount = () => {
     focused.current = false;
-    const value = Number.parseFloat(amount);
+    const value = parseGrouped(amount);
     if (Number.isFinite(value) && value > 0) onUpdate(entry.id, { amount: toBase(value) });
     else setAmount(grouped);
   };
@@ -84,15 +84,15 @@ export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
         <Text style={styles.prefix}>{symbol}</Text>
         <TextInput
           style={styles.amountInput}
-          keyboardType="decimal-pad"
+          keyboardType="number-pad"
           value={amount}
-          onChangeText={setAmount}
+          onChangeText={(v) => setAmount(groupLive(v))}
           onFocus={() => {
             focused.current = true;
-            setAmount(raw);
           }}
           onBlur={commitAmount}
           onSubmitEditing={commitAmount}
+          numberOfLines={1}
         />
       </View>
 
@@ -164,7 +164,8 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontFamily: theme.fonts.outfitBold,
     color: theme.colors.textPrimary,
-    width: 60,
+    // Sabit genişlik: gruplu tutar uzasa da satır kaymasın, taşan kırpılsın.
+    width: 84,
     textAlign: "right",
     fontVariant: ["tabular-nums"],
   },

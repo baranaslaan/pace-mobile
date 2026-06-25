@@ -4,6 +4,9 @@ import {
   symbolOf,
   currencyByCode,
   isCurrencyCode,
+  groupDigits,
+  parseGrouped,
+  groupSeparatorOf,
   DEFAULT_CURRENCY,
 } from "../money";
 
@@ -36,5 +39,29 @@ describe("money", () => {
     expect(formatMoney(1234567, "USD")).toBe("$1,234,567");
     expect(formatMoney(15000, "EUR")).toBe("€15.000");
     expect(formatMoney(-2500, "GBP")).toBe("£-2,500");
+  });
+
+  it("groupSeparatorOf para birimine göre ayıraç verir", () => {
+    expect(groupSeparatorOf("TRY")).toBe(".");
+    expect(groupSeparatorOf("USD")).toBe(",");
+  });
+
+  it("groupDigits ham metni canlı binlik ayıraçlı tam sayıya çevirir", () => {
+    expect(groupDigits("", ".")).toBe("");
+    expect(groupDigits("5", ".")).toBe("5");
+    expect(groupDigits("1234", ".")).toBe("1.234");
+    expect(groupDigits("1234567", ",")).toBe("1,234,567");
+    // Rakam dışı karakterleri ve baştaki sıfırları temizler.
+    expect(groupDigits("1.2a3,4", ".")).toBe("1.234");
+    expect(groupDigits("007", ".")).toBe("7");
+    expect(groupDigits("abc", ".")).toBe("");
+  });
+
+  it("parseGrouped gruplu metinden sayısal değer üretir", () => {
+    expect(parseGrouped("1.234")).toBe(1234);
+    expect(parseGrouped("1,234,567")).toBe(1234567);
+    expect(parseGrouped("5")).toBe(5);
+    expect(Number.isNaN(parseGrouped(""))).toBe(true);
+    expect(Number.isNaN(parseGrouped("abc"))).toBe(true);
   });
 });

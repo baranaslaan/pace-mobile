@@ -79,6 +79,9 @@ export function Ring({ remaining, limit, tone }: any) {
         <MotiText
           key={shownNum}
           style={[styles.value, { fontSize: valueSize, lineHeight: Math.round(valueSize * 1.12) }]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.5}
           from={{ opacity: 0.3, scale: 0.88 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "timing", duration: 280 }}
@@ -127,6 +130,8 @@ const styles = StyleSheet.create({
     fontVariant: ["tabular-nums"],
     textAlign: "center",
     paddingHorizontal: 10,
+    // Halka içinde kalsın: çok büyük tutarda adjustsFontSizeToFit küçültür.
+    maxWidth: SIZE - 48,
   },
   unit: {
     fontFamily: theme.fonts.outfitMedium,

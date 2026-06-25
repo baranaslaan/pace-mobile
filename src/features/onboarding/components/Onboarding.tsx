@@ -91,6 +91,7 @@ export function Onboarding() {
                 subs={flow.subs}
                 onAdd={flow.addSub}
                 onRemove={flow.removeSub}
+                atLimit={flow.atSubLimit}
               />
             )}
             {step === 3 && <FeaturesStep />}

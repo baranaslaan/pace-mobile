@@ -49,6 +49,8 @@ export const en: Catalog = {
     weeklySummary: "Weekly · {day}",
     monthlySummary: "Monthly · day {day}",
     dayOfMonth: "Day of month",
+    quickProTitle: "Unlimited quick templates in Pace Pro",
+    quickProText: "Up to {n} quick templates on the free plan. Add unlimited with Pro — one-time, lifetime.",
     proTitle: "Auto-posting is in Pace Pro",
     proText: "Rent, subscriptions, gym… added automatically when due. One-time payment, lifetime.",
     goPro: "Get Pace Pro",
@@ -69,6 +71,7 @@ export const en: Catalog = {
     title: "Any fixed expenses?",
     hint: "Rent, subscriptions, loans… reserved from your budget up front. Skip if you like.",
     whatFor: "What for?",
+    limitNote: "Up to {n} fixed expenses on the free plan. Unlimited with Pro.",
   },
 
   recap: {

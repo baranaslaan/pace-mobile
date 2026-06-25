@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { AnimatePresence } from "moti";
-import { usePaceStore } from "../../../shared/store/usePaceStore";
+import { usePaceStore, FREE_SUBSCRIPTION_LIMIT } from "../../../shared/store/usePaceStore";
 import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
 import { totalSubscriptions } from "../../../shared/lib/engine";
+import { parseGrouped } from "../../../shared/lib/money";
 import { PlusIcon } from "../../../shared/ui/icons";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { SubscriptionRow } from "./SubscriptionRow";
@@ -13,8 +14,6 @@ import { useCurrency } from "../../../shared/store/useCurrency";
 import { ProUpsell } from "../../pro/components/ProUpsell";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
-
-const FREE_LIMIT = 3;
 
 interface SubscriptionsSheetProps {
   open: boolean;
@@ -31,15 +30,15 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
   const removeSubscription = usePaceStore((s) => s.removeSubscription);
   const isPro = usePaceStore((s) => s.isPro);
   const { limit } = useLimitLogic();
-  const { symbol, fmt, toBase } = useCurrency();
+  const { symbol, fmt, toBase, groupLive } = useCurrency();
   const { t, tu } = useT();
 
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
 
-  const parsed = Number.parseFloat(amount);
+  const parsed = parseGrouped(amount);
   const canAdd = name.trim() !== "" && !Number.isNaN(parsed) && parsed > 0;
-  const atFreeLimit = !isPro && subscriptions.length >= FREE_LIMIT;
+  const atFreeLimit = !isPro && subscriptions.length >= FREE_SUBSCRIPTION_LIMIT;
   const total = totalSubscriptions(subscriptions);
 
   const submit = () => {
@@ -81,7 +80,7 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
       {atFreeLimit ? (
         <ProUpsell
           title={t("subs.proTitle")}
-          text={t("subs.proText", { n: FREE_LIMIT })}
+          text={t("subs.proText", { n: FREE_SUBSCRIPTION_LIMIT })}
           cta={t("subs.goPro")}
           onUpgrade={onUpgrade}
         />
@@ -99,12 +98,13 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
             <Text style={styles.amountPrefix}>{symbol}</Text>
             <TextInput
               style={styles.amountInput}
-              keyboardType="decimal-pad"
+              keyboardType="number-pad"
               placeholder="0"
               placeholderTextColor={theme.colors.textDim}
               value={amount}
-              onChangeText={setAmount}
+              onChangeText={(v) => setAmount(groupLive(v))}
               onSubmitEditing={submit}
+              numberOfLines={1}
             />
           </View>
           <TouchableOpacity

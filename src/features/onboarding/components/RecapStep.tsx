@@ -5,6 +5,7 @@ import { dailyLimit } from "../../../shared/lib/engine";
 import { remainingDaysInclusive, daysInMonth } from "../../../shared/lib/date";
 import type { SubDraft } from "../hooks/useOnboardingFlow";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { parseGrouped } from "../../../shared/lib/money";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
@@ -25,7 +26,7 @@ export function RecapStep({ budget, subs }: RecapStepProps) {
     t("recap.point6"),
   ];
   const limit = dailyLimit({
-    budget: Number.parseFloat(budget) || 0,
+    budget: parseGrouped(budget) || 0,
     subscriptions: subs,
     expenses: {},
   });
@@ -43,7 +44,9 @@ export function RecapStep({ budget, subs }: RecapStepProps) {
 
       <View style={styles.limit}>
         <Text style={styles.prefix}>{symbol}</Text>
-        <Text style={styles.value}>{fmtNum(limit)}</Text>
+        <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
+          {fmtNum(limit)}
+        </Text>
         <Text style={styles.unit}>{t("recap.perDay")}</Text>
       </View>
 

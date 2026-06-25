@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { AnimatePresence, MotiView } from "moti";
-import { usePaceStore } from "../../../shared/store/usePaceStore";
+import { usePaceStore, FREE_TEMPLATE_LIMIT } from "../../../shared/store/usePaceStore";
 import { useCurrency } from "../../../shared/store/useCurrency";
 import { useT, weekdaysShort, weekdaysFull } from "../../../shared/i18n";
 import { CATEGORIES, categoryById } from "../../../shared/lib/categories";
@@ -10,6 +10,7 @@ import type { Cadence } from "../../../shared/lib/recurring";
 import { PlusIcon, TrashIcon } from "../../../shared/ui/icons";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { ProUpsell } from "../../pro/components/ProUpsell";
+import { parseGrouped } from "../../../shared/lib/money";
 import { theme } from "../../../shared/styles/theme";
 
 // Pazartesi-başlangıçlı görüntü sırası (JS getDay indeksi).
@@ -65,7 +66,7 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
   const removeTemplate = usePaceStore((s) => s.removeTemplate);
   const addRecurring = usePaceStore((s) => s.addRecurring);
   const removeRecurring = usePaceStore((s) => s.removeRecurring);
-  const { fmt, toBase, symbol } = useCurrency();
+  const { fmt, toBase, symbol, groupLive } = useCurrency();
   const { t, lang } = useT();
   const wdShort = weekdaysShort(lang);
   const wdFull = weekdaysFull(lang);
@@ -74,7 +75,7 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
   const [qName, setQName] = useState("");
   const [qAmount, setQAmount] = useState("");
   const [qCat, setQCat] = useState<string | undefined>(undefined);
-  const qParsed = Number.parseFloat(qAmount);
+  const qParsed = parseGrouped(qAmount);
   const qValid = qName.trim() !== "" && Number.isFinite(qParsed) && qParsed > 0;
 
   const submitQuick = () => {
@@ -92,9 +93,11 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
   const [cadence, setCadence] = useState<Cadence>("monthly");
   const [weekday, setWeekday] = useState(1);
   const [monthDay, setMonthDay] = useState("1");
-  const sParsed = Number.parseFloat(sAmount);
+  const sParsed = parseGrouped(sAmount);
   const sDay = cadence === "weekly" ? weekday : Math.min(31, Math.max(1, Number.parseInt(monthDay || "1", 10)));
   const sValid = sName.trim() !== "" && Number.isFinite(sParsed) && sParsed > 0;
+
+  const atTemplateLimit = !isPro && templates.length >= FREE_TEMPLATE_LIMIT;
 
   const submitScheduled = () => {
     if (!sValid) return;
@@ -137,35 +140,47 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
         </AnimatePresence>
         {templates.length === 0 && <Text style={styles.empty}>{t("recurring.quickEmpty")}</Text>}
 
-        <View style={styles.addRow}>
-          <TextInput
-            style={styles.nameInput}
-            placeholder={t("recurring.name")}
-            placeholderTextColor={theme.colors.textDim}
-            value={qName}
-            onChangeText={setQName}
+        {atTemplateLimit ? (
+          <ProUpsell
+            title={t("recurring.quickProTitle")}
+            text={t("recurring.quickProText", { n: FREE_TEMPLATE_LIMIT })}
+            cta={t("recurring.goPro")}
+            onUpgrade={onUpgrade}
           />
-          <View style={styles.amountField}>
-            <Text style={styles.prefix}>{symbol}</Text>
-            <TextInput
-              style={styles.amountInput}
-              keyboardType="decimal-pad"
-              placeholder="0"
-              placeholderTextColor={theme.colors.textDim}
-              value={qAmount}
-              onChangeText={setQAmount}
-            />
-          </View>
-          <TouchableOpacity
-            style={[styles.add, !qValid && { opacity: 0.35 }]}
-            onPress={submitQuick}
-            disabled={!qValid}
-            activeOpacity={0.8}
-          >
-            <PlusIcon color="#fff" />
-          </TouchableOpacity>
-        </View>
-        <CategoryPicker value={qCat} onChange={setQCat} />
+        ) : (
+          <>
+            <View style={styles.addRow}>
+              <TextInput
+                style={styles.nameInput}
+                placeholder={t("recurring.name")}
+                placeholderTextColor={theme.colors.textDim}
+                value={qName}
+                onChangeText={setQName}
+              />
+              <View style={styles.amountField}>
+                <Text style={styles.prefix}>{symbol}</Text>
+                <TextInput
+                  style={styles.amountInput}
+                  keyboardType="number-pad"
+                  placeholder="0"
+                  placeholderTextColor={theme.colors.textDim}
+                  value={qAmount}
+                  onChangeText={(v) => setQAmount(groupLive(v))}
+                  numberOfLines={1}
+                />
+              </View>
+              <TouchableOpacity
+                style={[styles.add, !qValid && { opacity: 0.35 }]}
+                onPress={submitQuick}
+                disabled={!qValid}
+                activeOpacity={0.8}
+              >
+                <PlusIcon color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <CategoryPicker value={qCat} onChange={setQCat} />
+          </>
+        )}
 
         {/* Zamanlanmış */}
         <Text style={[styles.sectionLabel, { marginTop: 28 }]}>{t("recurring.scheduledSection")}</Text>
@@ -209,11 +224,12 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
             <Text style={styles.prefix}>{symbol}</Text>
             <TextInput
               style={styles.amountInput}
-              keyboardType="decimal-pad"
+              keyboardType="number-pad"
               placeholder="0"
               placeholderTextColor={theme.colors.textDim}
               value={sAmount}
-              onChangeText={setSAmount}
+              onChangeText={(v) => setSAmount(groupLive(v))}
+              numberOfLines={1}
             />
           </View>
           <TouchableOpacity
@@ -392,8 +408,10 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontFamily: theme.fonts.outfitBold,
     color: theme.colors.textPrimary,
-    minWidth: 44,
+    // Sabit genişlik: tutar uzadıkça alan büyümesin, taşan kısım kırpılsın.
+    width: 92,
     textAlign: "right",
+    fontVariant: ["tabular-nums"],
   },
   add: {
     width: 44,

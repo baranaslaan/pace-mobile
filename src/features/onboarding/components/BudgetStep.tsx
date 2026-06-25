@@ -12,7 +12,7 @@ interface BudgetStepProps {
 }
 
 export function BudgetStep({ value, onChange, onSubmit }: BudgetStepProps) {
-  const { symbol } = useCurrency();
+  const { symbol, groupLive } = useCurrency();
   const { t } = useT();
   return (
     <View style={styles.step}>
@@ -25,13 +25,14 @@ export function BudgetStep({ value, onChange, onSubmit }: BudgetStepProps) {
         <Text style={styles.prefix}>{symbol}</Text>
         <TextInput
           autoFocus
-          keyboardType="numeric"
+          keyboardType="number-pad"
           placeholder="0"
           placeholderTextColor={theme.colors.textMute}
           style={[styles.input, value !== "" && styles.inputFilled]}
           value={value}
-          onChangeText={onChange}
+          onChangeText={(v) => onChange(groupLive(v))}
           onSubmitEditing={onSubmit}
+          numberOfLines={1}
         />
       </View>
     </View>

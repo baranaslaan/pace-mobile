@@ -22,6 +22,12 @@ import type {
   Subscription,
 } from "@/shared/lib/engine";
 
+/** Ücretsiz planda eklenebilecek en fazla sabit gider sayısı. */
+export const FREE_SUBSCRIPTION_LIMIT = 3;
+
+/** Ücretsiz planda eklenebilecek en fazla hızlı şablon sayısı. */
+export const FREE_TEMPLATE_LIMIT = 3;
+
 const mmkvStorage = createMMKV({ id: "pace-storage" });
 
 export const zustandStorage: StateStorage = {
@@ -134,6 +140,9 @@ export const usePaceStore = create<PaceState>()(
         set((s) => {
           const trimmed = name.trim();
           if (!trimmed || !Number.isFinite(amount) || amount <= 0) return s;
+          // Ücretsiz planda sabit gider sayısı sınırlı — UI'dan kaçan
+          // (örn. onboarding) yolları da burada kesilir.
+          if (!s.isPro && s.subscriptions.length >= FREE_SUBSCRIPTION_LIMIT) return s;
           return {
             subscriptions: [...s.subscriptions, { id: uid(), name: trimmed, amount }],
           };
@@ -195,6 +204,8 @@ export const usePaceStore = create<PaceState>()(
         set((s) => {
           const trimmed = label.trim();
           if (!trimmed || !Number.isFinite(amount) || amount <= 0) return s;
+          // Ücretsiz planda hızlı şablon sayısı sınırlı.
+          if (!s.isPro && s.templates.length >= FREE_TEMPLATE_LIMIT) return s;
           const tpl: QuickTemplate = {
             id: uid(),
             label: trimmed,

@@ -3,6 +3,8 @@ import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView } from "react
 import { AnimatePresence, MotiView } from "moti";
 import { PlusIcon, XIcon } from "../../../shared/ui/icons";
 import type { SubDraft } from "../hooks/useOnboardingFlow";
+import { FREE_SUBSCRIPTION_LIMIT } from "../../../shared/store/usePaceStore";
+import { parseGrouped } from "../../../shared/lib/money";
 import { useCurrency } from "../../../shared/store/useCurrency";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
@@ -12,20 +14,22 @@ interface SubscriptionsStepProps {
   subs: SubDraft[];
   onAdd: (name: string, amount: number) => void;
   onRemove: (id: string) => void;
+  atLimit?: boolean;
 }
 
 export function SubscriptionsStep({
   subs,
   onAdd,
   onRemove,
+  atLimit = false,
 }: SubscriptionsStepProps) {
-  const { symbol, fmt } = useCurrency();
+  const { symbol, fmt, groupLive } = useCurrency();
   const { t } = useT();
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
 
-  const parsed = Number.parseFloat(amount);
-  const canAdd = name.trim() !== "" && !Number.isNaN(parsed) && parsed > 0;
+  const parsed = parseGrouped(amount);
+  const canAdd = name.trim() !== "" && !Number.isNaN(parsed) && parsed > 0 && !atLimit;
 
   const submit = () => {
     if (!canAdd) return;
@@ -54,12 +58,13 @@ export function SubscriptionsStep({
           <Text style={styles.prefix}>{symbol}</Text>
           <TextInput
             style={styles.amountInput}
-            keyboardType="numeric"
+            keyboardType="number-pad"
             placeholder="0"
             placeholderTextColor={theme.colors.textMute}
             value={amount}
-            onChangeText={setAmount}
+            onChangeText={(v) => setAmount(groupLive(v))}
             onSubmitEditing={submit}
+            numberOfLines={1}
           />
         </View>
         <TouchableOpacity
@@ -71,6 +76,12 @@ export function SubscriptionsStep({
           <PlusIcon color="#fff" />
         </TouchableOpacity>
       </View>
+
+      {atLimit && (
+        <Text style={styles.limitNote}>
+          {t("subsStep.limitNote", { n: FREE_SUBSCRIPTION_LIMIT })}
+        </Text>
+      )}
 
       <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 40, gap: 8 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets showsVerticalScrollIndicator={false}>
         <AnimatePresence>
@@ -125,6 +136,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
+  },
+  limitNote: {
+    marginTop: -12,
+    fontFamily: theme.fonts.outfitMedium,
+    fontSize: 13,
+    fontWeight: "500",
+    color: theme.colors.textDim,
+    lineHeight: 19,
   },
   nameInput: {
     flex: 1,

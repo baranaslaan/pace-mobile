@@ -48,6 +48,8 @@ export const tr = {
     weeklySummary: "Haftalık · {day}",
     monthlySummary: "Aylık · {day}. gün",
     dayOfMonth: "Ayın günü",
+    quickProTitle: "Sınırsız hızlı şablon Pace Pro'da",
+    quickProText: "Ücretsiz planda en fazla {n} hızlı şablon. Pro ile sınırsızca ekle — tek seferlik, ömür boyu.",
     proTitle: "Otomatik harcamalar Pace Pro'da",
     proText: "Kira, abonelik, spor salonu… vadesi gelince kendiliğinden eklensin. Tek seferlik ödeme, ömür boyu.",
     goPro: "Pace Pro'ya geç",
@@ -68,6 +70,7 @@ export const tr = {
     title: "Sabit giderlerin var mı?",
     hint: "Kira, abonelik, kredi… Bütçenden peşin ayrılır, boş da geçebilirsin.",
     whatFor: "Ne için?",
+    limitNote: "Ücretsiz planda en fazla {n} sabit gider. Pro ile sınırsız.",
   },
 
   recap: {

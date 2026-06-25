@@ -7,6 +7,7 @@ import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
 import { ArrowUpIcon } from "../../../shared/ui/icons";
 import { CATEGORIES, categoryById } from "../../../shared/lib/categories";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { parseGrouped } from "../../../shared/lib/money";
 import { tapLight, tapWarn } from "../../../shared/lib/haptics";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
@@ -17,7 +18,7 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
   const templates = usePaceStore((s) => s.templates);
   const applyTemplate = usePaceStore((s) => s.applyTemplate);
   const { remaining, limit } = useLimitLogic();
-  const { symbol, toBase, fmt } = useCurrency();
+  const { symbol, toBase, fmt, groupLive } = useCurrency();
   const { t } = useT();
   const tone = getTone(remaining, limit);
 
@@ -44,7 +45,7 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
   }, []);
   const lift = keyboardHeight > 0 ? Math.max(0, keyboardHeight - bottomInset) : 0;
 
-  const amount = Number.parseFloat(input);
+  const amount = parseGrouped(input);
   const valid = !Number.isNaN(amount) && amount > 0;
 
   const submit = () => {
@@ -88,13 +89,14 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
             <Text style={styles.prefix}>{symbol}</Text>
             <TextInput
               ref={inputRef}
-              keyboardType="decimal-pad"
+              keyboardType="number-pad"
               placeholder="0"
               placeholderTextColor="rgba(255, 255, 255, 0.18)"
               style={[styles.input, input !== "" && styles.inputFilled]}
               value={input}
-              onChangeText={setInput}
+              onChangeText={(v) => setInput(groupLive(v))}
               onSubmitEditing={submit}
+              numberOfLines={1}
             />
           </TouchableOpacity>
 

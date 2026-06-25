@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useState } from "react";
-import { StyleSheet, View, TouchableOpacity, Dimensions } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Dimensions, Keyboard, Platform } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
@@ -30,6 +30,30 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
   // Çıkış animasyonu bitene kadar DOM'da kalsın diye iç "mounted" durumu.
   const [mounted, setMounted] = useState(open);
   const translateY = useSharedValue(SCREEN_HEIGHT);
+  // Klavye yüksekliği kadar sheet'i yukarı kaldır — alttaki input (tutar girişi)
+  // klavyenin altında kalmasın. Sheet alta sabit olduğu için bottom kaydırılır.
+  const keyboardLift = useSharedValue(0);
+
+  useEffect(() => {
+    const showEvt = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvt = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const show = Keyboard.addListener(showEvt, (e) => {
+      keyboardLift.value = withTiming(e.endCoordinates.height, {
+        duration: Platform.OS === "ios" ? 240 : 160,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    const hide = Keyboard.addListener(hideEvt, () => {
+      keyboardLift.value = withTiming(0, {
+        duration: Platform.OS === "ios" ? 240 : 160,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -67,7 +91,8 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
     });
 
   const sheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
+    // Açılış/sürükleme translate'i + klavye kaldırması (yukarı negatif).
+    transform: [{ translateY: translateY.value - keyboardLift.value }],
   }));
 
   const backdropStyle = useAnimatedStyle(() => ({

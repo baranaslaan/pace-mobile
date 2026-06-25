@@ -4,6 +4,7 @@ import { Text } from "../../../shared/typography/Text";
 import { MotiView } from "moti";
 import { TrashIcon } from "../../../shared/ui/icons";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { parseGrouped } from "../../../shared/lib/money";
 import { theme } from "../../../shared/styles/theme";
 
 interface SubscriptionRowProps {
@@ -13,10 +14,9 @@ interface SubscriptionRowProps {
 }
 
 export function SubscriptionRow({ sub, onUpdateAmount, onRemove }: SubscriptionRowProps) {
-  const { symbol, toBase, toDisplay, fmtNum } = useCurrency();
-  // Blur'da gruplu göster; düzenleme için focus'ta ham say.
-  const grouped = fmtNum(sub.amount);
-  const raw = String(Math.round(toDisplay(sub.amount)));
+  const { symbol, toBase, groupLive, toGroupedInput } = useCurrency();
+  // Yazarken de blur'da da binlik ayıraçlı — tek tutarlı biçim.
+  const grouped = toGroupedInput(sub.amount);
   const [draft, setDraft] = useState(grouped);
   const focused = useRef(false);
 
@@ -26,7 +26,7 @@ export function SubscriptionRow({ sub, onUpdateAmount, onRemove }: SubscriptionR
 
   const commit = () => {
     focused.current = false;
-    const value = Number.parseFloat(draft);
+    const value = parseGrouped(draft);
     if (Number.isFinite(value) && value > 0) onUpdateAmount(sub.id, toBase(value));
     else setDraft(grouped);
   };
@@ -45,15 +45,15 @@ export function SubscriptionRow({ sub, onUpdateAmount, onRemove }: SubscriptionR
         <Text style={styles.prefix}>{symbol}</Text>
         <TextInput
           style={styles.amountInput}
-          keyboardType="decimal-pad"
+          keyboardType="number-pad"
           value={draft}
-          onChangeText={setDraft}
+          onChangeText={(v) => setDraft(groupLive(v))}
           onFocus={() => {
             focused.current = true;
-            setDraft(raw);
           }}
           onBlur={commit}
           onSubmitEditing={commit}
+          numberOfLines={1}
         />
       </View>
 
@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: "rgba(255, 255, 255, 0.04)",
     marginBottom: 8,
+    overflow: "hidden",
   },
   itemName: {
     flex: 1,
@@ -105,8 +106,10 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontFamily: theme.fonts.outfitBold,
     color: theme.colors.textPrimary,
-    minWidth: 40,
+    // Sabit genişlik: tutar uzadıkça alan büyümesin, taşan kısım kırpılsın.
+    width: 96,
     textAlign: "right",
+    fontVariant: ["tabular-nums"],
   },
   remove: {
     width: 34,

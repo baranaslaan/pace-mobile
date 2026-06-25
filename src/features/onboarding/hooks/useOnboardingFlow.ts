@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
-import { usePaceStore } from "@/shared/store/usePaceStore";
+import { usePaceStore, FREE_SUBSCRIPTION_LIMIT } from "@/shared/store/usePaceStore";
+import { parseGrouped } from "@/shared/lib/money";
 
 /** Onboarding sırasında yerel tutulan sabit gider taslağı. */
 export interface SubDraft {
@@ -27,6 +28,7 @@ export function useOnboardingFlow() {
   const commitBudget = usePaceStore((s) => s.setBudget);
   const commitSubscription = usePaceStore((s) => s.addSubscription);
   const completeOnboarding = usePaceStore((s) => s.completeOnboarding);
+  const isPro = usePaceStore((s) => s.isPro);
 
   const [step, setStep] = useState(0);
   /** Slide yönü: 1 ileri, -1 geri. */
@@ -44,18 +46,28 @@ export function useOnboardingFlow() {
     setStep((s) => Math.max(0, s - 1));
   }, []);
 
-  const addSub = useCallback((name: string, amount: number) => {
-    const trimmed = name.trim();
-    if (!trimmed || !Number.isFinite(amount) || amount <= 0) return;
-    setSubs((list) => [...list, { id: uid(), name: trimmed, amount }]);
-  }, []);
+  // Ücretsiz planda sabit gider sayısı sınırlı; store guard'ıyla aynı sınır.
+  const atSubLimit = !isPro && subs.length >= FREE_SUBSCRIPTION_LIMIT;
+
+  const addSub = useCallback(
+    (name: string, amount: number) => {
+      const trimmed = name.trim();
+      if (!trimmed || !Number.isFinite(amount) || amount <= 0) return;
+      setSubs((list) => {
+        // Sınıra ulaşıldıysa ekleme — finish'te store da bunu kesiyor.
+        if (!isPro && list.length >= FREE_SUBSCRIPTION_LIMIT) return list;
+        return [...list, { id: uid(), name: trimmed, amount }];
+      });
+    },
+    [isPro],
+  );
 
   const removeSub = useCallback((id: string) => {
     setSubs((list) => list.filter((s) => s.id !== id));
   }, []);
 
   const finish = useCallback(() => {
-    commitBudget(Number.parseFloat(budget) || 0);
+    commitBudget(parseGrouped(budget) || 0);
     subs.forEach((s) => commitSubscription(s.name, s.amount));
     completeOnboarding();
   }, [budget, subs, commitBudget, commitSubscription, completeOnboarding]);
@@ -66,6 +78,7 @@ export function useOnboardingFlow() {
     budget,
     setBudget,
     subs,
+    atSubLimit,
     addSub,
     removeSub,
     goNext,

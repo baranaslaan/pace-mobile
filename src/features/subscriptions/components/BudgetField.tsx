@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, TextInput } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { parseGrouped } from "../../../shared/lib/money";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
@@ -11,11 +12,10 @@ interface BudgetFieldProps {
 }
 
 export function BudgetField({ value, onCommit }: BudgetFieldProps) {
-  const { symbol, toBase, toDisplay, fmtNum } = useCurrency();
+  const { symbol, toBase, groupLive, toGroupedInput } = useCurrency();
   const { t, tu } = useT();
-  // Blur'da binlik ayıraçlı (gruplu) göster; düzenleme için focus'ta ham say.
-  const grouped = fmtNum(value);
-  const raw = String(Math.round(toDisplay(value)));
+  // Yazarken de blur'da da binlik ayıraçlı (gruplu) göster — tek tutarlı biçim.
+  const grouped = toGroupedInput(value);
   const [draft, setDraft] = useState(grouped);
   const focused = useRef(false);
 
@@ -27,7 +27,7 @@ export function BudgetField({ value, onCommit }: BudgetFieldProps) {
 
   const commit = () => {
     focused.current = false;
-    const next = Number.parseFloat(draft);
+    const next = parseGrouped(draft);
     if (Number.isFinite(next) && next > 0) onCommit(toBase(next));
     else setDraft(grouped);
   };
@@ -39,15 +39,15 @@ export function BudgetField({ value, onCommit }: BudgetFieldProps) {
         <Text style={styles.budgetPrefix}>{symbol}</Text>
         <TextInput
           style={styles.budgetInput}
-          keyboardType="decimal-pad"
+          keyboardType="number-pad"
           value={draft}
-          onChangeText={setDraft}
+          onChangeText={(v) => setDraft(groupLive(v))}
           onFocus={() => {
             focused.current = true;
-            setDraft(raw);
           }}
           onBlur={commit}
           onSubmitEditing={commit}
+          numberOfLines={1}
         />
       </View>
     </View>

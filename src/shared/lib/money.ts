@@ -64,3 +64,25 @@ export function formatNumber(amount: number, code: string | undefined): string {
 export function formatMoney(amount: number, code: string | undefined): string {
   return `${symbolOf(code)}${formatNumber(amount, code)}`;
 }
+
+/** Para biriminin binlik ayıracı (canlı input gruplaması için). */
+export function groupSeparatorOf(code: string | undefined): string {
+  return currencyByCode(code).group;
+}
+
+/**
+ * Kullanıcının yazdığı ham metni binlik ayıraçlı tam sayıya çevirir
+ * (ör. "12345" → "12.345"). Tutarlar her yerde yuvarlanarak gösterildiği
+ * için giriş de tam sayıdır — ondalık ayıraç belirsizliği böylece kalkar.
+ */
+export function groupDigits(raw: string, sep: string): string {
+  const digits = raw.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+  if (digits === "") return "";
+  return groupThousands(Number(digits), sep);
+}
+
+/** Gruplu/ayıraçlı metinden sayısal değer (NaN = boş/geçersiz). */
+export function parseGrouped(text: string): number {
+  const digits = text.replace(/\D/g, "");
+  return digits === "" ? Number.NaN : Number.parseInt(digits, 10);
+}
