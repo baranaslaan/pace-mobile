@@ -73,13 +73,15 @@ export default function AppIndex() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <AnimatePresence>
-      {!ready ? (
-        <Splash key="splash" />
-      ) : !onboarded ? (
+    <View style={styles.screen}>
+      {/* Alt katman: hazır olunca app/onboarding. Splash üstte opak dururken
+          burası boyanır, böylece splash sönünce altta hazır içerik bulunur —
+          geçişte boş/blink kare oluşmaz. */}
+      <AnimatePresence>
+      {!ready ? null : !onboarded ? (
         <MotiView
           key="onboarding"
-          style={styles.screen}
+          style={StyleSheet.absoluteFill}
           from={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -90,7 +92,7 @@ export default function AppIndex() {
       ) : (
         <MotiView
           key="app"
-          style={styles.screen}
+          style={StyleSheet.absoluteFill}
           from={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ type: "timing", duration: 350 }}
@@ -134,7 +136,13 @@ export default function AppIndex() {
           <AppSheets menuOpen={menuOpen} onCloseMenu={() => setMenuOpen(false)} />
         </MotiView>
       )}
-    </AnimatePresence>
+      </AnimatePresence>
+
+      {/* Üst katman: splash. Hazır olunca sönerek alttaki içeriği açar. */}
+      <AnimatePresence>
+        {!ready && <Splash key="splash" />}
+      </AnimatePresence>
+    </View>
   );
 }
 

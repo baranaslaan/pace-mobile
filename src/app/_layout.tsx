@@ -14,6 +14,7 @@ import { usePaceStore } from "@/shared/store/usePaceStore";
 import { fetchRates } from "@/shared/lib/rates";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { PrivacyShield } from "@/shared/ui/PrivacyShield";
+import { theme } from "@/shared/styles/theme";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -59,9 +60,16 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.colors.bgPage }}>
       <ErrorBoundary>
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            // Splash→app opacity geçişinde arkada beyaz parlama olmasın diye
+            // navigator içeriğini de koyu zemine sabitle.
+            contentStyle: { backgroundColor: theme.colors.bgPage },
+          }}
+        >
           <Stack.Screen name="index" />
         </Stack>
       </ErrorBoundary>
