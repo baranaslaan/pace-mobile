@@ -9,7 +9,7 @@ export function Splash() {
     <MotiView
       style={styles.splash}
       exit={{ opacity: 0 }}
-      transition={{ type: "timing", duration: 500 }}
+      transition={{ type: "timing", duration: 350 }}
     >
       <View style={styles.glow} pointerEvents="none">
         <Svg width="100%" height="100%">

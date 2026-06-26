@@ -90,10 +90,15 @@ export function Onboarding() {
             // tersi. exit, AnimatePresence custom'ından güncel yönü alır.
             from={{ opacity: 0, translateX: direction * SLIDE }}
             animate={{ opacity: 1, translateX: 0 }}
-            exit={(custom?: number) => ({
-              opacity: 0,
-              translateX: -(custom ?? 1) * SLIDE,
-            })}
+            exit={(custom?: number) => {
+              // moti bu exit'i UI thread'de (worklet) çağırır — Reanimated 4'te
+              // fonksiyon-exit'ler 'worklet' direktifi içermek zorunda.
+              "worklet";
+              return {
+                opacity: 0,
+                translateX: -(custom ?? 1) * SLIDE,
+              };
+            }}
             transition={{ type: "timing", duration: 260 }}
           >
             {step === 0 && <WelcomeStep />}

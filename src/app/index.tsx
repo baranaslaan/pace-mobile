@@ -20,7 +20,9 @@ import { useWidgetSync } from "../widgets/useWidgetSync";
 
 import { theme } from "../shared/styles/theme";
 
-const MIN_SPLASH_MS = 1400;
+// Logo girişi ~600ms'de tamamlanıyor; markanın görünmesine yetecek kadar tut,
+// fazlası boşa bekleme. Hydration genelde bundan hızlı bittiği için asıl freni budur.
+const MIN_SPLASH_MS = 700;
 
 export default function AppIndex() {
   const onboarded = usePaceStore((s) => s.onboarded);
@@ -81,7 +83,7 @@ export default function AppIndex() {
           from={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ type: "timing", duration: 500 }}
+          transition={{ type: "timing", duration: 350 }}
         >
           <Onboarding />
         </MotiView>
@@ -91,7 +93,7 @@ export default function AppIndex() {
           style={styles.screen}
           from={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ type: "timing", duration: 500 }}
+          transition={{ type: "timing", duration: 350 }}
         >
           <View style={styles.safe}>
             <View style={StyleSheet.absoluteFill} pointerEvents="none">
