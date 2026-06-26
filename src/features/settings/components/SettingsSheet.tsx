@@ -18,9 +18,10 @@ import {
 import { CardIcon, ChevronLeftIcon, SparklesIcon, TrashIcon, CheckIcon, DownloadIcon, LockIcon, BellIcon, RotateCcwIcon, ListIcon } from "../../../shared/ui/icons";
 import { theme } from "../../../shared/styles/theme";
 
-// TODO(revenuecat): gerçek barındırılan URL'lerle değiştir (App Store zorunlu).
-const PRIVACY_URL = "https://pace.app/privacy";
-const TERMS_URL = "https://pace.app/terms";
+// Barındırılan yasal sayfalar (GitHub Pages, kaynak: docs/). pace.app özel
+// alan adına geçilirse bu sabitler güncellenmeli.
+const PRIVACY_URL = "https://baranaslaan.github.io/pace-mobile/privacy.html";
+const TERMS_URL = "https://baranaslaan.github.io/pace-mobile/terms.html";
 
 interface SettingsSheetProps {
   open: boolean;
