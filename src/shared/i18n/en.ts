@@ -110,6 +110,8 @@ export const en: Catalog = {
     limit: "limit",
     rolloverTip:
       "Your limit recalculates daily: underspend and it rises, overspend and it tightens. Tap to dismiss.",
+    firstExpenseTip:
+      "Add your first expense in the box below — type the amount, done.",
   },
 
   ring: {

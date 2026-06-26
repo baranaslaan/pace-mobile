@@ -18,8 +18,14 @@ export function LimitBoard() {
   const tone = getTone(remaining, limit);
   const rolloverTipSeen = usePaceStore((s) => s.rolloverTipSeen);
   const markRolloverTipSeen = usePaceStore((s) => s.markRolloverTipSeen);
+  const firstExpenseTipSeen = usePaceStore((s) => s.firstExpenseTipSeen);
+  const markFirstExpenseTipSeen = usePaceStore((s) => s.markFirstExpenseTipSeen);
   // Devir görünür biçimde çalıştığı ilk anda, henüz görülmemişse tek seferlik ipucu.
   const showTip = !setup && rolloverActive && !rolloverTipSeen;
+  // İlk açılış: bütçe kurulu ama henüz hiç harcama yokken aşağıdaki girişe yönlendir.
+  // Devir ipucuyla yarışmasın diye onunla aynı anda gösterilmez.
+  const showFirstTip =
+    !setup && !showTip && spent === 0 && !firstExpenseTipSeen;
 
   if (setup) {
     const oversubscribed = setup === "oversubscribed";
@@ -91,6 +97,24 @@ export function LimitBoard() {
               activeOpacity={0.8}
             >
               <Text style={styles.tipText}>{t("board.rolloverTip")}</Text>
+            </TouchableOpacity>
+          </MotiView>
+        )}
+
+        {showFirstTip && (
+          <MotiView
+            key="firstTip"
+            from={{ opacity: 0, translateY: 8 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            exit={{ opacity: 0, translateY: 8 }}
+            transition={{ type: "timing", duration: 220 }}
+          >
+            <TouchableOpacity
+              style={styles.tip}
+              onPress={markFirstExpenseTipSeen}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.tipText}>{t("board.firstExpenseTip")}</Text>
             </TouchableOpacity>
           </MotiView>
         )}

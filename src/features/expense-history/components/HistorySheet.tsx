@@ -4,8 +4,9 @@ import { Text } from "../../../shared/typography/Text";
 import { AnimatePresence, MotiView } from "moti";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { dayKey } from "../../../shared/lib/date";
-import { RotateCcwIcon } from "../../../shared/ui/icons";
+import { RotateCcwIcon, ListIcon } from "../../../shared/ui/icons";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
+import { EmptyState } from "../../../shared/ui/EmptyState";
 import { EntryRow } from "./EntryRow";
 import { useCurrency } from "../../../shared/store/useCurrency";
 import { useT } from "../../../shared/i18n";
@@ -61,9 +62,10 @@ export function HistorySheet({ open, onClose }: HistorySheetProps) {
         </AnimatePresence>
 
         {today.length === 0 && (
-          <View style={styles.infoBox}>
-            <Text style={styles.infoText}>{t("history.empty")}</Text>
-          </View>
+          <EmptyState
+            icon={<ListIcon size={22} color={theme.colors.textDim} />}
+            text={t("history.empty")}
+          />
         )}
       </ScrollView>
 
@@ -121,16 +123,6 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     marginHorizontal: -4,
     paddingHorizontal: 4,
-  },
-  infoBox: {
-    paddingVertical: 28,
-    paddingHorizontal: 12,
-  },
-  infoText: {
-    fontSize: 14,
-    color: theme.colors.textDim,
-    lineHeight: 21,
-    textAlign: "center",
   },
   reset: {
     flexDirection: "row",

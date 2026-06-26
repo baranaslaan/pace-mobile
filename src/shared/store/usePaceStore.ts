@@ -75,6 +75,8 @@ interface PaceState {
   reminderMinute: number;
   /** Rollover (devir) ipucu bir kez gösterilip kapatıldı mı? */
   rolloverTipSeen: boolean;
+  /** İlk-harcama ipucu görüldü mü? (ilk kalem eklenince/dokununca kalıcı kapanır) */
+  firstExpenseTipSeen: boolean;
   _hydrated: boolean;
 
   setBudget: (amount: number) => void;
@@ -108,6 +110,7 @@ interface PaceState {
   setRates: (rates: Record<string, number>) => void;
   setReminder: (enabled: boolean, hour: number, minute: number) => void;
   markRolloverTipSeen: () => void;
+  markFirstExpenseTipSeen: () => void;
   rollIfNewMonth: () => void;
 }
 
@@ -131,6 +134,7 @@ export const usePaceStore = create<PaceState>()(
       reminderHour: 20,
       reminderMinute: 0,
       rolloverTipSeen: false,
+      firstExpenseTipSeen: false,
       _hydrated: false,
 
       setBudget: (amount) =>
@@ -172,7 +176,8 @@ export const usePaceStore = create<PaceState>()(
             ...(trimmed ? { note: trimmed } : {}),
             ...(isCategoryId(category) ? { category } : {}),
           };
-          return { entries: [...s.entries, entry] };
+          // İlk harcama loglandığı an ilk-açılış ipucu kalıcı olarak kapanır.
+          return { entries: [...s.entries, entry], firstExpenseTipSeen: true };
         }),
 
       updateExpense: (id, patch) =>
@@ -332,6 +337,8 @@ export const usePaceStore = create<PaceState>()(
 
       markRolloverTipSeen: () => set({ rolloverTipSeen: true }),
 
+      markFirstExpenseTipSeen: () => set({ firstExpenseTipSeen: true }),
+
       rollIfNewMonth: () =>
         set((s) => rollMonth(s, monthKey()) ?? s),
     }),
@@ -356,6 +363,7 @@ export const usePaceStore = create<PaceState>()(
         reminderHour,
         reminderMinute,
         rolloverTipSeen,
+        firstExpenseTipSeen,
       }) => ({
         budget,
         subscriptions,
@@ -374,8 +382,9 @@ export const usePaceStore = create<PaceState>()(
         reminderHour,
         reminderMinute,
         rolloverTipSeen,
+        firstExpenseTipSeen,
       }),
-      version: 8,
+      version: 9,
       migrate: (persisted) => {
         const s = (persisted ?? {}) as Partial<PaceState>;
         return {
@@ -419,6 +428,9 @@ export const usePaceStore = create<PaceState>()(
           reminderMinute:
             typeof s.reminderMinute === "number" ? s.reminderMinute : 0,
           rolloverTipSeen: Boolean(s.rolloverTipSeen),
+          // Mevcut (zaten onboard olmuş) kullanıcılar ilk-açılış ipucunu görmesin.
+          firstExpenseTipSeen:
+            Boolean(s.firstExpenseTipSeen) || Boolean(s.onboarded),
         } as PaceState;
       },
     },

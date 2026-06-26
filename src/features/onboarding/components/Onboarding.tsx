@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, View, SafeAreaView, Dimensions, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from "react-native";
+import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { Text } from "../../../shared/typography/Text";
 import { AnimatePresence, MotiView } from "moti";
 import { ChevronLeftIcon } from "../../../shared/ui/icons";
@@ -16,6 +17,8 @@ import { theme } from "../../../shared/styles/theme";
 
 const ACCENT = theme.colors.stateGood;
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+/** Adımlar arası yatay slide mesafesi (ekranın küçük bir oranı, ferah hisset). */
+const SLIDE = Math.min(48, SCREEN_WIDTH * 0.12);
 
 export function Onboarding() {
   const flow = useOnboardingFlow();
@@ -43,7 +46,17 @@ export function Onboarding() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <View style={styles.glow} pointerEvents="none" />
+      <View style={styles.glow} pointerEvents="none">
+        <Svg width="100%" height="100%">
+          <Defs>
+            <RadialGradient id="onbGlow" cx="50%" cy="8%" rx="100%" ry="50%">
+              <Stop offset="0%" stopColor={ACCENT} stopOpacity="0.12" />
+              <Stop offset="60%" stopColor={ACCENT} stopOpacity="0" />
+            </RadialGradient>
+          </Defs>
+          <Rect width="100%" height="100%" fill="url(#onbGlow)" />
+        </Svg>
+      </View>
 
       <View style={styles.header}>
         <View style={styles.slot}>
@@ -73,9 +86,14 @@ export function Onboarding() {
           <MotiView
             key={step}
             style={styles.stepWrap}
-            from={{ opacity: 0, translateY: 10 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            exit={{ opacity: 0 }}
+            // Yönlü slide: ileri giderken sağdan girer/sola çıkar, geri giderken
+            // tersi. exit, AnimatePresence custom'ından güncel yönü alır.
+            from={{ opacity: 0, translateX: direction * SLIDE }}
+            animate={{ opacity: 1, translateX: 0 }}
+            exit={(custom?: number) => ({
+              opacity: 0,
+              translateX: -(custom ?? 1) * SLIDE,
+            })}
             transition={{ type: "timing", duration: 260 }}
           >
             {step === 0 && <WelcomeStep />}

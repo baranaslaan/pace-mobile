@@ -109,6 +109,8 @@ export const tr = {
     limit: "limit",
     rolloverTip:
       "Limitin her gün yeniden hesaplanır: az harcadığın gün artar, çok harcadığın gün kısılır. Dokun, anladım.",
+    firstExpenseTip:
+      "İlk harcamanı aşağıdaki kutudan ekle — tutarı yaz, bitti.",
   },
 
   ring: {

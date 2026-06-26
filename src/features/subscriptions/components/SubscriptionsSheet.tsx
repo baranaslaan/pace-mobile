@@ -6,8 +6,9 @@ import { usePaceStore, FREE_SUBSCRIPTION_LIMIT } from "../../../shared/store/use
 import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
 import { totalSubscriptions } from "../../../shared/lib/engine";
 import { parseGrouped } from "../../../shared/lib/money";
-import { PlusIcon } from "../../../shared/ui/icons";
+import { PlusIcon, CardIcon } from "../../../shared/ui/icons";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
+import { EmptyState } from "../../../shared/ui/EmptyState";
 import { SubscriptionRow } from "./SubscriptionRow";
 import { BudgetField } from "./BudgetField";
 import { useCurrency } from "../../../shared/store/useCurrency";
@@ -73,7 +74,10 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
         </AnimatePresence>
 
         {subscriptions.length === 0 && (
-          <Text style={styles.empty}>{t("subs.empty")}</Text>
+          <EmptyState
+            icon={<CardIcon size={22} color={theme.colors.textDim} />}
+            text={t("subs.empty")}
+          />
         )}
       </ScrollView>
 
@@ -141,12 +145,6 @@ const styles = StyleSheet.create({
     // Sabit cap yerine sheet'in 88%'ine kadar uzar; bütçe alanı + alt eylem
     // sabit kalır, liste taşınca scroll eder.
     flexShrink: 1,
-  },
-  empty: {
-    fontSize: 15,
-    color: theme.colors.textSoft,
-    fontStyle: "italic",
-    paddingVertical: 16,
   },
   addRow: {
     flexDirection: "row",

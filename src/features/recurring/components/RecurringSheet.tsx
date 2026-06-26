@@ -7,8 +7,9 @@ import { useCurrency } from "../../../shared/store/useCurrency";
 import { useT, weekdaysShort, weekdaysFull } from "../../../shared/i18n";
 import { CATEGORIES, categoryById } from "../../../shared/lib/categories";
 import type { Cadence } from "../../../shared/lib/recurring";
-import { PlusIcon, TrashIcon } from "../../../shared/ui/icons";
+import { PlusIcon, TrashIcon, SparklesIcon, RepeatIcon } from "../../../shared/ui/icons";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
+import { EmptyState } from "../../../shared/ui/EmptyState";
 import { ProUpsell } from "../../pro/components/ProUpsell";
 import { parseGrouped } from "../../../shared/lib/money";
 import { theme } from "../../../shared/styles/theme";
@@ -138,7 +139,13 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
             </MotiView>
           ))}
         </AnimatePresence>
-        {templates.length === 0 && <Text style={styles.empty}>{t("recurring.quickEmpty")}</Text>}
+        {templates.length === 0 && (
+          <EmptyState
+            compact
+            icon={<SparklesIcon size={18} color={theme.colors.textDim} />}
+            text={t("recurring.quickEmpty")}
+          />
+        )}
 
         {atTemplateLimit ? (
           <ProUpsell
@@ -210,7 +217,13 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
             </MotiView>
           ))}
         </AnimatePresence>
-        {recurring.length === 0 && <Text style={styles.empty}>{t("recurring.scheduledEmpty")}</Text>}
+        {recurring.length === 0 && (
+          <EmptyState
+            compact
+            icon={<RepeatIcon size={18} color={theme.colors.textDim} />}
+            text={t("recurring.scheduledEmpty")}
+          />
+        )}
 
         <View style={styles.addRow}>
           <TextInput
@@ -367,11 +380,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderRadius: 11,
-  },
-  empty: {
-    fontSize: 13,
-    color: theme.colors.textDim,
-    paddingVertical: 8,
   },
   addRow: {
     flexDirection: "row",
