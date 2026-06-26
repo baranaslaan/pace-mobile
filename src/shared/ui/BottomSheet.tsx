@@ -151,10 +151,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.sheetBg,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
+    // Sheet animasyonlu bir View (her frame translateY değişiyor). iOS shadowPath
+    // olmadan büyük blur'lu gölgeyi her karede yeniden rasterize eder ve maliyet
+    // yarıçapın karesiyle artar — 56 çok pahalıydı. Daha küçük yarıçapla derinliği
+    // koruyup UI thread maliyetini büyük ölçüde düşürürüz.
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: -24 },
-    shadowOpacity: 0.55,
-    shadowRadius: 56,
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
     elevation: 24,
   },
   dragZone: {

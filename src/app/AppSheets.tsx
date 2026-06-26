@@ -29,13 +29,23 @@ interface AppSheetsProps {
  */
 export function AppSheets({ menuOpen, onCloseMenu }: AppSheetsProps) {
   const [active, setActive] = useState<Sheet>("none");
+  // Performans: her sheet kendi içeriğini + store aboneliklerini taşır. Hepsini
+  // açılıştan itibaren mount tutmak, kullanıcı hiç açmasa bile her store
+  // değişiminde gereksiz render/hesap demek. Bir sheet'i ancak en az bir kez
+  // açıldıktan sonra mount ediyoruz; açılınca mount kalır (kapanış animasyonu ve
+  // tekrar açılış sorunsuz çalışsın diye).
+  const [everOpened, setEverOpened] = useState<Set<Sheet>>(() => new Set());
 
+  const open = (s: Sheet) => {
+    setEverOpened((prev) => (prev.has(s) ? prev : new Set(prev).add(s)));
+    setActive(s);
+  };
   const close = () => setActive("none");
-  const upgrade = () => setActive("paywall");
+  const upgrade = () => open("paywall");
   // Menüden açılışlar: önce menüyü kapat, sonra hedef sheet'i aç.
   const openFromMenu = (s: Sheet) => {
     onCloseMenu();
-    setActive(s);
+    open(s);
   };
 
   return (
@@ -51,17 +61,25 @@ export function AppSheets({ menuOpen, onCloseMenu }: AppSheetsProps) {
         onOpenPaywall={() => openFromMenu("paywall")}
       />
 
-      <HistorySheet open={active === "history"} onClose={close} />
-      <SubscriptionsSheet open={active === "subs"} onClose={close} onUpgrade={upgrade} />
-      <AnalyticsSheet open={active === "analytics"} onClose={close} onUpgrade={upgrade} />
-      <RecurringSheet open={active === "recurring"} onClose={close} onUpgrade={upgrade} />
-      <SettingsSheet
-        open={active === "settings"}
-        onClose={close}
-        onUpgrade={upgrade}
-        onOpenSubscriptions={() => setActive("subs")}
-      />
-      <Paywall open={active === "paywall"} onClose={close} />
+      {everOpened.has("history") && <HistorySheet open={active === "history"} onClose={close} />}
+      {everOpened.has("subs") && (
+        <SubscriptionsSheet open={active === "subs"} onClose={close} onUpgrade={upgrade} />
+      )}
+      {everOpened.has("analytics") && (
+        <AnalyticsSheet open={active === "analytics"} onClose={close} onUpgrade={upgrade} />
+      )}
+      {everOpened.has("recurring") && (
+        <RecurringSheet open={active === "recurring"} onClose={close} onUpgrade={upgrade} />
+      )}
+      {everOpened.has("settings") && (
+        <SettingsSheet
+          open={active === "settings"}
+          onClose={close}
+          onUpgrade={upgrade}
+          onOpenSubscriptions={() => open("subs")}
+        />
+      )}
+      {everOpened.has("paywall") && <Paywall open={active === "paywall"} onClose={close} />}
     </>
   );
 }
