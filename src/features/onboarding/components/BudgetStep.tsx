@@ -73,9 +73,14 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 48,
+    // Açık lineHeight + sıfır padding: placeholder ile girilen değer aynı
+    // dikey çizgide oturur (yoksa "0" üstte başlar, yazınca ortalanırdı).
+    lineHeight: 56,
     fontWeight: "800",
     fontFamily: theme.fonts.outfitExtra,
     letterSpacing: -1,
+    paddingVertical: 0,
+    includeFontPadding: false,
     color: "rgba(255, 255, 255, 0.18)",
   },
   inputFilled: {

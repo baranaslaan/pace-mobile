@@ -400,7 +400,9 @@ const styles = StyleSheet.create({
   amountField: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 8,
+    // nameInput ile aynı dikey padding (12) — yan yana duran iki alanın
+    // yüksekliği eşit olsun, tutar alanı kısa kalmasın.
+    paddingVertical: 12,
     paddingHorizontal: 12,
     borderRadius: 14,
     backgroundColor: "rgba(255, 255, 255, 0.05)",

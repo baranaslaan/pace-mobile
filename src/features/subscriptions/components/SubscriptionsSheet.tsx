@@ -154,7 +154,10 @@ const styles = StyleSheet.create({
   },
   nameInput: {
     flex: 1,
-    height: 50,
+    // Yükseklik padding + lineHeight ile (15*2 + 20 = 50). Sabit height tek
+    // başına iOS'ta Outfit placeholder'ını alta kaydırıyordu.
+    paddingVertical: 15,
+    lineHeight: 20,
     borderRadius: 14,
     backgroundColor: "rgba(255, 255, 255, 0.05)",
     paddingHorizontal: 16,

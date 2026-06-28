@@ -147,11 +147,11 @@ const styles = StyleSheet.create({
   },
   nameInput: {
     flex: 1,
-    // Sabit yükseklik + ortalama: tek satır TextInput iOS'ta kendi içinde
-    // dikey ortalanır; paddingVertical Outfit metrikleriyle metni alta
-    // kaydırıyordu. Yükseklik, satırdaki tutar alanı/butonla (52) aynı.
-    height: 52,
-    textAlignVertical: "center",
+    // Yükseklik padding + lineHeight ile kurulur (16*2 + 20 = 52). Sabit
+    // height + textAlignVertical, iOS'ta Outfit metrikleriyle placeholder'ı
+    // alta kaydırıyordu; deterministik line box ile metin tam ortalanır.
+    paddingVertical: 16,
+    lineHeight: 20,
     borderRadius: 16,
     backgroundColor: "rgba(255, 255, 255, 0.05)",
     paddingHorizontal: 16,
