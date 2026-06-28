@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, SafeAreaView, Dimensions, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { StyleSheet, View, SafeAreaView, Dimensions, TouchableOpacity, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform } from "react-native";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { Text } from "../../../shared/typography/Text";
 import { AnimatePresence, MotiView } from "moti";
@@ -58,6 +58,12 @@ export function Onboarding() {
         </Svg>
       </View>
 
+      {/* Klavye açılınca (BudgetStep number-pad'i hemen açar) footer'daki CTA'yı
+          klavyenin üstüne kaldır — number-pad'de submit tuşu yok, CTA tek çıkış. */}
+      <KeyboardAvoidingView
+        style={styles.kav}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
       <View style={styles.header}>
         <View style={styles.slot}>
           {step > 0 && (
@@ -134,6 +140,7 @@ export function Onboarding() {
           <Text style={styles.ctaLabel}>{cta.label}</Text>
         </TouchableOpacity>
       </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -145,6 +152,9 @@ const styles = StyleSheet.create({
   },
   glow: {
     ...StyleSheet.absoluteFill,
+  },
+  kav: {
+    flex: 1,
   },
   header: {
     flexDirection: "row",

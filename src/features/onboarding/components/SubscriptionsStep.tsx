@@ -83,7 +83,7 @@ export function SubscriptionsStep({
         </Text>
       )}
 
-      <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 40, gap: 8 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 40, gap: 8 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false}>
         <AnimatePresence>
           {subs.map((sub) => (
             <MotiView
