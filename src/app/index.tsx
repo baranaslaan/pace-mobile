@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { AnimatePresence, MotiView } from "moti";
 import { usePaceStore } from "../shared/store/usePaceStore";
+import { useDayKey } from "../shared/store/useDayKey";
 import { getTone } from "../shared/lib/tone";
 import { useLimitLogic } from "../features/limit-board/hooks/useLimitLogic";
 import { Logo } from "../shared/typography/Logo";
@@ -33,6 +34,9 @@ export default function AppIndex() {
   const reminderHour = usePaceStore((s) => s.reminderHour);
   const reminderMinute = usePaceStore((s) => s.reminderMinute);
   const language = usePaceStore((s) => s.language) as Language;
+  // Gün anahtarı; değişince (resume/gece yarısı) ay devri + tekrarlayanlar
+  // yeniden değerlendirilsin.
+  const today = useDayKey();
   const { remaining, limit } = useLimitLogic();
   const tone = getTone(remaining, limit);
 
@@ -58,7 +62,9 @@ export default function AppIndex() {
       // kalemleri olarak ekle.
       applyRecurring();
     }
-  }, [hydrated, rollIfNewMonth, applyRecurring]);
+    // `today` bağımlılığı: uygulama arka plandayken gün/ay geçip resume olunca
+    // (ya da açıkken gece yarısında) devir + tekrarlayanlar yeniden işlesin.
+  }, [hydrated, today, rollIfNewMonth, applyRecurring]);
 
   // Hatırlatma açıksa, OS planı temizlemiş olabilir — açılışta yeniden kur.
   useEffect(() => {

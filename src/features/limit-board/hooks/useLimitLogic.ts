@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { usePaceStore } from "@/shared/store/usePaceStore";
+import { useDayKey } from "@/shared/store/useDayKey";
 import {
   dailyLimit,
   remainingToday,
@@ -30,6 +31,9 @@ export function useLimitLogic() {
   const currency = usePaceStore((s) => s.currency);
   const rates = usePaceStore((s) => s.rates);
   const language = usePaceStore((s) => s.language) as Language;
+  // Gün değişince (resume/gece yarısı) yeniden hesapla — `now` aksi halde
+  // bayat kalır, dünün limitini gösterirdi.
+  const today = useDayKey();
 
   return useMemo(() => {
     const snap: PaceSnapshot = {
@@ -37,7 +41,11 @@ export function useLimitLogic() {
       subscriptions,
       expenses: expensesByDay(entries),
     };
-    const now = new Date();
+    // `now`'u gün anahtarından türet: motor fonksiyonları yalnızca tarih
+    // granülaritesinde çalışıyor (dayKey, remainingDaysInclusive, monthKey…),
+    // bu yüzden günün öğlesi yeterli — hem `today` gerçek bir bağımlılık olur
+    // hem aynı render'daki tüm hesaplar aynı ana sabitlenir.
+    const now = new Date(`${today}T12:00:00`);
     const pool = spendableThisMonth(snap);
     const subsTotal = totalSubscriptions(subscriptions);
 
@@ -81,5 +89,5 @@ export function useLimitLogic() {
       setup,
       rolloverActive,
     };
-  }, [budget, subscriptions, entries, currency, rates, language]);
+  }, [budget, subscriptions, entries, currency, rates, language, today]);
 }
