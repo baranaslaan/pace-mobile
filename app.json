@@ -36,7 +36,8 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      "./plugins/withoutPushEntitlement"
     ],
     "experiments": {
       "typedRoutes": true

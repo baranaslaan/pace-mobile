@@ -28,6 +28,10 @@ export const FREE_SUBSCRIPTION_LIMIT = 3;
 /** Ücretsiz planda eklenebilecek en fazla hızlı şablon sayısı. */
 export const FREE_TEMPLATE_LIMIT = 3;
 
+/** Persist anahtarı ve şema sürümü — yedekleme/geri yükleme bunlara dayanır. */
+export const PERSIST_KEY = "pace-v1";
+export const PERSIST_VERSION = 9;
+
 const mmkvStorage = createMMKV({ id: "pace-storage" });
 
 export const zustandStorage: StateStorage = {
@@ -343,7 +347,7 @@ export const usePaceStore = create<PaceState>()(
         set((s) => rollMonth(s, monthKey()) ?? s),
     }),
     {
-      name: "pace-v1",
+      name: PERSIST_KEY,
       storage: createJSONStorage(() => zustandStorage),
       partialize: ({
         budget,
@@ -384,7 +388,7 @@ export const usePaceStore = create<PaceState>()(
         rolloverTipSeen,
         firstExpenseTipSeen,
       }),
-      version: 9,
+      version: PERSIST_VERSION,
       migrate: (persisted) => {
         const s = (persisted ?? {}) as Partial<PaceState>;
         return {

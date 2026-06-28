@@ -2,8 +2,14 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View, TouchableOpacity, Share, Alert, Switch, ScrollView, Linking } from "react-native";
 import Constants from "expo-constants";
 import { File, Paths } from "expo-file-system";
+import * as DocumentPicker from "expo-document-picker";
 import { Text } from "../../../shared/typography/Text";
-import { usePaceStore } from "../../../shared/store/usePaceStore";
+import {
+  usePaceStore,
+  zustandStorage,
+  PERSIST_KEY,
+} from "../../../shared/store/usePaceStore";
+import { serializeBackup, parseBackup, BackupError } from "../../../shared/lib/backup";
 import { useCurrency } from "../../../shared/store/useCurrency";
 import { CURRENCIES } from "../../../shared/lib/money";
 import { useT, LANGUAGES } from "../../../shared/i18n";
@@ -15,7 +21,7 @@ import {
   cancelDailyReminder,
   sendTestNotification,
 } from "../../../shared/lib/notifications";
-import { CardIcon, ChevronLeftIcon, SparklesIcon, TrashIcon, CheckIcon, DownloadIcon, LockIcon, BellIcon, RotateCcwIcon, ListIcon } from "../../../shared/ui/icons";
+import { CardIcon, ChevronLeftIcon, SparklesIcon, TrashIcon, CheckIcon, DownloadIcon, LockIcon, BellIcon, RotateCcwIcon, ListIcon, ArchiveIcon } from "../../../shared/ui/icons";
 import { theme } from "../../../shared/styles/theme";
 
 // Barındırılan yasal sayfalar (GitHub Pages, kaynak: docs/). pace.app özel
@@ -52,6 +58,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
 
   const [confirmReset, setConfirmReset] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [backingUp, setBackingUp] = useState(false);
   const [restoring, setRestoring] = useState(false);
 
   const handleRestore = async () => {
@@ -139,6 +146,69 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
       Alert.alert(t("settings.exportFailTitle"), t("settings.exportFailBody"));
     } finally {
       setExporting(false);
+    }
+  };
+
+  // Tüm store state'ini tek JSON dosyasına yedekler ve paylaşır. Ücretsiz —
+  // veri kaybı koruması temel bir güven özelliği (CSV/analiz Pro'da kalır).
+  const handleBackup = async () => {
+    if (backingUp) return;
+    try {
+      setBackingUp(true);
+      // getItem senkron (MMKV) — StateStorage tipi async union döndürse de.
+      const raw = zustandStorage.getItem(PERSIST_KEY) as string | null;
+      const json = serializeBackup(raw, { appVersion: VERSION });
+      const file = new File(Paths.cache, "pace-backup.json");
+      file.create({ overwrite: true });
+      file.write(json);
+      await Share.share({ url: file.uri, title: "pace" });
+    } catch (e) {
+      if (e instanceof BackupError) {
+        Alert.alert(t("settings.backupNoDataTitle"), t("settings.backupNoDataBody"));
+      } else {
+        Alert.alert(t("settings.backupFailTitle"), t("settings.backupFailBody"));
+      }
+    } finally {
+      setBackingUp(false);
+    }
+  };
+
+  // Yedek dosyasını seçtirir, doğrular ve mevcut veriyi onunla değiştirir.
+  // Onay zorunlu — geri alınamaz.
+  const handleImport = () => {
+    Alert.alert(
+      t("settings.restoreConfirmTitle"),
+      t("settings.restoreConfirmBody"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("settings.restoreConfirmCta"),
+          style: "destructive",
+          onPress: runImport,
+        },
+      ],
+    );
+  };
+
+  const runImport = async () => {
+    try {
+      const picked = await DocumentPicker.getDocumentAsync({
+        type: ["application/json", "public.json", "*/*"],
+        copyToCacheDirectory: true,
+      });
+      if (picked.canceled) return;
+      const text = await new File(picked.assets[0].uri).text();
+      const blob = parseBackup(text);
+      // version'ı 0'a düşür → rehydrate her zaman migrate'i çalıştırır, böylece
+      // her alan store'un kendi doğrulamasından geçer (kötü/eski veri temizlenir).
+      zustandStorage.setItem(PERSIST_KEY, JSON.stringify({ ...blob, version: 0 }));
+      await usePaceStore.persist.rehydrate();
+      // Yedek geçmiş bir aydan geliyorsa ay devrini uygula.
+      usePaceStore.getState().rollIfNewMonth();
+      Alert.alert(t("settings.restoreSuccessTitle"), t("settings.restoreSuccessBody"));
+      onClose();
+    } catch (e) {
+      Alert.alert(t("settings.restoreFailTitle"), t("settings.restoreFailBody"));
     }
   };
 
@@ -299,6 +369,37 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
             <Text style={styles.proChipText}>Pro</Text>
           </View>
         )}
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.row, { marginBottom: 8 }]}
+        onPress={handleBackup}
+        disabled={backingUp}
+        activeOpacity={0.7}
+      >
+        <View style={styles.rowIcon}>
+          <ArchiveIcon color={theme.colors.textSoft} />
+        </View>
+        <View style={styles.rowInfo}>
+          <Text style={styles.rowTitle}>{t("settings.backup")}</Text>
+          <Text style={styles.rowSub}>
+            {backingUp ? t("settings.backupPreparing") : t("settings.backupSub")}
+          </Text>
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.row, { marginBottom: 8 }]}
+        onPress={handleImport}
+        activeOpacity={0.7}
+      >
+        <View style={styles.rowIcon}>
+          <RotateCcwIcon size={18} color={theme.colors.textSoft} />
+        </View>
+        <View style={styles.rowInfo}>
+          <Text style={styles.rowTitle}>{t("settings.dataRestore")}</Text>
+          <Text style={styles.rowSub}>{t("settings.dataRestoreSub")}</Text>
+        </View>
       </TouchableOpacity>
 
       {!confirmReset ? (
