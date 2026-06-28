@@ -274,6 +274,7 @@ export const en: Catalog = {
     annual: "Annual",
     annualNote: "renews yearly",
     bestValue: "Best value",
+    founderBadge: "Founder price",
     launchNote: "For the first few — your price, for a little while",
     processing: "Processing…",
     buy: "Unlock Pace Pro · {price}",

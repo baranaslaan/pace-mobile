@@ -13,8 +13,11 @@ const MOCK_PURCHASE_MS = 900;
 
 // Placeholder fiyatlar — gerçek satın almada RevenueCat `localizedPriceString`
 // ile mağaza para birimine göre değişir. Lifetime kahraman, yıllık çapa.
+// Lifetime süreli "kurucu fiyatı" lansman teklifi: ₺499 çapa, ₺399 lansman.
+// Gerçek indirim RevenueCat'te intro/founder ürünü olarak kurulacak; burada
+// `original` yalnızca çapa fiyatı görünür kılar (üstü çizili).
 const PLANS = [
-  { id: "lifetime", price: "₺499" },
+  { id: "lifetime", price: "₺399", original: "₺499" },
   { id: "annual", price: "₺199/yıl" },
 ] as const;
 
@@ -135,12 +138,15 @@ export function Paywall({ open, onClose }: PaywallProps) {
                   >
                     {p.id === "lifetime" && (
                       <View style={styles.bestBadge}>
-                        <Text style={styles.bestBadgeText}>{tu("paywall.bestValue")}</Text>
+                        <Text style={styles.bestBadgeText}>{tu("paywall.founderBadge")}</Text>
                       </View>
                     )}
                     <Text style={[styles.planTitle, active && styles.planTitleActive]}>
                       {t(`paywall.${p.id}`)}
                     </Text>
+                    {"original" in p && p.original && (
+                      <Text style={styles.planOriginal}>{p.original}</Text>
+                    )}
                     <Text
                       style={[styles.planPrice, active && styles.planPriceActive]}
                       numberOfLines={1}
@@ -289,6 +295,16 @@ const styles = StyleSheet.create({
   },
   planTitleActive: {
     color: theme.colors.textPrimary,
+  },
+  planOriginal: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: theme.colors.textMute,
+    textDecorationLine: "line-through",
+    textAlign: "center",
+    alignSelf: "stretch",
+    marginBottom: 1,
+    fontVariant: ["tabular-nums"],
   },
   planPrice: {
     fontSize: 20,

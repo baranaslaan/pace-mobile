@@ -274,6 +274,7 @@ export const tr = {
     annual: "Yıllık",
     annualNote: "yılda bir yenilenir",
     bestValue: "En avantajlı",
+    founderBadge: "Kurucu fiyatı",
     launchNote: "İlklere özel — kısa süreliğine senin fiyatın",
     processing: "İşleniyor…",
     buy: "Pace Pro'yu aç · {price}",
