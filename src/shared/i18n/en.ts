@@ -144,6 +144,7 @@ export const en: Catalog = {
     daily: "Your daily limit is",
     reserved: "reserved",
     listLabel: "Fixed expenses",
+    listHint: "Deducted from your budget upfront — not counted as daily spending.",
     empty: "No fixed expenses yet. Rent, subscriptions, loans…",
     proTitle: "Unlimited fixed expenses in Pace Pro",
     proText: "Up to {n} fixed expenses on the free plan. Unlimited with Pro — one-time, lifetime.",

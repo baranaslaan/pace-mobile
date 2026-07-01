@@ -143,6 +143,7 @@ export const tr = {
     daily: "Günlük limitin",
     reserved: "rezerve",
     listLabel: "Sabit giderler",
+    listHint: "Bütçenden baştan düşülür — günlük harcamaya sayılmaz.",
     empty: "Henüz sabit gider yok. Kira, abonelik, kredi…",
     proTitle: "Sınırsız sabit gider Pace Pro'da",
     proText: "Ücretsiz planda en fazla {n} sabit gider. Pro ile sınırsızca ekle — tek seferlik, ömür boyu.",

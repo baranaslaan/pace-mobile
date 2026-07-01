@@ -60,6 +60,7 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
       </Text>
 
       <Text style={styles.listLabel}>{tu("subs.listLabel")}</Text>
+      <Text style={styles.listHint}>{t("subs.listHint")}</Text>
 
       <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 20 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <AnimatePresence>
@@ -139,7 +140,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: theme.colors.textDim,
-    marginBottom: 8,
+    marginBottom: 4,
+  },
+  listHint: {
+    fontSize: 12,
+    color: theme.colors.textMute,
+    lineHeight: 16,
+    marginBottom: 12,
   },
   list: {
     // Sabit cap yerine sheet'in 88%'ine kadar uzar; bütçe alanı + alt eylem
