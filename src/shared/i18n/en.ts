@@ -205,6 +205,9 @@ export const en: Catalog = {
     budget: "Budget",
     budgetRow: "Budget & fixed expenses",
     budgetSub: "Monthly {budget} · {n} fixed expenses",
+    categoryBudgetsRow: "Category budgets",
+    categoryBudgetsSub: "Limits on {n} categories",
+    categoryBudgetsSubEmpty: "Monthly limit per category",
     currency: "Currency",
     language: "Language",
     data: "Data",
@@ -296,6 +299,18 @@ export const en: Catalog = {
     nearBody: "You've used {pct}% of this month's budget.",
     overTitle: "You've gone over budget",
     overBody: "You've used {pct}% of this month's budget.",
+    catNearTitle: "You're close to your {cat} budget",
+    catNearBody: "You've used {pct}% of your {cat} budget this month.",
+    catOverTitle: "You've gone over your {cat} budget",
+    catOverBody: "You've used {pct}% of your {cat} budget this month.",
+  },
+
+  catBudget: {
+    title: "Category budgets",
+    intro: "Set a monthly limit per category; we'll alert you at 80% and 100% of it.",
+    proTitle: "Category budgets are in Pace Pro",
+    proText: "Set a monthly limit per category and get alerts as you approach it. One-time purchase, lifetime.",
+    goPro: "Go Pace Pro",
   },
 
   csv: {

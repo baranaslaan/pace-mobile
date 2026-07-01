@@ -204,6 +204,9 @@ export const tr = {
     budget: "Bütçe",
     budgetRow: "Bütçe & sabit giderler",
     budgetSub: "Aylık {budget} · {n} sabit gider",
+    categoryBudgetsRow: "Kategori bütçeleri",
+    categoryBudgetsSub: "{n} kategoride limit",
+    categoryBudgetsSubEmpty: "Kategori başına aylık limit",
     currency: "Para birimi",
     language: "Dil",
     data: "Veri",
@@ -296,6 +299,18 @@ export const tr = {
     nearBody: "Bu ayki harcaman bütçenin %{pct}'ine ulaştı.",
     overTitle: "Bütçeni aştın",
     overBody: "Bu ayki harcaman bütçenin %{pct}'ine ulaştı.",
+    catNearTitle: "{cat} bütçene yaklaşıyorsun",
+    catNearBody: "{cat} harcaman bu ay limitin %{pct}'ine ulaştı.",
+    catOverTitle: "{cat} bütçeni aştın",
+    catOverBody: "{cat} harcaman bu ay limitin %{pct}'ine ulaştı.",
+  },
+
+  catBudget: {
+    title: "Kategori bütçeleri",
+    intro: "Her kategoriye aylık bir limit koy; harcaman %80 ve %100'e gelince seni uyaralım.",
+    proTitle: "Kategori bütçeleri Pace Pro'da",
+    proText: "Kategori başına aylık limit koy, yaklaşınca uyarı al. Tek seferlik ödeme, ömür boyu.",
+    goPro: "Pace Pro'ya geç",
   },
 
   csv: {

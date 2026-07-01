@@ -8,7 +8,7 @@ import { isCategoryId } from "@/shared/lib/categories";
 import { isCurrencyCode, DEFAULT_CURRENCY } from "@/shared/lib/money";
 import { FALLBACK_RATES, isRateTable } from "@/shared/lib/rates";
 import { isLanguage, DEFAULT_LANGUAGE } from "@/shared/i18n/lang";
-import { isBudgetAlertState, type BudgetAlertState } from "@/shared/lib/budgetAlerts";
+import { normalizeBudgetAlertState, type BudgetAlertState } from "@/shared/lib/budgetAlerts";
 import {
   dueRecurring,
   mostRecentDue,
@@ -29,9 +29,21 @@ export const FREE_SUBSCRIPTION_LIMIT = 3;
 /** Ücretsiz planda eklenebilecek en fazla hızlı şablon sayısı. */
 export const FREE_TEMPLATE_LIMIT = 3;
 
+/** Kalıcı kategori bütçelerini güvene alır: geçerli kategori + pozitif tutar. */
+function sanitizeCategoryBudgets(v: unknown): Record<string, number> {
+  if (!v || typeof v !== "object") return {};
+  const out: Record<string, number> = {};
+  for (const [id, amount] of Object.entries(v as Record<string, unknown>)) {
+    if (isCategoryId(id) && typeof amount === "number" && amount > 0) {
+      out[id] = amount;
+    }
+  }
+  return out;
+}
+
 /** Persist anahtarı ve şema sürümü — yedekleme/geri yükleme bunlara dayanır. */
 export const PERSIST_KEY = "pace-v1";
-export const PERSIST_VERSION = 10;
+export const PERSIST_VERSION = 11;
 
 const mmkvStorage = createMMKV({ id: "pace-storage" });
 
@@ -82,6 +94,8 @@ interface PaceState {
   budgetAlertsEnabled: boolean;
   /** Ay-başına hangi bütçe eşiklerinin uyarıldığı — tekrar spam önler. */
   budgetAlertState: BudgetAlertState;
+  /** Kategori-başı aylık limit (kategoriId → tutar). Pro; boş = limitsiz. */
+  categoryBudgets: Record<string, number>;
   /** Rollover (devir) ipucu bir kez gösterilip kapatıldı mı? */
   rolloverTipSeen: boolean;
   /** İlk-harcama ipucu görüldü mü? (ilk kalem eklenince/dokununca kalıcı kapanır) */
@@ -120,7 +134,9 @@ interface PaceState {
   setReminder: (enabled: boolean, hour: number, minute: number) => void;
   setBudgetAlertsEnabled: (enabled: boolean) => void;
   /** Ay-başı dedupe kaydını günceller (uyarılan eşikler). */
-  setBudgetAlertState: (month: string, crossed: number[]) => void;
+  setBudgetAlertState: (state: BudgetAlertState) => void;
+  /** Kategori limitini ayarlar (0/geçersiz = kaldırır). Yalnızca Pro. */
+  setCategoryBudget: (categoryId: string, amount: number) => void;
   markRolloverTipSeen: () => void;
   markFirstExpenseTipSeen: () => void;
   rollIfNewMonth: () => void;
@@ -145,8 +161,9 @@ export const usePaceStore = create<PaceState>()(
       reminderEnabled: false,
       reminderHour: 20,
       reminderMinute: 0,
-      budgetAlertsEnabled: true,
-      budgetAlertState: { month: "", crossed: [] },
+      budgetAlertsEnabled: false,
+      budgetAlertState: { month: "", crossed: [], byCategory: {} },
+      categoryBudgets: {},
       rolloverTipSeen: false,
       firstExpenseTipSeen: false,
       _hydrated: false,
@@ -351,8 +368,17 @@ export const usePaceStore = create<PaceState>()(
 
       setBudgetAlertsEnabled: (enabled) => set({ budgetAlertsEnabled: enabled }),
 
-      setBudgetAlertState: (month, crossed) =>
-        set({ budgetAlertState: { month, crossed } }),
+      setBudgetAlertState: (state) => set({ budgetAlertState: state }),
+
+      setCategoryBudget: (categoryId, amount) =>
+        set((s) => {
+          // Kategori limitleri Pro'ya kapılı — UI'dan kaçan yolları da kes.
+          if (!s.isPro || !isCategoryId(categoryId)) return s;
+          const next = { ...s.categoryBudgets };
+          if (Number.isFinite(amount) && amount > 0) next[categoryId] = amount;
+          else delete next[categoryId];
+          return { categoryBudgets: next };
+        }),
 
       markRolloverTipSeen: () => set({ rolloverTipSeen: true }),
 
@@ -383,6 +409,7 @@ export const usePaceStore = create<PaceState>()(
         reminderMinute,
         budgetAlertsEnabled,
         budgetAlertState,
+        categoryBudgets,
         rolloverTipSeen,
         firstExpenseTipSeen,
       }) => ({
@@ -404,6 +431,7 @@ export const usePaceStore = create<PaceState>()(
         reminderMinute,
         budgetAlertsEnabled,
         budgetAlertState,
+        categoryBudgets,
         rolloverTipSeen,
         firstExpenseTipSeen,
       }),
@@ -453,10 +481,9 @@ export const usePaceStore = create<PaceState>()(
           budgetAlertsEnabled:
             typeof s.budgetAlertsEnabled === "boolean"
               ? s.budgetAlertsEnabled
-              : true,
-          budgetAlertState: isBudgetAlertState(s.budgetAlertState)
-            ? s.budgetAlertState
-            : { month: "", crossed: [] },
+              : false,
+          budgetAlertState: normalizeBudgetAlertState(s.budgetAlertState),
+          categoryBudgets: sanitizeCategoryBudgets(s.categoryBudgets),
           rolloverTipSeen: Boolean(s.rolloverTipSeen),
           // Mevcut (zaten onboard olmuş) kullanıcılar ilk-açılış ipucunu görmesin.
           firstExpenseTipSeen:

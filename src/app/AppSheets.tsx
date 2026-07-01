@@ -5,6 +5,7 @@ import { HistorySheet } from "../features/expense-history/components/HistoryShee
 import { AnalyticsSheet } from "../features/analytics/components/AnalyticsSheet";
 import { RecurringSheet } from "../features/recurring/components/RecurringSheet";
 import { SettingsSheet } from "../features/settings/components/SettingsSheet";
+import { CategoryBudgetsSheet } from "../features/category-budgets/components/CategoryBudgetsSheet";
 import { Paywall } from "../features/pro/components/Paywall";
 
 type Sheet =
@@ -14,6 +15,7 @@ type Sheet =
   | "analytics"
   | "recurring"
   | "paywall"
+  | "catbudget"
   | "settings";
 
 interface AppSheetsProps {
@@ -77,6 +79,14 @@ export function AppSheets({ menuOpen, onCloseMenu }: AppSheetsProps) {
           onClose={close}
           onUpgrade={upgrade}
           onOpenSubscriptions={() => open("subs")}
+          onOpenCategoryBudgets={() => open("catbudget")}
+        />
+      )}
+      {everOpened.has("catbudget") && (
+        <CategoryBudgetsSheet
+          open={active === "catbudget"}
+          onClose={close}
+          onUpgrade={upgrade}
         />
       )}
       {everOpened.has("paywall") && <Paywall open={active === "paywall"} onClose={close} />}

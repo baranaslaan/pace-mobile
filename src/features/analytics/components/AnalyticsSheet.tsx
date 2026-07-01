@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { StyleSheet, View, TouchableOpacity, ScrollView } from "react-native";
+import { StyleSheet, View, ScrollView } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
@@ -105,7 +105,9 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
         </View>
 
         <View style={styles.proWrap}>
-          <View style={!isPro && { opacity: 0.3, pointerEvents: "none" }}>
+          {/* Kilitli analiz yalnızca Pro'da çizilir — ücretsizde arkadan sızmasın. */}
+          {isPro && (
+            <>
             {stats.pool > 0 && (
               <>
                 <Text style={styles.sectionLabel}>{t("analytics.streak")}</Text>
@@ -293,7 +295,8 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                 </View>
               </>
             )}
-          </View>
+            </>
+          )}
 
           {!isPro && (
             <ProUpsell
@@ -301,7 +304,6 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
               text={t("analytics.lockText")}
               cta={t("analytics.goPro")}
               onUpgrade={onUpgrade}
-              style={styles.lockPos}
             />
           )}
         </View>
@@ -706,18 +708,5 @@ const styles = StyleSheet.create({
   monthPool: {
     color: theme.colors.textMute,
     fontWeight: "500",
-  },
-  // Yalnızca konumlandırma — kartın görseli paylaşılan ProUpsell'den gelir.
-  lockPos: {
-    position: "absolute",
-    top: 60,
-    left: 0,
-    right: 0,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.6,
-    shadowRadius: 32,
-    elevation: 20,
-    zIndex: 10,
   },
 });

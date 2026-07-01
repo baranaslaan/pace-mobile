@@ -4,6 +4,7 @@ import {
   thresholdsMet,
   newlyCrossedThreshold,
   isBudgetAlertState,
+  normalizeBudgetAlertState,
   DEFAULT_BUDGET_THRESHOLDS,
 } from "../budgetAlerts";
 
@@ -65,14 +66,44 @@ describe("newlyCrossedThreshold", () => {
 
 describe("isBudgetAlertState", () => {
   it("geçerli şekli doğrular", () => {
-    expect(isBudgetAlertState({ month: "2026-07", crossed: [80] })).toBe(true);
-    expect(isBudgetAlertState({ month: "", crossed: [] })).toBe(true);
+    expect(
+      isBudgetAlertState({ month: "2026-07", crossed: [80], byCategory: { yemek: [80] } }),
+    ).toBe(true);
+    expect(isBudgetAlertState({ month: "", crossed: [], byCategory: {} })).toBe(true);
   });
 
   it("bozuk şekli reddeder", () => {
     expect(isBudgetAlertState(null)).toBe(false);
-    expect(isBudgetAlertState({ month: 7, crossed: [] })).toBe(false);
-    expect(isBudgetAlertState({ month: "x", crossed: ["80"] })).toBe(false);
+    expect(isBudgetAlertState({ month: 7, crossed: [], byCategory: {} })).toBe(false);
+    expect(isBudgetAlertState({ month: "x", crossed: ["80"], byCategory: {} })).toBe(false);
+    // byCategory eksik → eski (v10) şekil, artık geçerli değil
+    expect(isBudgetAlertState({ month: "x", crossed: [] })).toBe(false);
+    expect(isBudgetAlertState({ month: "x", crossed: [], byCategory: { a: ["80"] } })).toBe(false);
+  });
+});
+
+describe("normalizeBudgetAlertState", () => {
+  it("boş/null → temiz varsayılan", () => {
+    expect(normalizeBudgetAlertState(null)).toEqual({ month: "", crossed: [], byCategory: {} });
+    expect(normalizeBudgetAlertState(undefined)).toEqual({ month: "", crossed: [], byCategory: {} });
+  });
+
+  it("eski v10 şeklini (byCategory yok) yükseltir", () => {
+    expect(normalizeBudgetAlertState({ month: "2026-07", crossed: [80] })).toEqual({
+      month: "2026-07",
+      crossed: [80],
+      byCategory: {},
+    });
+  });
+
+  it("geçerli şekli korur, bozuk kategori girdilerini atar", () => {
+    expect(
+      normalizeBudgetAlertState({
+        month: "2026-07",
+        crossed: [80, 100],
+        byCategory: { yemek: [80], bozuk: ["x"] },
+      }),
+    ).toEqual({ month: "2026-07", crossed: [80, 100], byCategory: { yemek: [80] } });
   });
 });
 

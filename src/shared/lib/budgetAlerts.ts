@@ -12,17 +12,41 @@ export const DEFAULT_BUDGET_THRESHOLDS = [80, 100] as const;
 export interface BudgetAlertState {
   /** monthKey ("YYYY-MM"); "" = henüz hiç değerlendirilmedi. */
   month: string;
-  /** Bu ay için zaten uyarılan eşik yüzdeleri. */
+  /** Bu ay genel bütçe için uyarılan eşik yüzdeleri. */
   crossed: number[];
+  /** Bu ay kategori-başı uyarılan eşikler (kategoriId → yüzdeler). */
+  byCategory: Record<string, number[]>;
 }
 
+const isNumArray = (v: unknown): v is number[] =>
+  Array.isArray(v) && v.every((n) => typeof n === "number");
+
 export function isBudgetAlertState(v: unknown): v is BudgetAlertState {
+  const s = v as BudgetAlertState;
   return (
     !!v &&
-    typeof (v as BudgetAlertState).month === "string" &&
-    Array.isArray((v as BudgetAlertState).crossed) &&
-    (v as BudgetAlertState).crossed.every((n) => typeof n === "number")
+    typeof s.month === "string" &&
+    isNumArray(s.crossed) &&
+    !!s.byCategory &&
+    typeof s.byCategory === "object" &&
+    Object.values(s.byCategory).every(isNumArray)
   );
+}
+
+/** Boş/eksik/eski şekli tam geçerli bir BudgetAlertState'e normalize eder. */
+export function normalizeBudgetAlertState(v: unknown): BudgetAlertState {
+  const s = (v ?? {}) as Partial<BudgetAlertState>;
+  const byCategory: Record<string, number[]> = {};
+  if (s.byCategory && typeof s.byCategory === "object") {
+    for (const [k, arr] of Object.entries(s.byCategory)) {
+      if (isNumArray(arr)) byCategory[k] = arr;
+    }
+  }
+  return {
+    month: typeof s.month === "string" ? s.month : "",
+    crossed: isNumArray(s.crossed) ? s.crossed : [],
+    byCategory,
+  };
 }
 
 /**

@@ -30,15 +30,17 @@ interface SettingsSheetProps {
   onClose: () => void;
   onUpgrade: () => void;
   onOpenSubscriptions: () => void;
+  onOpenCategoryBudgets: () => void;
 }
 
 const VERSION = Constants.expoConfig?.version ?? "1.0.0";
 
-export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }: SettingsSheetProps) {
+export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions, onOpenCategoryBudgets }: SettingsSheetProps) {
   const budget = usePaceStore((s) => s.budget);
   const subscriptions = usePaceStore((s) => s.subscriptions);
   const entries = usePaceStore((s) => s.entries);
   const isPro = usePaceStore((s) => s.isPro);
+  const categoryBudgets = usePaceStore((s) => s.categoryBudgets);
   const resetAll = usePaceStore((s) => s.resetAll);
   const unlockPro = usePaceStore((s) => s.unlockPro);
   const lockPro = usePaceStore((s) => s.lockPro);
@@ -80,6 +82,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
   const openURL = (url: string) => Linking.openURL(url).catch(() => {});
 
   const reminderTime = `${String(reminderHour).padStart(2, "0")}:${String(reminderMinute).padStart(2, "0")}`;
+  const catBudgetCount = Object.keys(categoryBudgets).length;
 
   const toggleReminder = async () => {
     if (reminderEnabled) {
@@ -317,7 +320,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
 
       {/* Bütçe */}
       <Text style={styles.sectionLabel}>{tu("settings.budget")}</Text>
-      <TouchableOpacity style={styles.row} onPress={onOpenSubscriptions} activeOpacity={0.7}>
+      <TouchableOpacity style={[styles.row, { marginBottom: 8 }]} onPress={onOpenSubscriptions} activeOpacity={0.7}>
         <View style={styles.rowIcon}>
           <CardIcon color={theme.colors.textSoft} />
         </View>
@@ -327,6 +330,28 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
             {t("settings.budgetSub", { budget: fmt(budget), n: subscriptions.length })}
           </Text>
         </View>
+        <View style={styles.chevron}>
+          <ChevronLeftIcon color={theme.colors.textDim} size={18} />
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.row} onPress={onOpenCategoryBudgets} activeOpacity={0.7}>
+        <View style={styles.rowIcon}>
+          <ListIcon color={theme.colors.textSoft} />
+        </View>
+        <View style={styles.rowInfo}>
+          <Text style={styles.rowTitle}>{t("settings.categoryBudgetsRow")}</Text>
+          <Text style={styles.rowSub}>
+            {catBudgetCount > 0
+              ? t("settings.categoryBudgetsSub", { n: catBudgetCount })
+              : t("settings.categoryBudgetsSubEmpty")}
+          </Text>
+        </View>
+        {!isPro && (
+          <View style={styles.rowIcon}>
+            <LockIcon color={theme.colors.textDim} />
+          </View>
+        )}
         <View style={styles.chevron}>
           <ChevronLeftIcon color={theme.colors.textDim} size={18} />
         </View>
