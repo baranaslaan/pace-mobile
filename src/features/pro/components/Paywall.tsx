@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { StyleSheet, View, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
+import { StyleSheet, View, TouchableOpacity, ScrollView, ActivityIndicator, Linking } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { MotiView } from "moti";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
@@ -8,6 +8,9 @@ import { CheckIcon, SparklesIcon } from "../../../shared/ui/icons";
 import { tapLight, tapSuccess } from "../../../shared/lib/haptics";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
+import { PRIVACY_URL, TERMS_URL } from "../../../shared/config/legal";
+
+const openURL = (url: string) => Linking.openURL(url).catch(() => {});
 
 const MOCK_PURCHASE_MS = 900;
 
@@ -179,6 +182,16 @@ export function Paywall({ open, onClose }: PaywallProps) {
             </TouchableOpacity>
 
             <Text style={styles.fine}>{t("paywall.fine")}</Text>
+
+            <View style={styles.legalLinks}>
+              <TouchableOpacity onPress={() => openURL(TERMS_URL)} activeOpacity={0.6} hitSlop={8}>
+                <Text style={styles.legalLink}>{t("paywall.terms")}</Text>
+              </TouchableOpacity>
+              <Text style={styles.legalDot}>·</Text>
+              <TouchableOpacity onPress={() => openURL(PRIVACY_URL)} activeOpacity={0.6} hitSlop={8}>
+                <Text style={styles.legalLink}>{t("paywall.privacy")}</Text>
+              </TouchableOpacity>
+            </View>
           </>
         )}
       </ScrollView>
@@ -346,5 +359,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.textMute,
     textAlign: "center",
+    lineHeight: 17,
+  },
+  legalLinks: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 10,
+  },
+  legalLink: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: theme.colors.textSoft,
+    textDecorationLine: "underline",
+  },
+  legalDot: {
+    fontSize: 12,
+    color: theme.colors.textMute,
   },
 });

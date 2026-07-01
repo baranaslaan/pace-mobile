@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pace — App Store görselleri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#07090e; --sheet:#11141c; --input:#13161f;
+    --tPrimary:#fff; --tSoft:rgba(255,255,255,.55); --tDim:rgba(255,255,255,.28);
+    --tMute:rgba(255,255,255,.25); --tFaint:rgba(255,255,255,.2);
+    --good:#3b82f6; --warn:#f59e0b; --crit:#ef4444;
+    --surface:rgba(255,255,255,.04); --hairline:rgba(255,255,255,.08);
+    /* kategori renkleri (categories.ts) */
+    --market:#22c55e; --yemek:#f97316; --ulasim:#3b82f6; --kahve:#d4a373;
+    --eglence:#a855f7; --fatura:#ef4444; --saglik:#14b8a6; --diger:#94a3b8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+  body{font-family:'Outfit',system-ui,sans-serif;background:#1a1d24;color:#fff}
+
+  .bar{position:sticky;top:0;z-index:50;display:flex;gap:12px;align-items:center;
+    padding:14px 20px;background:#0d0f14;border-bottom:1px solid rgba(255,255,255,.08)}
+  .bar h1{font-size:15px;font-weight:600;margin-right:auto;letter-spacing:.2px}
+  .bar button{font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
+    padding:9px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.05);color:#fff}
+  .bar button:hover{background:rgba(255,255,255,.1)}
+  .bar button.primary{background:var(--good);border-color:var(--good)}
+  .bar .seg{display:flex;border:1px solid rgba(255,255,255,.14);border-radius:10px;overflow:hidden}
+  .bar .seg button{border:0;border-radius:0;background:transparent}
+  .bar .seg button.on{background:var(--good)}
+  .hint{padding:12px 20px;font-size:12.5px;color:rgba(255,255,255,.5);line-height:1.6;
+    background:#0d0f14;border-bottom:1px solid rgba(255,255,255,.06)}
+  .hint code{background:rgba(255,255,255,.08);padding:1px 6px;border-radius:5px;font-size:11.5px}
+
+  .stage{display:flex;flex-wrap:wrap;gap:28px;padding:28px;justify-content:center;align-items:flex-start}
+  .slot{width:330px;height:717px;overflow:hidden;border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.5);cursor:pointer}
+  .slot .frame{transform:scale(.25);transform-origin:top left}
+
+  .frame{position:relative;width:1320px;height:2868px;background:var(--bg);overflow:hidden}
+  .frame::before{content:"";position:absolute;top:-260px;left:50%;transform:translateX(-50%);
+    width:1500px;height:1100px;border-radius:50%;
+    background:radial-gradient(closest-side,rgba(59,130,246,.16),transparent 70%);pointer-events:none}
+  .frame.warn::before{background:radial-gradient(closest-side,rgba(245,158,11,.14),transparent 70%)}
+  .cap{position:absolute;top:150px;left:0;right:0;padding:0 110px;text-align:center;z-index:2}
+  .cap h2{font-size:94px;line-height:1.07;font-weight:800;letter-spacing:-2px;color:#fff}
+  .cap p{margin-top:26px;font-size:40px;font-weight:500;color:var(--tSoft)}
+
+  .phone{position:absolute;left:50%;bottom:-70px;transform:translateX(-50%);
+    width:980px;height:2000px;background:#000;border-radius:130px;padding:22px;
+    box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 0 4px rgba(255,255,255,.06)}
+  .screen{position:relative;width:100%;height:100%;background:var(--bg);border-radius:110px;overflow:hidden}
+  .notch{position:absolute;top:26px;left:50%;transform:translateX(-50%);width:280px;height:38px;background:#000;border-radius:20px;z-index:6}
+  .sb{display:flex;justify-content:space-between;align-items:center;padding:44px 66px 0;font-size:30px;font-weight:600;color:#fff}
+  .sb .r{display:flex;gap:14px;align-items:center;font-size:26px}
+
+  .swap{position:absolute;inset:0;display:none}
+  .swap img{width:100%;height:100%;object-fit:cover}
+  .frame[data-has-img] .mock{display:none}
+  .frame[data-has-img] .swap{display:block}
+
+  /* ---- gerçek app yüzeyi ---- */
+  .mock{position:absolute;inset:0;display:flex;flex-direction:column}
+  .hd{display:flex;align-items:center;justify-content:space-between;padding:140px 60px 0}
+  .logo{font-size:54px;font-weight:800;letter-spacing:-1px}
+  .logo .d{color:var(--good)}
+  .more{font-size:60px;color:#fff;line-height:.5;letter-spacing:2px}
+
+  /* ring */
+  .center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:96px}
+  .ring{position:relative;width:600px;height:600px;display:flex;align-items:center;justify-content:center}
+  .ring svg{position:absolute;transform:rotate(-90deg)}
+  .ringtxt{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .ringtxt .k{font-size:26px;font-weight:600;color:var(--tMute);letter-spacing:3.5px}
+  .ringtxt .v{font-size:150px;font-weight:800;letter-spacing:-5px;line-height:1.05}
+  .ringtxt .u{font-size:32px;font-weight:500;color:var(--tMute)}
+  .ringtxt .s{font-size:28px;font-weight:700;letter-spacing:2px;margin-top:14px;color:var(--good)}
+  .stats{display:flex;align-items:center;gap:40px;width:700px}
+  .stats .st{flex:1;text-align:center}
+  .stats .st .v{font-size:56px;font-weight:700;letter-spacing:-1px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .stats .st .l{font-size:25px;font-weight:600;color:var(--tFaint);letter-spacing:2.5px;margin-top:10px}
+  .stats .sep{width:2px;height:80px;background:var(--hairline)}
+
+  /* input bar */
+  .inbar{background:rgba(59,130,246,.06);border-radius:70px 70px 0 0;padding:58px 60px 80px}
+  .inbar.warn{background:rgba(245,158,11,.06)}
+  .inlabel{font-size:32px;font-weight:600;color:var(--tDim);margin-bottom:36px}
+  .inrow{display:flex;align-items:center;gap:24px;position:relative}
+  .field{flex:1;display:flex;align-items:center}
+  .field .pre{font-size:80px;font-weight:700;color:rgba(255,255,255,.22);margin-right:20px}
+  .field .val{font-size:100px;font-weight:800;letter-spacing:-3px;color:rgba(255,255,255,.18)}
+  .field .val.fill{color:#fff}
+  .send{width:136px;height:136px;border-radius:68px;background:var(--good);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:64px;color:#fff;
+    box-shadow:0 14px 50px rgba(59,130,246,.45)}
+  .send.dim{opacity:.3;box-shadow:none}
+  .chips{display:flex;gap:20px;margin-top:46px;overflow:hidden}
+  .chip{display:flex;align-items:center;gap:18px;padding:22px 32px;border-radius:999px;
+    border:2px solid var(--hairline);background:var(--surface);white-space:nowrap}
+  .chip .dot{width:20px;height:20px;border-radius:50%;flex-shrink:0}
+  .chip .nm{font-size:32px;font-weight:600;color:var(--tSoft)}
+  .chip .am{font-size:32px;font-weight:700;color:var(--tSoft);font-variant-numeric:tabular-nums}
+  .chip.on{border-color:var(--ulasim);background:rgba(59,130,246,.12)}
+  .chip.on .nm{color:#fff}
+  .note{margin-top:36px;padding:30px 36px;border-radius:30px;background:rgba(255,255,255,.05);
+    font-size:34px;font-weight:500;color:var(--tDim)}
+
+  /* sheet — tam panel (bottom-sheet kabuğu; iç içe köşe/seam yok) */
+  .sheetmock{background:var(--sheet)}
+  .sheetbody{padding:18px 60px 0}
+  .grab{width:100px;height:11px;border-radius:99px;background:rgba(255,255,255,.15);margin:8px auto 40px}
+  .shead{display:flex;align-items:center;justify-content:space-between;margin-bottom:50px}
+  .shead .t{font-size:52px;font-weight:700;letter-spacing:-1px}
+  .shead .x{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.06);
+    display:flex;align-items:center;justify-content:center;font-size:38px;color:var(--tSoft)}
+  .ssub{font-size:34px;color:var(--tSoft);margin-bottom:54px}
+  .ssub b{font-weight:700;color:#fff}
+  .ssub .sep{color:var(--tDim)}
+  .slabel{font-size:26px;font-weight:600;color:var(--tDim);letter-spacing:2.5px;margin:0 4px 30px}
+
+  .lrow{display:flex;align-items:center;gap:30px;background:var(--surface);
+    border-radius:36px;padding:38px 42px;margin-bottom:24px}
+  .lrow .dot{width:22px;height:22px;border-radius:50%;flex-shrink:0}
+  .lrow .nm{flex:1}
+  .lrow .nm b{display:block;font-size:40px;font-weight:600}
+  .lrow .nm span{font-size:28px;color:var(--tSoft)}
+  .lrow .am{font-size:44px;font-weight:700;font-variant-numeric:tabular-nums}
+  .lrow .tg{width:108px;height:62px;border-radius:99px;background:var(--good);position:relative;flex-shrink:0}
+  .lrow .tg::after{content:"";position:absolute;top:7px;right:7px;width:48px;height:48px;border-radius:50%;background:#fff}
+  .lrow .tg.off{background:rgba(255,255,255,.1)}
+  .lrow .tg.off::after{right:auto;left:7px}
+  .addrow{display:flex;gap:20px;margin-top:14px}
+  .addrow .ni{flex:1;background:var(--input);border-radius:34px;padding:34px 38px;font-size:32px;color:var(--tDim);font-weight:500}
+  .addrow .af{width:300px;background:var(--input);border-radius:34px;padding:34px 38px;font-size:32px;color:var(--tDim);font-weight:500;display:flex;gap:14px}
+
+  /* analytics */
+  .a3{display:flex;align-items:center;gap:30px;margin-bottom:50px}
+  .a3 .st{flex:1;text-align:center;min-width:0}
+  .a3 .st .v{font-size:50px;font-weight:700;letter-spacing:-1px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .a3 .st .l{font-size:24px;font-weight:600;color:var(--tFaint);letter-spacing:2px;margin-top:8px}
+  .a3 .sep{width:2px;height:70px;background:var(--hairline)}
+  .card{background:var(--surface);border-radius:44px;padding:48px;margin-bottom:30px}
+  .card .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px}
+  .card .big{font-size:64px;font-weight:800;letter-spacing:-1px}
+  .card .cap2{font-size:26px;color:var(--tDim);font-weight:600;letter-spacing:1.5px;margin-top:8px}
+  .tchip{padding:16px 30px;border-radius:999px;font-size:34px;font-weight:700;
+    background:rgba(34,197,94,.14);color:#4ade80}
+  .card .note{font-size:34px;color:var(--tSoft);line-height:1.45;margin-top:8px}
+  .fcard{background:rgba(34,197,94,.08);border:2px solid rgba(34,197,94,.25);border-radius:44px;padding:48px;margin-bottom:30px}
+  .fcard .h{font-size:30px;font-weight:600;color:var(--tDim);letter-spacing:1.5px;margin-bottom:22px}
+  .fcard .b{font-size:46px;font-weight:600;line-height:1.4}
+  .fcard .b b{color:#4ade80;font-weight:800}
+  .bars{display:flex;align-items:flex-end;gap:18px;height:300px;margin-top:36px}
+  .bars .bcol{flex:1;border-radius:14px 14px 5px 5px;background:rgba(255,255,255,.1)}
+  .bars .bcol.hl{background:var(--good)}
+
+  /* privacy (settings yüzeyi) */
+  .prv{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 70px}
+  .prv .ic{width:170px;height:170px;border-radius:50%;background:rgba(59,130,246,.14);
+    display:flex;align-items:center;justify-content:center;font-size:80px;margin:0 auto 60px}
+  .prv h3{font-size:72px;font-weight:800;letter-spacing:-1.5px;text-align:center;margin-bottom:80px}
+  .prow{display:flex;align-items:center;gap:30px;background:var(--surface);border-radius:36px;padding:42px 44px;margin-bottom:22px}
+  .prow .ck{color:var(--good);font-size:48px;font-weight:800}
+  .prow .tx{font-size:40px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="bar">
+  <h1>Pace · App Store görselleri (1320×2868)</h1>
+  <div class="seg">
+    <button id="tr" class="on" onclick="setLang('tr')">TR</button>
+    <button id="en" onclick="setLang('en')">EN</button>
+  </div>
+  <button class="primary" onclick="downloadAll()">Hepsini PNG indir</button>
+</div>
+<div class="hint">
+  Gerçek uygulama ekranlarından (LimitBoard, ExpenseInput, sheet'ler) yeniden çizildi —
+  ince ring, renkli-nokta kategoriler, gerçek metinler. Kareye tıkla → PNG iner.
+  Gerçek cihaz yakalaması için <code>.swap</code> içine <code>&lt;img&gt;</code> koy + frame'e <code>data-has-img</code> ver.
+</div>
+
+<div class="stage" id="stage"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const T = {
+  cap:{
+    1:{tr:["Bugün ne kadar","harcayabilirsin?"],en:["How much can you","spend today?"],s:{tr:"Bütçeni güne böler.",en:"Splits your budget by day."}},
+    2:{tr:["Tek dokunuşla","ekle, kategorile"],en:["Add and categorize","in one tap"],s:{tr:"Yaz, kategori seç, gönder.",en:"Type, pick, send."}},
+    3:{tr:["Bir kez gir,","gerisini pace yapsın"],en:["Set it once,","pace does the rest"],s:{tr:"Sabit giderler peşin ayrılır.",en:"Fixed costs set aside up front."}},
+    4:{tr:["Ay sonunu","önceden gör"],en:["See month-end","before it comes"],s:{tr:"Öngörü ve tempo trendleri.",en:"Forecast and pace trends."}},
+    5:{tr:["Tekrarlayanları","otomatikleştir"],en:["Automate the","recurring stuff"],s:{tr:"Zamanı gelince kendi işler.",en:"Posts itself on schedule."}},
+    6:{tr:["Verin telefonunda.","Hesap yok."],en:["Your data stays","on your device"],s:{tr:"Reklam yok, izleme yok.",en:"No ads, no tracking."}},
+  },
+  ring:{k:{tr:"KALAN",en:"LEFT"},u:{tr:"₺ / gün",en:"₺ / day"},s:{tr:"İYİ GİDİYOR",en:"ON TRACK"}},
+  st:{spent:{tr:"HARCANAN",en:"SPENT"},limit:{tr:"LİMİT",en:"LIMIT"}},
+  in:{prompt:{tr:"Bugün ne harcadın?",en:"What did you spend today?"},note:{tr:"Not ekle (opsiyonel)",en:"Add a note (optional)"}},
+  cat:{market:{tr:"Market",en:"Groceries"},yemek:{tr:"Yemek",en:"Food"},ulasim:{tr:"Ulaşım",en:"Transit"},kahve:{tr:"Kahve",en:"Coffee"},eglence:{tr:"Eğlence",en:"Fun"},fatura:{tr:"Fatura",en:"Bills"}},
+  subs:{title:{tr:"Bütçe & Giderler",en:"Budget & Costs"},daily:{tr:"Günlük limitin",en:"Your daily limit"},reserved:{tr:"rezerve",en:"reserved"},list:{tr:"SABİT GİDERLER",en:"FIXED COSTS"},what:{tr:"Ne için?",en:"What for?"}},
+  an:{title:{tr:"Tempo",en:"Pace"},spent:{tr:"HARCANAN",en:"SPENT"},avg:{tr:"GÜNLÜK ORT.",en:"DAILY AVG"},pool:{tr:"HAVUZ",en:"POOL"},weekly:{tr:"Haftalık tempo",en:"Weekly pace"},last7:{tr:"SON 7 GÜN",en:"LAST 7 DAYS"},fc:{tr:"AY SONU ÖNGÖRÜSÜ",en:"MONTH-END FORECAST"},trend:{tr:["Geçen haftaya göre ","%18"," daha az harcadın 👏"],en:["You spent ","18%"," less than last week 👏"]}},
+  rec:{title:{tr:"Tekrarlayanlar",en:"Recurring"},sched:{tr:"ZAMANLANMIŞ",en:"SCHEDULED"},name:{tr:"Ne için?",en:"What for?"}},
+  prv:{title:{tr:"Verin sende kalır",en:"Your data stays with you"},rows:{
+    tr:["Hesap gerekmez","Reklam yok","İzleme / analitik yok","Tek dosyaya yedekle"],
+    en:["No account needed","No ads","No tracking or analytics","Back up to one file"]}},
+};
+
+function ringSvg(ratio,color){
+  const r=265,c=2*Math.PI*r,off=c*(1-ratio);
+  return `<svg width="600" height="600" viewBox="0 0 600 600">
+    <circle cx="300" cy="300" r="${r}" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="30"/>
+    <circle cx="300" cy="300" r="${r}" fill="none" stroke="${color}" stroke-width="30"
+      stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"/></svg>`;
+}
+const sb=`<div class="sb"><span>9:41</span><span class="r">●●● 100%</span></div>`;
+const L=k=>k[LANG];
+
+function header(){return `<div class="hd"><span class="logo">pace<span class="d">.</span></span><span class="more">⋯</span></div>`;}
+
+function homeScreen(filled){
+  const chips = filled
+    ? `<div class="chips">
+        <div class="chip"><span class="dot" style="background:var(--market)"></span><span class="nm">${L(T.cat.market)}</span></div>
+        <div class="chip"><span class="dot" style="background:var(--yemek)"></span><span class="nm">${L(T.cat.yemek)}</span></div>
+        <div class="chip on"><span class="dot" style="background:var(--ulasim)"></span><span class="nm">${L(T.cat.ulasim)}</span></div>
+        <div class="chip"><span class="dot" style="background:var(--kahve)"></span><span class="nm">${L(T.cat.kahve)}</span></div>
+       </div>
+       <div class="note">${L(T.in.note)}</div>`
+    : `<div class="chips">
+        <div class="chip"><span class="dot" style="background:var(--kahve)"></span><span class="nm">${L(T.cat.kahve)}</span><span class="am">₺65</span></div>
+        <div class="chip"><span class="dot" style="background:var(--market)"></span><span class="nm">${L(T.cat.market)}</span><span class="am">₺450</span></div>
+        <div class="chip"><span class="dot" style="background:var(--yemek)"></span><span class="nm">${L(T.cat.yemek)}</span><span class="am">₺145</span></div>
+       </div>`;
+  return `${sb}<div class="mock">${header()}
+    <div class="center">
+      <div class="ring">${ringSvg(.62,'#3b82f6')}
+        <div class="ringtxt"><div class="k">${L(T.ring.k)}</div>
+          <div class="v">${filled?'255':'340'}</div><div class="u">${L(T.ring.u)}</div>
+          <div class="s">${L(T.ring.s)}</div></div></div>
+      <div class="stats">
+        <div class="st"><div class="v">${filled?'₺295':'₺210'}</div><div class="l">${L(T.st.spent)}</div></div>
+        <div class="sep"></div>
+        <div class="st"><div class="v">₺550</div><div class="l">${L(T.st.limit)}</div></div>
+      </div>
+    </div>
+    <div class="inbar">
+      <div class="inlabel">${L(T.in.prompt)}</div>
+      <div class="inrow"><div class="field"><span class="pre">₺</span><span class="val${filled?' fill':''}">${filled?'85':'0'}</span></div>
+        <div class="send${filled?'':' dim'}">↑</div></div>
+      ${chips}
+    </div></div>`;
+}
+
+function sheetScreen(title,body){
+  return `${sb}<div class="mock sheetmock">
+    <div class="sheetbody"><div class="grab"></div>
+      <div class="shead"><div class="t">${title}</div><div class="x">✕</div></div>
+      ${body}</div></div>`;
+}
+
+const SCREENS = {
+  1:()=>homeScreen(false),
+  2:()=>homeScreen(true),
+  3:()=>sheetScreen(L(T.subs.title),
+      `<div class="ssub">${L(T.subs.daily)} <b>₺550</b> <span class="sep">•</span> ${L(T.subs.reserved)} <b>₺8.209</b></div>
+       <div class="slabel">${L(T.subs.list)}</div>
+       <div class="lrow"><div class="nm"><b>Kira</b></div><div class="am">₺6.000</div></div>
+       <div class="lrow"><div class="nm"><b>Spotify</b></div><div class="am">₺59</div></div>
+       <div class="lrow"><div class="nm"><b>Kredi taksiti</b></div><div class="am">₺2.150</div></div>
+       <div class="lrow"><div class="nm"><b>iCloud</b></div><div class="am">₺39</div></div>
+       <div class="addrow"><div class="ni">${L(T.subs.what)}</div><div class="af"><span style="color:var(--tMute)">₺</span> 0</div></div>`),
+  4:()=>sheetScreen(L(T.an.title),
+      `<div class="a3">
+        <div class="st"><div class="v">₺8.420</div><div class="l">${L(T.an.spent)}</div></div><div class="sep"></div>
+        <div class="st"><div class="v">₺372</div><div class="l">${L(T.an.avg)}</div></div><div class="sep"></div>
+        <div class="st"><div class="v">₺16.600</div><div class="l">${L(T.an.pool)}</div></div>
+       </div>
+       <div class="fcard"><div class="h">${L(T.an.fc)}</div>
+        <div class="b">Bu hızla ay sonunda elinde <b>₺1.240</b> kalır.</div></div>
+       <div class="card"><div class="top"><div><div class="big">₺2.610</div><div class="cap2">${L(T.an.last7)}</div></div>
+        <div class="tchip">%18 ↓</div></div>
+        <div class="note">${T.an.trend[LANG][0]}<b style="color:#4ade80">${T.an.trend[LANG][1]}</b>${T.an.trend[LANG][2]}</div></div>
+       <div class="card"><div class="cap2" style="margin:0 0 6px">${L(T.an.weekly).toUpperCase()}</div>
+        <div class="bars">
+          <div class="bcol" style="height:48%"></div><div class="bcol" style="height:62%"></div>
+          <div class="bcol hl" style="height:80%"></div><div class="bcol" style="height:40%"></div>
+          <div class="bcol" style="height:55%"></div><div class="bcol" style="height:35%"></div>
+          <div class="bcol hl" style="height:70%"></div></div></div>`),
+  5:()=>sheetScreen(L(T.rec.title),
+      `<div class="slabel">${L(T.rec.sched)}</div>
+       <div class="lrow"><span class="dot" style="background:var(--ulasim)"></span><div class="nm"><b>Aylık ulaşım</b><span>her ayın 1'i</span></div><div class="tg"></div></div>
+       <div class="lrow"><span class="dot" style="background:var(--saglik)"></span><div class="nm"><b>Spor salonu</b><span>her ayın 10'u</span></div><div class="tg"></div></div>
+       <div class="lrow"><span class="dot" style="background:var(--eglence)"></span><div class="nm"><b>Netflix</b><span>her ayın 22'si</span></div><div class="tg"></div></div>
+       <div class="lrow"><span class="dot" style="background:var(--diger)"></span><div class="nm"><b>iCloud</b><span>duraklatıldı</span></div><div class="tg off"></div></div>
+       <div class="addrow"><div class="ni">${L(T.rec.name)}</div><div class="af"><span style="color:var(--tMute)">₺</span> 0</div></div>`),
+  6:()=>`${sb}<div class="mock">${header()}
+    <div class="prv">
+      <div class="ic">🔒</div>
+      <h3>${L(T.prv.title)}</h3>
+      ${T.prv.rows[LANG].map(r=>`<div class="prow"><span class="ck">✓</span><span class="tx">${r}</span></div>`).join('')}
+    </div></div>`,
+};
+
+let LANG='tr';
+function build(){
+  const stage=document.getElementById('stage');stage.innerHTML='';
+  for(let i=1;i<=6;i++){
+    const c=T.cap[i];
+    const slot=document.createElement('div');slot.className='slot';
+    slot.innerHTML=`<div class="frame" id="frame${i}">
+      <div class="cap"><h2>${c[LANG][0]}<br>${c[LANG][1]}</h2><p>${c.s[LANG]}</p></div>
+      <div class="phone"><div class="screen"><div class="notch"></div>
+        <div class="swap"></div>${SCREENS[i]()}</div></div></div>`;
+    slot.onclick=()=>downloadOne(i);
+    stage.appendChild(slot);
+  }
+}
+function setLang(l){LANG=l;document.getElementById('tr').classList.toggle('on',l==='tr');
+  document.getElementById('en').classList.toggle('on',l==='en');build();}
+
+async function capture(i){
+  const el=document.getElementById('frame'+i);const prev=el.style.transform;el.style.transform='none';
+  const canvas=await html2canvas(el,{width:1320,height:2868,scale:1,backgroundColor:'#07090e',windowWidth:1320,windowHeight:2868});
+  el.style.transform=prev;return canvas;
+}
+async function downloadOne(i){const canvas=await capture(i);const a=document.createElement('a');
+  a.download=`pace-appstore-${LANG}-${String(i).padStart(2,'0')}.png`;a.href=canvas.toDataURL('image/png');a.click();}
+async function downloadAll(){for(let i=1;i<=6;i++){await downloadOne(i);await new Promise(r=>setTimeout(r,400));}}
+build();
+</script>
+</body>
+</html>

@@ -23,11 +23,7 @@ import {
 } from "../../../shared/lib/notifications";
 import { CardIcon, ChevronLeftIcon, SparklesIcon, TrashIcon, CheckIcon, DownloadIcon, LockIcon, BellIcon, RotateCcwIcon, ListIcon, ArchiveIcon } from "../../../shared/ui/icons";
 import { theme } from "../../../shared/styles/theme";
-
-// Barındırılan yasal sayfalar (GitHub Pages, kaynak: docs/). pace.app özel
-// alan adına geçilirse bu sabitler güncellenmeli.
-const PRIVACY_URL = "https://baranaslaan.github.io/pace-mobile/privacy.html";
-const TERMS_URL = "https://baranaslaan.github.io/pace-mobile/terms.html";
+import { PRIVACY_URL, TERMS_URL } from "../../../shared/config/legal";
 
 interface SettingsSheetProps {
   open: boolean;

@@ -278,7 +278,9 @@ export const tr = {
     launchNote: "İlklere özel — kısa süreliğine senin fiyatın",
     processing: "İşleniyor…",
     buy: "Pace Pro'yu aç · {price}",
-    fine: "Gerçek satın alma mobil uygulamada (App Store / Google Play).",
+    terms: "Kullanım Şartları",
+    privacy: "Gizlilik",
+    fine: "Yıllık plan, dönem bitmeden en az 24 saat önce kapatılmazsa otomatik yenilenir ve ücret App Store hesabından tahsil edilir. Ömür boyu plan tek seferlik ödemedir. İstediğin zaman App Store ayarlarından yönetebilir veya iptal edebilirsin.",
   },
 
   notif: {

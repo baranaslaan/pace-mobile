@@ -278,7 +278,9 @@ export const en: Catalog = {
     launchNote: "For the first few — your price, for a little while",
     processing: "Processing…",
     buy: "Unlock Pace Pro · {price}",
-    fine: "Real purchase is in the mobile app (App Store / Google Play).",
+    terms: "Terms of Use",
+    privacy: "Privacy",
+    fine: "The annual plan auto-renews unless turned off at least 24 hours before the period ends; payment is charged to your App Store account. Lifetime is a one-time purchase. You can manage or cancel anytime in your App Store settings.",
   },
 
   notif: {
