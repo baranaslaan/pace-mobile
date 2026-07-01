@@ -7,6 +7,7 @@ import { usePaceStore } from "../shared/store/usePaceStore";
 import { useDayKey } from "../shared/store/useDayKey";
 import { getTone } from "../shared/lib/tone";
 import { useLimitLogic } from "../features/limit-board/hooks/useLimitLogic";
+import { useBudgetAlerts } from "../features/limit-board/hooks/useBudgetAlerts";
 import { Logo } from "../shared/typography/Logo";
 import { MoreIcon } from "../shared/ui/icons";
 
@@ -42,6 +43,9 @@ export default function AppIndex() {
 
   // Günlük limit/tempo değiştikçe iOS ana ekran widget'ını güncel tut.
   useWidgetSync();
+
+  // Ay-başı harcama bütçe eşiklerini aşınca yerel bildirim at.
+  useBudgetAlerts();
 
   const [mounted, setMounted] = useState(false);
   const [minElapsed, setMinElapsed] = useState(false);

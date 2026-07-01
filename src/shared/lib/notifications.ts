@@ -60,6 +60,25 @@ export async function cancelDailyReminder(): Promise<void> {
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
+/**
+ * Bütçe-eşiği uyarısı: anında tek seferlik yerel bildirim.
+ * İzin YOKKEN sessizce hiçbir şey yapmaz (kullanıcıdan izin İSTEMEZ; eşik
+ * aşımı anında izin diyaloğu açmak istenmez — izin ayrı toggle'da alınır).
+ * Uygulama önplandayken de handler banner gösterir.
+ */
+export async function presentBudgetAlert(text: NotificationText): Promise<void> {
+  const perm = await Notifications.getPermissionsAsync();
+  if (!perm.granted) return;
+  await Notifications.scheduleNotificationAsync({
+    content: { title: text.title, body: text.body },
+    trigger: {
+      type: SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds: 1,
+      repeats: false,
+    },
+  });
+}
+
 /** Test amaçlı: birkaç saniye sonra tek seferlik bir bildirim atar. */
 export async function sendTestNotification(
   text: NotificationText = {

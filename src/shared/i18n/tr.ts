@@ -195,6 +195,8 @@ export const tr = {
     notifications: "Bildirimler",
     dailyReminder: "Günlük hatırlatma",
     everyDayAt: "Her gün {time}",
+    budgetAlerts: "Bütçe uyarıları",
+    budgetAlertsOn: "Bütçenin %80 ve %100'ünde uyar",
     off: "Kapalı",
     permTitle: "Bildirim izni kapalı",
     permBody:
@@ -287,6 +289,13 @@ export const tr = {
     title: "pace",
     body: "Bugün ne harcadın? Günlük tempona bir bak.",
     testBody: "Test bildirimi — her şey çalışıyor 👍",
+  },
+
+  budgetAlert: {
+    nearTitle: "Bütçene yaklaşıyorsun",
+    nearBody: "Bu ayki harcaman bütçenin %{pct}'ine ulaştı.",
+    overTitle: "Bütçeni aştın",
+    overBody: "Bu ayki harcaman bütçenin %{pct}'ine ulaştı.",
   },
 
   csv: {

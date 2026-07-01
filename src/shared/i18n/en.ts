@@ -196,6 +196,8 @@ export const en: Catalog = {
     notifications: "Notifications",
     dailyReminder: "Daily reminder",
     everyDayAt: "Every day at {time}",
+    budgetAlerts: "Budget alerts",
+    budgetAlertsOn: "Alert at 80% and 100% of budget",
     off: "Off",
     permTitle: "Notifications are off",
     permBody:
@@ -287,6 +289,13 @@ export const en: Catalog = {
     title: "pace",
     body: "What did you spend today? Check your daily pace.",
     testBody: "Test notification — everything works 👍",
+  },
+
+  budgetAlert: {
+    nearTitle: "You're close to your budget",
+    nearBody: "You've used {pct}% of this month's budget.",
+    overTitle: "You've gone over budget",
+    overBody: "You've used {pct}% of this month's budget.",
   },
 
   csv: {

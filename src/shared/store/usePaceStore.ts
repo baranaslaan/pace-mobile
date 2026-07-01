@@ -8,6 +8,7 @@ import { isCategoryId } from "@/shared/lib/categories";
 import { isCurrencyCode, DEFAULT_CURRENCY } from "@/shared/lib/money";
 import { FALLBACK_RATES, isRateTable } from "@/shared/lib/rates";
 import { isLanguage, DEFAULT_LANGUAGE } from "@/shared/i18n/lang";
+import { isBudgetAlertState, type BudgetAlertState } from "@/shared/lib/budgetAlerts";
 import {
   dueRecurring,
   mostRecentDue,
@@ -30,7 +31,7 @@ export const FREE_TEMPLATE_LIMIT = 3;
 
 /** Persist anahtarı ve şema sürümü — yedekleme/geri yükleme bunlara dayanır. */
 export const PERSIST_KEY = "pace-v1";
-export const PERSIST_VERSION = 9;
+export const PERSIST_VERSION = 10;
 
 const mmkvStorage = createMMKV({ id: "pace-storage" });
 
@@ -77,6 +78,10 @@ interface PaceState {
   reminderEnabled: boolean;
   reminderHour: number;
   reminderMinute: number;
+  /** Bütçe-eşiği uyarıları açık mı? (yerel bildirim; izin gerektirir) */
+  budgetAlertsEnabled: boolean;
+  /** Ay-başına hangi bütçe eşiklerinin uyarıldığı — tekrar spam önler. */
+  budgetAlertState: BudgetAlertState;
   /** Rollover (devir) ipucu bir kez gösterilip kapatıldı mı? */
   rolloverTipSeen: boolean;
   /** İlk-harcama ipucu görüldü mü? (ilk kalem eklenince/dokununca kalıcı kapanır) */
@@ -113,6 +118,9 @@ interface PaceState {
   setLanguage: (code: string) => void;
   setRates: (rates: Record<string, number>) => void;
   setReminder: (enabled: boolean, hour: number, minute: number) => void;
+  setBudgetAlertsEnabled: (enabled: boolean) => void;
+  /** Ay-başı dedupe kaydını günceller (uyarılan eşikler). */
+  setBudgetAlertState: (month: string, crossed: number[]) => void;
   markRolloverTipSeen: () => void;
   markFirstExpenseTipSeen: () => void;
   rollIfNewMonth: () => void;
@@ -137,6 +145,8 @@ export const usePaceStore = create<PaceState>()(
       reminderEnabled: false,
       reminderHour: 20,
       reminderMinute: 0,
+      budgetAlertsEnabled: true,
+      budgetAlertState: { month: "", crossed: [] },
       rolloverTipSeen: false,
       firstExpenseTipSeen: false,
       _hydrated: false,
@@ -339,6 +349,11 @@ export const usePaceStore = create<PaceState>()(
       setReminder: (enabled, hour, minute) =>
         set({ reminderEnabled: enabled, reminderHour: hour, reminderMinute: minute }),
 
+      setBudgetAlertsEnabled: (enabled) => set({ budgetAlertsEnabled: enabled }),
+
+      setBudgetAlertState: (month, crossed) =>
+        set({ budgetAlertState: { month, crossed } }),
+
       markRolloverTipSeen: () => set({ rolloverTipSeen: true }),
 
       markFirstExpenseTipSeen: () => set({ firstExpenseTipSeen: true }),
@@ -366,6 +381,8 @@ export const usePaceStore = create<PaceState>()(
         reminderEnabled,
         reminderHour,
         reminderMinute,
+        budgetAlertsEnabled,
+        budgetAlertState,
         rolloverTipSeen,
         firstExpenseTipSeen,
       }) => ({
@@ -385,6 +402,8 @@ export const usePaceStore = create<PaceState>()(
         reminderEnabled,
         reminderHour,
         reminderMinute,
+        budgetAlertsEnabled,
+        budgetAlertState,
         rolloverTipSeen,
         firstExpenseTipSeen,
       }),
@@ -431,6 +450,13 @@ export const usePaceStore = create<PaceState>()(
           reminderHour: typeof s.reminderHour === "number" ? s.reminderHour : 20,
           reminderMinute:
             typeof s.reminderMinute === "number" ? s.reminderMinute : 0,
+          budgetAlertsEnabled:
+            typeof s.budgetAlertsEnabled === "boolean"
+              ? s.budgetAlertsEnabled
+              : true,
+          budgetAlertState: isBudgetAlertState(s.budgetAlertState)
+            ? s.budgetAlertState
+            : { month: "", crossed: [] },
           rolloverTipSeen: Boolean(s.rolloverTipSeen),
           // Mevcut (zaten onboard olmuş) kullanıcılar ilk-açılış ipucunu görmesin.
           firstExpenseTipSeen:

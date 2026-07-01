@@ -21,7 +21,7 @@ import {
   cancelDailyReminder,
   sendTestNotification,
 } from "../../../shared/lib/notifications";
-import { CardIcon, ChevronLeftIcon, SparklesIcon, TrashIcon, CheckIcon, DownloadIcon, LockIcon, BellIcon, RotateCcwIcon, ListIcon, ArchiveIcon } from "../../../shared/ui/icons";
+import { CardIcon, ChevronLeftIcon, SparklesIcon, TrashIcon, CheckIcon, DownloadIcon, LockIcon, BellIcon, ActivityIcon, RotateCcwIcon, ListIcon, ArchiveIcon } from "../../../shared/ui/icons";
 import { theme } from "../../../shared/styles/theme";
 import { PRIVACY_URL, TERMS_URL } from "../../../shared/config/legal";
 
@@ -46,6 +46,8 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
   const reminderHour = usePaceStore((s) => s.reminderHour);
   const reminderMinute = usePaceStore((s) => s.reminderMinute);
   const setReminder = usePaceStore((s) => s.setReminder);
+  const budgetAlertsEnabled = usePaceStore((s) => s.budgetAlertsEnabled);
+  const setBudgetAlertsEnabled = usePaceStore((s) => s.setBudgetAlertsEnabled);
   const setCurrency = usePaceStore((s) => s.setCurrency);
   const language = usePaceStore((s) => s.language);
   const setLanguage = usePaceStore((s) => s.setLanguage);
@@ -95,6 +97,20 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
       body: t("notif.body"),
     });
     setReminder(true, reminderHour, reminderMinute);
+  };
+
+  const toggleBudgetAlerts = async () => {
+    if (budgetAlertsEnabled) {
+      setBudgetAlertsEnabled(false);
+      return;
+    }
+    // Eşik aşımında bildirim atabilmek için izin şart.
+    const granted = await ensureNotificationPermission();
+    if (!granted) {
+      Alert.alert(t("settings.permTitle"), t("settings.permBody"));
+      return;
+    }
+    setBudgetAlertsEnabled(true);
   };
 
   // Sheet kapanınca onay adımını sıfırla.
@@ -262,7 +278,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
 
       {/* Bildirimler */}
       <Text style={styles.sectionLabel}>{tu("settings.notifications")}</Text>
-      <View style={styles.row}>
+      <View style={[styles.row, { marginBottom: 8 }]}>
         <View style={styles.rowIcon}>
           <BellIcon color={theme.colors.textSoft} />
         </View>
@@ -276,6 +292,24 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions }:
           style={{ alignSelf: "center" }}
           value={reminderEnabled}
           onValueChange={toggleReminder}
+          trackColor={{ false: "rgba(255,255,255,0.15)", true: theme.colors.stateGood }}
+          thumbColor="#fff"
+        />
+      </View>
+      <View style={styles.row}>
+        <View style={styles.rowIcon}>
+          <ActivityIcon color={theme.colors.textSoft} />
+        </View>
+        <View style={styles.rowInfo}>
+          <Text style={styles.rowTitle}>{t("settings.budgetAlerts")}</Text>
+          <Text style={styles.rowSub}>
+            {budgetAlertsEnabled ? t("settings.budgetAlertsOn") : t("settings.off")}
+          </Text>
+        </View>
+        <Switch
+          style={{ alignSelf: "center" }}
+          value={budgetAlertsEnabled}
+          onValueChange={toggleBudgetAlerts}
           trackColor={{ false: "rgba(255,255,255,0.15)", true: theme.colors.stateGood }}
           thumbColor="#fff"
         />
