@@ -4,7 +4,7 @@ import { Text } from "../../../shared/typography/Text";
 import { MotiView } from "moti";
 import { timeLabel } from "../../../shared/lib/date";
 import { TrashIcon } from "../../../shared/ui/icons";
-import { CATEGORIES, categoryById } from "../../../shared/lib/categories";
+import { useCategories } from "../../../shared/store/useCategories";
 import { useCurrency } from "../../../shared/store/useCurrency";
 import { parseGrouped } from "../../../shared/lib/money";
 import { useT } from "../../../shared/i18n";
@@ -18,6 +18,7 @@ interface EntryRowProps {
 
 export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
   const { symbol, toBase, groupLive, toGroupedInput } = useCurrency();
+  const { list: categories, resolve: resolveCat } = useCategories();
   const { t } = useT();
   // Yazarken de blur'da da binlik ayıraçlı — tek tutarlı biçim.
   const grouped = toGroupedInput(entry.amount);
@@ -42,11 +43,11 @@ export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
     setNote(trimmed);
   };
 
-  // Dokununca sıradaki kategoriye geç (listede sırayla döner).
-  const cat = categoryById(entry.category);
+  // Dokununca sıradaki kategoriye geç (listede sırayla döner; custom dahil).
+  const cat = resolveCat(entry.category);
   const cycleCategory = () => {
-    const idx = CATEGORIES.findIndex((c) => c.id === entry.category);
-    const next = CATEGORIES[(idx + 1) % CATEGORIES.length];
+    const idx = categories.findIndex((c) => c.id === entry.category);
+    const next = categories[(idx + 1) % categories.length];
     onUpdate(entry.id, { category: next.id });
   };
 

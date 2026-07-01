@@ -5,7 +5,7 @@ import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { getTone } from "../../../shared/lib/tone";
 import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
 import { ArrowUpIcon } from "../../../shared/ui/icons";
-import { CATEGORIES, categoryById } from "../../../shared/lib/categories";
+import { useCategories } from "../../../shared/store/useCategories";
 import { useCurrency } from "../../../shared/store/useCurrency";
 import { parseGrouped } from "../../../shared/lib/money";
 import { tapLight, tapWarn } from "../../../shared/lib/haptics";
@@ -20,6 +20,7 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
   const { remaining, limit } = useLimitLogic();
   const { symbol, toBase, fmt, groupLive } = useCurrency();
   const { t } = useT();
+  const { list: categories, resolve: resolveCat } = useCategories();
   const tone = getTone(remaining, limit);
 
   const [input, setInput] = useState("");
@@ -135,7 +136,7 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
                 contentContainerStyle={styles.chipsContent}
               >
                 {templates.map((tpl) => {
-                  const color = categoryById(tpl.category).color;
+                  const color = resolveCat(tpl.category).color;
                   return (
                     <TouchableOpacity
                       key={tpl.id}
@@ -174,7 +175,7 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
                 style={styles.chips}
                 contentContainerStyle={styles.chipsContent}
               >
-                {CATEGORIES.map((c) => {
+                {categories.map((c) => {
                   const active = category === c.id;
                   return (
                     <TouchableOpacity
@@ -188,7 +189,7 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
                     >
                       <View style={[styles.chipDot, { backgroundColor: c.color }]} />
                       <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                        {t(`category.${c.id}`)}
+                        {c.name}
                       </Text>
                     </TouchableOpacity>
                   );

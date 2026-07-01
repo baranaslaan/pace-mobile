@@ -5,7 +5,7 @@ import { AnimatePresence, MotiView } from "moti";
 import { usePaceStore, FREE_TEMPLATE_LIMIT } from "../../../shared/store/usePaceStore";
 import { useCurrency } from "../../../shared/store/useCurrency";
 import { useT, weekdaysShort, weekdaysFull } from "../../../shared/i18n";
-import { CATEGORIES, categoryById } from "../../../shared/lib/categories";
+import { useCategories } from "../../../shared/store/useCategories";
 import type { Cadence } from "../../../shared/lib/recurring";
 import { PlusIcon, TrashIcon, SparklesIcon, RepeatIcon } from "../../../shared/ui/icons";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
@@ -31,7 +31,7 @@ function CategoryPicker({
   value: string | undefined;
   onChange: (id: string | undefined) => void;
 }) {
-  const { t } = useT();
+  const { list: categories } = useCategories();
   return (
     <ScrollView
       horizontal
@@ -39,7 +39,7 @@ function CategoryPicker({
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={styles.catRow}
     >
-      {CATEGORIES.map((c) => {
+      {categories.map((c) => {
         const active = value === c.id;
         return (
           <TouchableOpacity
@@ -50,7 +50,7 @@ function CategoryPicker({
           >
             <View style={[styles.dot, { backgroundColor: c.color }]} />
             <Text style={[styles.catChipText, active && styles.catChipTextActive]}>
-              {t(`category.${c.id}`)}
+              {c.name}
             </Text>
           </TouchableOpacity>
         );
@@ -69,6 +69,7 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
   const removeRecurring = usePaceStore((s) => s.removeRecurring);
   const { fmt, toBase, symbol, groupLive } = useCurrency();
   const { t, lang } = useT();
+  const { resolve: resolveCat } = useCategories();
   const wdShort = weekdaysShort(lang);
   const wdFull = weekdaysFull(lang);
 
@@ -130,7 +131,7 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
               exit={{ opacity: 0, height: 0 }}
               transition={{ type: "timing", duration: 200 }}
             >
-              <View style={[styles.dot, { backgroundColor: categoryById(tpl.category).color }]} />
+              <View style={[styles.dot, { backgroundColor: resolveCat(tpl.category).color }]} />
               <Text style={styles.itemName} numberOfLines={1}>{tpl.label}</Text>
               <Text style={styles.itemAmount} numberOfLines={1}>{fmt(tpl.amount)}</Text>
               <TouchableOpacity style={styles.remove} onPress={() => removeTemplate(tpl.id)} activeOpacity={0.7}>
@@ -205,7 +206,7 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
               exit={{ opacity: 0, height: 0 }}
               transition={{ type: "timing", duration: 200 }}
             >
-              <View style={[styles.dot, { backgroundColor: categoryById(r.category).color }]} />
+              <View style={[styles.dot, { backgroundColor: resolveCat(r.category).color }]} />
               <View style={styles.ruleInfo}>
                 <Text style={styles.itemName} numberOfLines={1}>{r.label}</Text>
                 <Text style={styles.ruleSummary}>{ruleSummary(r.cadence, r.day)}</Text>

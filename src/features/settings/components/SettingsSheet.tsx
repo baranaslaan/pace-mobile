@@ -11,6 +11,7 @@ import {
 } from "../../../shared/store/usePaceStore";
 import { serializeBackup, parseBackup, BackupError } from "../../../shared/lib/backup";
 import { useCurrency } from "../../../shared/store/useCurrency";
+import { useCategories } from "../../../shared/store/useCategories";
 import { CURRENCIES } from "../../../shared/lib/money";
 import { useT, LANGUAGES } from "../../../shared/i18n";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
@@ -54,6 +55,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions, o
   const language = usePaceStore((s) => s.language);
   const setLanguage = usePaceStore((s) => s.setLanguage);
   const { currency, fmt, toDisplay } = useCurrency();
+  const { resolve: resolveCat } = useCategories();
   const { t, tu } = useT();
 
   const [confirmReset, setConfirmReset] = useState(false);
@@ -144,7 +146,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions, o
         expensesToCSV(entries, {
           convert: toDisplay,
           currencyCode: currency,
-          categoryLabel: (id) => t(`category.${id ?? "diger"}`),
+          categoryLabel: (id) => resolveCat(id).name,
           headers: {
             date: t("csv.date"),
             time: t("csv.time"),

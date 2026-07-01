@@ -4,7 +4,7 @@ import { createMMKV } from "react-native-mmkv";
 import { dayKey, monthKey } from "@/shared/lib/date";
 import { rollMonth } from "@/shared/lib/engine";
 import { migrateEntries } from "@/shared/lib/migrate";
-import { isCategoryId } from "@/shared/lib/categories";
+import { isCategoryId, isCategoryRef, isCustomCategory, CUSTOM_CATEGORY_PREFIX, type CustomCategory } from "@/shared/lib/categories";
 import { isCurrencyCode, DEFAULT_CURRENCY } from "@/shared/lib/money";
 import { FALLBACK_RATES, isRateTable } from "@/shared/lib/rates";
 import { isLanguage, DEFAULT_LANGUAGE } from "@/shared/i18n/lang";
@@ -29,21 +29,37 @@ export const FREE_SUBSCRIPTION_LIMIT = 3;
 /** Ücretsiz planda eklenebilecek en fazla hızlı şablon sayısı. */
 export const FREE_TEMPLATE_LIMIT = 3;
 
-/** Kalıcı kategori bütçelerini güvene alır: geçerli kategori + pozitif tutar. */
+/** Yerleşik VEYA kullanıcı (custom) kategorisi mi? Store durumuna göre. */
+function isKnownCategory(
+  s: Pick<PaceState, "customCategories">,
+  id: unknown,
+): id is string {
+  return (
+    isCategoryId(id) ||
+    (typeof id === "string" && s.customCategories.some((c) => c.id === id))
+  );
+}
+
+/** Kalıcı kategori bütçelerini güvene alır: kategori referansı + pozitif tutar. */
 function sanitizeCategoryBudgets(v: unknown): Record<string, number> {
   if (!v || typeof v !== "object") return {};
   const out: Record<string, number> = {};
   for (const [id, amount] of Object.entries(v as Record<string, unknown>)) {
-    if (isCategoryId(id) && typeof amount === "number" && amount > 0) {
+    if (isCategoryRef(id) && typeof amount === "number" && amount > 0) {
       out[id] = amount;
     }
   }
   return out;
 }
 
+/** Kalıcı custom kategorileri güvene alır (geçerli şekil). */
+function sanitizeCustomCategories(v: unknown): CustomCategory[] {
+  return Array.isArray(v) ? v.filter(isCustomCategory) : [];
+}
+
 /** Persist anahtarı ve şema sürümü — yedekleme/geri yükleme bunlara dayanır. */
 export const PERSIST_KEY = "pace-v1";
-export const PERSIST_VERSION = 11;
+export const PERSIST_VERSION = 12;
 
 const mmkvStorage = createMMKV({ id: "pace-storage" });
 
@@ -96,6 +112,8 @@ interface PaceState {
   budgetAlertState: BudgetAlertState;
   /** Kategori-başı aylık limit (kategoriId → tutar). Pro; boş = limitsiz. */
   categoryBudgets: Record<string, number>;
+  /** Kullanıcı (custom) kategorileri — yerleşiklere eklenir. Pro. */
+  customCategories: CustomCategory[];
   /** Rollover (devir) ipucu bir kez gösterilip kapatıldı mı? */
   rolloverTipSeen: boolean;
   /** İlk-harcama ipucu görüldü mü? (ilk kalem eklenince/dokununca kalıcı kapanır) */
@@ -137,6 +155,10 @@ interface PaceState {
   setBudgetAlertState: (state: BudgetAlertState) => void;
   /** Kategori limitini ayarlar (0/geçersiz = kaldırır). Yalnızca Pro. */
   setCategoryBudget: (categoryId: string, amount: number) => void;
+  /** Custom kategori ekler (ad + palet rengi). Yalnızca Pro. */
+  addCustomCategory: (label: string, color: string) => void;
+  /** Custom kategoriyi ve varsa bütçesini kaldırır. Yalnızca Pro. */
+  removeCustomCategory: (id: string) => void;
   markRolloverTipSeen: () => void;
   markFirstExpenseTipSeen: () => void;
   rollIfNewMonth: () => void;
@@ -164,6 +186,7 @@ export const usePaceStore = create<PaceState>()(
       budgetAlertsEnabled: false,
       budgetAlertState: { month: "", crossed: [], byCategory: {} },
       categoryBudgets: {},
+      customCategories: [],
       rolloverTipSeen: false,
       firstExpenseTipSeen: false,
       _hydrated: false,
@@ -205,7 +228,7 @@ export const usePaceStore = create<PaceState>()(
             amount,
             ts: Date.now(),
             ...(trimmed ? { note: trimmed } : {}),
-            ...(isCategoryId(category) ? { category } : {}),
+            ...(isKnownCategory(s, category) ? { category } : {}),
           };
           // İlk harcama loglandığı an ilk-açılış ipucu kalıcı olarak kapanır.
           return { entries: [...s.entries, entry], firstExpenseTipSeen: true };
@@ -226,7 +249,7 @@ export const usePaceStore = create<PaceState>()(
               else delete next.note;
             }
             if (patch.category !== undefined) {
-              if (isCategoryId(patch.category)) next.category = patch.category;
+              if (isKnownCategory(s, patch.category)) next.category = patch.category;
               else delete next.category;
             }
             return next;
@@ -246,7 +269,7 @@ export const usePaceStore = create<PaceState>()(
             id: uid(),
             label: trimmed,
             amount,
-            ...(isCategoryId(category) ? { category } : {}),
+            ...(isKnownCategory(s, category) ? { category } : {}),
           };
           return { templates: [...s.templates, tpl] };
         }),
@@ -373,11 +396,41 @@ export const usePaceStore = create<PaceState>()(
       setCategoryBudget: (categoryId, amount) =>
         set((s) => {
           // Kategori limitleri Pro'ya kapılı — UI'dan kaçan yolları da kes.
-          if (!s.isPro || !isCategoryId(categoryId)) return s;
+          if (!s.isPro || !isKnownCategory(s, categoryId)) return s;
           const next = { ...s.categoryBudgets };
           if (Number.isFinite(amount) && amount > 0) next[categoryId] = amount;
           else delete next[categoryId];
           return { categoryBudgets: next };
+        }),
+
+      addCustomCategory: (label, color) =>
+        set((s) => {
+          if (!s.isPro) return s;
+          const trimmed = label.trim();
+          if (!trimmed || typeof color !== "string") return s;
+          // Aynı adlı custom kategori tekrarını (büyük/küçük harf duyarsız) engelle.
+          if (s.customCategories.some((c) => c.label.toLowerCase() === trimmed.toLowerCase()))
+            return s;
+          const cat: CustomCategory = { id: `${CUSTOM_CATEGORY_PREFIX}${uid()}`, label: trimmed, color };
+          return { customCategories: [...s.customCategories, cat] };
+        }),
+
+      removeCustomCategory: (id) =>
+        set((s) => {
+          if (!s.customCategories.some((c) => c.id === id)) return s;
+          const nextBudgets = { ...s.categoryBudgets };
+          delete nextBudgets[id];
+          // Ölü kimliği taşıyan kalem/şablon/kuralları "kategorisiz"e çevir —
+          // analizde hayalet satır kalmasın (görüntüde "Diğer"e düşerler).
+          const strip = <T extends { category?: string }>(x: T): T =>
+            x.category === id ? { ...x, category: undefined } : x;
+          return {
+            customCategories: s.customCategories.filter((c) => c.id !== id),
+            categoryBudgets: nextBudgets,
+            entries: s.entries.map(strip),
+            templates: s.templates.map(strip),
+            recurring: s.recurring.map(strip),
+          };
         }),
 
       markRolloverTipSeen: () => set({ rolloverTipSeen: true }),
@@ -410,6 +463,7 @@ export const usePaceStore = create<PaceState>()(
         budgetAlertsEnabled,
         budgetAlertState,
         categoryBudgets,
+        customCategories,
         rolloverTipSeen,
         firstExpenseTipSeen,
       }) => ({
@@ -432,6 +486,7 @@ export const usePaceStore = create<PaceState>()(
         budgetAlertsEnabled,
         budgetAlertState,
         categoryBudgets,
+        customCategories,
         rolloverTipSeen,
         firstExpenseTipSeen,
       }),
@@ -483,6 +538,7 @@ export const usePaceStore = create<PaceState>()(
               ? s.budgetAlertsEnabled
               : false,
           budgetAlertState: normalizeBudgetAlertState(s.budgetAlertState),
+          customCategories: sanitizeCustomCategories(s.customCategories),
           categoryBudgets: sanitizeCategoryBudgets(s.categoryBudgets),
           rolloverTipSeen: Boolean(s.rolloverTipSeen),
           // Mevcut (zaten onboard olmuş) kullanıcılar ilk-açılış ipucunu görmesin.

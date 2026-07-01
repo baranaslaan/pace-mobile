@@ -7,7 +7,7 @@
    kullanıcı verisini sessizce kaybettirir, bu yüzden ayrı test edilir.
    ============================================================= */
 
-import { isCategoryId } from "./categories";
+import { isCategoryRef } from "./categories";
 import type { ExpenseEntry } from "./engine";
 
 /** Basit benzersiz kimlik (crypto varsa onu kullan). */
@@ -43,7 +43,8 @@ export function migrateEntries(persisted: unknown): ExpenseEntry[] {
           (e as ExpenseEntry).amount > 0,
       )
       // Bilinmeyen kategori kimliklerini at — analitik "Diğer"e düşürür.
-      .map((e) => (isCategoryId(e.category) ? e : { ...e, category: undefined }));
+      // Custom (`c_…`) kimlikler korunur; silinmişse görüntüde "Diğer"e düşer.
+      .map((e) => (isCategoryRef(e.category) ? e : { ...e, category: undefined }));
   }
 
   const expenses = s.expenses;

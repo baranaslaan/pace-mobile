@@ -3,38 +3,20 @@ import { StyleSheet, View, ScrollView } from "react-native";
 import { Text } from "../../../shared/typography/Text";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { useLimitLogic } from "../../limit-board/hooks/useLimitLogic";
-import { expensesByDay, weeklyTrend, weekdayBreakdown, categoryBreakdown, disciplineStreak, topExpenses } from "../../../shared/lib/engine";
-import { categoryById } from "../../../shared/lib/categories";
+import { expensesByDay, weeklyTrend, categoryBreakdown, topExpenses } from "../../../shared/lib/engine";
+import { useCategories } from "../../../shared/store/useCategories";
 import { useCurrency } from "../../../shared/store/useCurrency";
-import { useT, monthLabel, weekdaysShort, weekdaysFull } from "../../../shared/i18n";
-import { dayKey, monthKey } from "../../../shared/lib/date";
+import { useT, monthLabel } from "../../../shared/i18n";
+import { monthKey } from "../../../shared/lib/date";
 import { BottomSheet } from "../../../shared/ui/BottomSheet";
 import { ProUpsell } from "../../pro/components/ProUpsell";
 import { theme } from "../../../shared/styles/theme";
 
-const HISTORY_DAYS = 7;
-
-// Pazartesi-başlangıçlı görüntü sırası (JS getDay indeksi). Etiketler dile göre.
-const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
-
-interface DayBar {
-  key: string;
-  day: number;
-  amount: number;
-  isToday: boolean;
-}
-
-function recentDays(expenses: Record<string, number>, count: number): DayBar[] {
-  const today = new Date();
-  const out: DayBar[] = [];
-  for (let i = count - 1; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    if (d.getMonth() !== today.getMonth()) continue;
-    const key = dayKey(d);
-    out.push({ key, day: d.getDate(), amount: expenses[key] ?? 0, isToday: i === 0 });
-  }
-  return out;
+/** Bütçe kullanım yüzdesine göre çubuk/etiket rengi. */
+function usageColor(pct: number): string {
+  if (pct >= 100) return theme.colors.stateOver;
+  if (pct >= 80) return theme.colors.stateWarn;
+  return theme.colors.stateGood;
 }
 
 interface AnalyticsSheetProps {
@@ -47,36 +29,41 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
   const entries = usePaceStore((s) => s.entries);
   const archive = usePaceStore((s) => s.archive);
   const isPro = usePaceStore((s) => s.isPro);
+  const categoryBudgets = usePaceStore((s) => s.categoryBudgets);
+  const { resolve: resolveCat } = useCategories();
   const { forecast, stats } = useLimitLogic();
   const { fmt } = useCurrency();
   const { t, tu, lang } = useT();
-  const wdShort = weekdaysShort(lang);
-  const wdFull = weekdaysFull(lang);
 
   // Engine türetmelerini tek seferde memoize et — açık sheet'te her render'da
   // entries üzerinden tekrar tarama yapılmasını önler.
   const a = useMemo(() => {
     const expMap = expensesByDay(entries);
-    const days = recentDays(expMap, HISTORY_DAYS);
     const categories = categoryBreakdown(entries, monthKey());
-    const weekdays = weekdayBreakdown(expMap);
     const top = topExpenses(entries, monthKey(), 3);
     return {
-      days,
-      maxAmount: Math.max(1, ...days.map((d) => d.amount)),
       trend: weeklyTrend(expMap),
       categories,
       maxCategory: Math.max(1, ...categories.map((c) => c.total)),
-      weekdays,
-      maxWeekdayAvg: Math.max(1, ...weekdays.map((w) => w.avg)),
-      peak: weekdays.reduce((x, y) => (y.avg > x.avg ? y : x), weekdays[0]),
-      streak: disciplineStreak(expMap, stats.pool),
       top,
       maxTop: Math.max(1, ...top.map((e) => e.amount)),
     };
-  }, [entries, stats.pool]);
+  }, [entries]);
 
-  const { days, maxAmount, trend, categories, maxCategory, weekdays, maxWeekdayAvg, peak, streak, top, maxTop } = a;
+  const { trend, categories, maxCategory, top, maxTop } = a;
+
+  // Bütçe durumu: limit koyulmuş kategoriler, kullanıma göre (kritik en üstte).
+  const budgetRows = useMemo(() => {
+    const spentByCat: Record<string, number> = {};
+    for (const c of categories) spentByCat[c.categoryId] = c.total;
+    return Object.entries(categoryBudgets)
+      .map(([id, limit]) => {
+        const spent = spentByCat[id] ?? 0;
+        return { id, limit, spent, pct: limit > 0 ? (spent / limit) * 100 : 0 };
+      })
+      .sort((x, y) => y.pct - x.pct);
+  }, [categories, categoryBudgets]);
+
   const surplus = forecast.endBalance >= 0;
   const projected = Math.round(stats.pace * stats.total);
 
@@ -108,32 +95,6 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
           {/* Kilitli analiz yalnızca Pro'da çizilir — ücretsizde arkadan sızmasın. */}
           {isPro && (
             <>
-            {stats.pool > 0 && (
-              <>
-                <Text style={styles.sectionLabel}>{t("analytics.streak")}</Text>
-                <View style={styles.streakCard}>
-                  <View style={styles.streakCol}>
-                    <View style={styles.streakValueRow}>
-                      <Text style={styles.streakValue}>{streak.current}</Text>
-                      <Text style={styles.streakUnit}>{t("analytics.streakDaysLabel")}</Text>
-                    </View>
-                    <Text style={styles.streakCaption}>{tu("analytics.streakCurrent")}</Text>
-                  </View>
-                  <View style={styles.streakSep} />
-                  <View style={styles.streakCol}>
-                    <View style={styles.streakValueRow}>
-                      <Text style={styles.streakBestValue}>{streak.best}</Text>
-                      <Text style={styles.streakUnit}>{t("analytics.streakDaysLabel")}</Text>
-                    </View>
-                    <Text style={styles.streakCaption}>{tu("analytics.streakBest")}</Text>
-                  </View>
-                </View>
-                <Text style={styles.streakNote}>
-                  {t("analytics.streakNote", { target: fmt(streak.target) })}
-                </Text>
-              </>
-            )}
-
             <Text style={styles.sectionLabel}>{t("analytics.weeklyPace")}</Text>
             <View style={styles.trendCard}>
               <View style={styles.trendTop}>
@@ -170,61 +131,16 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
               )}
             </View>
 
-            <Text style={styles.sectionLabel}>{t("analytics.recentDays")}</Text>
-            <View style={styles.history}>
-              {days.map((d) => (
-                <View key={d.key} style={styles.row}>
-                  <Text style={[styles.day, d.isToday && styles.dayToday]}>
-                    {d.isToday ? t("analytics.today") : d.day}
-                  </Text>
-                  <View style={styles.barTrack}>
-                    <View style={[styles.bar, { width: `${(d.amount / maxAmount) * 100}%` }]} />
-                  </View>
-                  <Text style={styles.amount} numberOfLines={1} ellipsizeMode="tail">{fmt(d.amount)}</Text>
-                </View>
-              ))}
-            </View>
-
-            <Text style={styles.sectionLabel}>{t("analytics.weekdays")}</Text>
-            <View style={styles.weekChart}>
-              {WEEKDAY_ORDER.map((wd) => {
-                const stat = weekdays[wd];
-                const h = Math.max(4, (stat.avg / maxWeekdayAvg) * 64);
-                const isPeak = stat.avg > 0 && wd === peak.weekday;
-                return (
-                  <View key={wd} style={styles.weekCol}>
-                    <View style={styles.weekBarTrack}>
-                      <View
-                        style={[
-                          styles.weekBar,
-                          { height: h },
-                          isPeak ? styles.weekBarPeak : styles.weekBarDim,
-                        ]}
-                      />
-                    </View>
-                    <Text style={[styles.weekLabel, isPeak && styles.weekLabelPeak]}>
-                      {wdShort[wd]}
-                    </Text>
-                  </View>
-                );
-              })}
-            </View>
-            <Text style={styles.weekNote}>
-              {peak.avg > 0
-                ? t("analytics.weekNote", { day: wdFull[peak.weekday], avg: fmt(peak.avg) })
-                : t("analytics.weekNoData")}
-            </Text>
-
             {categories.length > 0 && (
               <>
                 <Text style={styles.sectionLabel}>{t("analytics.categories")}</Text>
                 <View style={styles.cats}>
                   {categories.map((c) => {
-                    const cat = categoryById(c.categoryId);
+                    const cat = resolveCat(c.categoryId);
                     return (
                       <View key={c.categoryId} style={styles.catRow}>
                         <View style={[styles.catDot, { backgroundColor: cat.color }]} />
-                        <Text style={styles.catName}>{t(`category.${c.categoryId}`)}</Text>
+                        <Text style={styles.catName}>{cat.name}</Text>
                         <View style={styles.catBarTrack}>
                           <View
                             style={[
@@ -242,14 +158,41 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
               </>
             )}
 
+            {budgetRows.length > 0 && (
+              <>
+                <Text style={styles.sectionLabel}>{t("analytics.budgetStatus")}</Text>
+                <View style={styles.cats}>
+                  {budgetRows.map((b) => {
+                    const cat = resolveCat(b.id);
+                    const barPct = Math.min(100, b.pct);
+                    return (
+                      <View key={b.id} style={styles.catRow}>
+                        <View style={[styles.catDot, { backgroundColor: cat.color }]} />
+                        <Text style={styles.catName}>{cat.name}</Text>
+                        <View style={styles.catBarTrack}>
+                          <View
+                            style={[styles.catBar, { width: `${barPct}%`, backgroundColor: usageColor(b.pct) }]}
+                          />
+                        </View>
+                        <Text style={styles.budgetAmount} numberOfLines={1} ellipsizeMode="tail">
+                          {fmt(b.spent)}
+                          <Text style={styles.budgetLimit}> / {fmt(b.limit)}</Text>
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </>
+            )}
+
             {top.length > 0 && (
               <>
                 <Text style={styles.sectionLabel}>{t("analytics.biggest")}</Text>
                 <View style={styles.tops}>
                   {top.map((e) => {
-                    const cat = categoryById(e.category);
+                    const cat = resolveCat(e.category);
                     const note = e.note?.trim();
-                    const label = t(`category.${cat.id}`);
+                    const label = cat.name;
                     return (
                       <View key={e.id} style={styles.topRow}>
                         <View style={[styles.catDot, { backgroundColor: cat.color }]} />
@@ -442,142 +385,11 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginTop: 12,
   },
-  weekChart: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    height: 84,
-    marginBottom: 12,
-  },
-  weekCol: {
-    flex: 1,
-    alignItems: "center",
-  },
-  weekBarTrack: {
-    height: 64,
-    justifyContent: "flex-end",
-    alignItems: "center",
-  },
-  weekBar: {
-    width: 16,
-    borderRadius: 5,
-  },
-  weekBarPeak: {
-    backgroundColor: theme.colors.stateGood,
-  },
-  weekBarDim: {
-    backgroundColor: "rgba(255, 255, 255, 0.12)",
-  },
-  weekLabel: {
-    marginTop: 8,
-    fontSize: 11,
-    fontWeight: "600",
-    color: theme.colors.textMute,
-  },
-  weekLabelPeak: {
-    color: theme.colors.textPrimary,
-  },
-  weekNote: {
-    fontSize: 13,
-    color: theme.colors.textSoft,
-    lineHeight: 19,
-    marginBottom: 32,
-  },
   sectionLabel: {
     fontSize: 14,
     fontWeight: "700",
     color: theme.colors.textPrimary,
     marginBottom: 16,
-  },
-  history: {
-    marginBottom: 32,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  day: {
-    width: 48,
-    fontSize: 13,
-    color: theme.colors.textSoft,
-    fontWeight: "500",
-  },
-  dayToday: {
-    color: theme.colors.textPrimary,
-    fontWeight: "700",
-  },
-  barTrack: {
-    flex: 1,
-    height: 24,
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    borderRadius: 6,
-    marginRight: 12,
-    overflow: "hidden",
-  },
-  bar: {
-    height: "100%",
-    backgroundColor: theme.colors.stateGood,
-    borderRadius: 6,
-    minWidth: 4,
-  },
-  amount: {
-    width: 60,
-    textAlign: "right",
-    fontSize: 14,
-    fontWeight: "600",
-    color: theme.colors.textPrimary,
-  },
-  streakCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.04)",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-  },
-  streakCol: {
-    flex: 1,
-    alignItems: "center",
-  },
-  streakSep: {
-    width: 1,
-    height: 36,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-  },
-  streakValueRow: {
-    flexDirection: "row",
-    alignItems: "baseline",
-  },
-  streakValue: {
-    fontSize: 30,
-    fontWeight: "800",
-    color: theme.colors.stateGood,
-    fontVariant: ["tabular-nums"],
-  },
-  streakBestValue: {
-    fontSize: 30,
-    fontWeight: "800",
-    color: theme.colors.textPrimary,
-    fontVariant: ["tabular-nums"],
-  },
-  streakUnit: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: theme.colors.textMute,
-    marginLeft: 4,
-  },
-  streakCaption: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: theme.colors.textMute,
-    letterSpacing: 0.5,
-    marginTop: 4,
-  },
-  streakNote: {
-    fontSize: 13,
-    color: theme.colors.textSoft,
-    lineHeight: 19,
-    marginBottom: 32,
   },
   tops: {
     marginBottom: 32,
@@ -671,6 +483,18 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: theme.colors.textPrimary,
     fontVariant: ["tabular-nums"],
+  },
+  budgetAmount: {
+    width: 104,
+    textAlign: "right",
+    fontSize: 12.5,
+    fontWeight: "700",
+    color: theme.colors.textPrimary,
+    fontVariant: ["tabular-nums"],
+  },
+  budgetLimit: {
+    color: theme.colors.textMute,
+    fontWeight: "500",
   },
   months: {
     marginBottom: 32,

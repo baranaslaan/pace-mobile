@@ -1,13 +1,14 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Text } from "../../../shared/typography/Text";
-import { ListIcon, RepeatIcon, GlobeIcon } from "../../../shared/ui/icons";
+import { ActivityIcon, ListIcon, RepeatIcon, GlobeIcon } from "../../../shared/ui/icons";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
 export function FeaturesStep() {
   const { t } = useT();
   const items = [
+    { Icon: ActivityIcon, title: t("features.alertsTitle"), desc: t("features.alertsDesc") },
     { Icon: ListIcon, title: t("features.categoriesTitle"), desc: t("features.categoriesDesc") },
     { Icon: RepeatIcon, title: t("features.recurringTitle"), desc: t("features.recurringDesc") },
     { Icon: GlobeIcon, title: t("features.localeTitle"), desc: t("features.localeDesc") },

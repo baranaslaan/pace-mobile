@@ -49,8 +49,91 @@ export function categoryById(id: string | undefined): Category {
   return (id && BY_ID[id]) || BY_ID[DEFAULT_CATEGORY_ID];
 }
 
-/** Dile göre kategori adı (uyarı metinleri, kategori bütçesi ekranı). */
-export function categoryLabel(id: string | undefined, lang: string): string {
-  const c = categoryById(id);
-  return lang === "en" ? c.labelEn : c.label;
+/* ---- Kullanıcı (custom) kategorileri ---------------------------------------
+   Yerleşik listeye eklenen, store'da tutulan kullanıcı kategorileri. Ad tek
+   dilde (kullanıcının yazdığı); renk hazır paletten. Yerleşiklerle birleşince
+   seçici/analiz/bütçe hepsinde görünür. Silinen bir custom kimlik, ona bağlı
+   kalemler için görüntüde "Diğer"e düşer (veri kaybı yok). */
+
+/** Kullanıcı kategorisinin kalıcı şekli (store). */
+export interface CustomCategory {
+  id: string;
+  label: string;
+  color: string;
+}
+
+/** Çözümlenmiş (görüntüye hazır) kategori — yerleşik + custom ortak tipi. */
+export interface ResolvedCategory {
+  id: string;
+  /** Görüntülenecek ad (yerleşik: i18n; custom: kullanıcının yazdığı). */
+  name: string;
+  color: string;
+  builtin: boolean;
+}
+
+/** Custom kategori kimlik öneki — kalıcı doğrulama bunu şekle göre tanır. */
+export const CUSTOM_CATEGORY_PREFIX = "c_";
+
+/**
+ * Geçerli bir kategori REFERANSI mi? Yerleşik kimlik VEYA custom-şekilli (`c_…`).
+ * Kalıcılık katmanında (migrate/recurring) kullanılır: bilinmeyen çöp ("uzaylı")
+ * elenir ama silinmiş bir custom kimlik ("c_…") korunur → görüntüde "Diğer"e düşer.
+ * Yazma yolunda store, gerçekten var olan kategoriyi ayrıca doğrular.
+ */
+export function isCategoryRef(id: unknown): id is string {
+  return (
+    isCategoryId(id) ||
+    (typeof id === "string" && id.startsWith(CUSTOM_CATEGORY_PREFIX))
+  );
+}
+
+/** Custom kategori rengi için küratörlü palet (marka tonuyla uyumlu). */
+export const CATEGORY_PALETTE = [
+  "#22c55e", "#f97316", "#3b82f6", "#d4a373",
+  "#a855f7", "#ef4444", "#14b8a6", "#eab308",
+  "#ec4899", "#8b5cf6", "#06b6d4", "#94a3b8",
+] as const;
+
+export function isCustomCategory(v: unknown): v is CustomCategory {
+  const c = v as CustomCategory;
+  return (
+    !!v &&
+    typeof c.id === "string" &&
+    c.id.length > 0 &&
+    typeof c.label === "string" &&
+    c.label.trim().length > 0 &&
+    typeof c.color === "string"
+  );
+}
+
+/** Yerleşik + custom kategorileri tek görüntü listesine birleştirir (saf). */
+export function buildCategoryList(
+  custom: CustomCategory[],
+  builtinName: (id: string) => string,
+): ResolvedCategory[] {
+  return [
+    ...CATEGORIES.map((c) => ({
+      id: c.id,
+      name: builtinName(c.id),
+      color: c.color,
+      builtin: true,
+    })),
+    ...custom.map((c) => ({ id: c.id, name: c.label, color: c.color, builtin: false })),
+  ];
+}
+
+/** Kimlikten çözümlenmiş kategori — bilinmeyen/eksik "Diğer"e düşer (asla null). */
+export function resolveCategory(
+  list: ResolvedCategory[],
+  id: string | undefined,
+): ResolvedCategory {
+  return (
+    list.find((c) => c.id === id) ??
+    list.find((c) => c.id === DEFAULT_CATEGORY_ID) ?? {
+      id: DEFAULT_CATEGORY_ID,
+      name: "Diğer",
+      color: "#94a3b8",
+      builtin: true,
+    }
+  );
 }

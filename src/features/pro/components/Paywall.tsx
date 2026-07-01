@@ -41,6 +41,7 @@ export function Paywall({ open, onClose }: PaywallProps) {
     t("paywall.benefit3"),
     t("paywall.benefit4"),
     t("paywall.benefit5"),
+    t("paywall.benefit6"),
   ];
   const [phase, setPhase] = useState<Phase>("idle");
   const [plan, setPlan] = useState<string>("lifetime");

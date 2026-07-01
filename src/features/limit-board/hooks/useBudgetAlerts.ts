@@ -18,7 +18,6 @@ import {
   type PaceSnapshot,
 } from "@/shared/lib/engine";
 import { monthKey } from "@/shared/lib/date";
-import { CATEGORIES, categoryLabel, type Category } from "@/shared/lib/categories";
 import {
   budgetUsagePct,
   thresholdsMet,
@@ -46,13 +45,12 @@ function overallMessage(threshold: number, lang: Language, pct: number): AlertTe
 }
 
 function categoryMessage(
-  cat: Category,
+  name: string,
   threshold: number,
   lang: Language,
   pct: number,
 ): AlertText {
   const over = threshold >= 100;
-  const name = categoryLabel(cat.id, lang);
   return {
     title: translate(lang, over ? "budgetAlert.catOverTitle" : "budgetAlert.catNearTitle", {
       cat: name,
@@ -75,6 +73,7 @@ export function useBudgetAlerts(): void {
   const subscriptions = usePaceStore((s) => s.subscriptions);
   const entries = usePaceStore((s) => s.entries);
   const categoryBudgets = usePaceStore((s) => s.categoryBudgets);
+  const customCategories = usePaceStore((s) => s.customCategories);
   const alertState = usePaceStore((s) => s.budgetAlertState);
   const setBudgetAlertState = usePaceStore((s) => s.setBudgetAlertState);
   const language = usePaceStore((s) => s.language) as Language;
@@ -100,6 +99,9 @@ export function useBudgetAlerts(): void {
     }
     const catUsage = (id: string) =>
       categoryBudgets[id] ? budgetUsagePct(spentByCat[id] ?? 0, categoryBudgets[id]) : null;
+    // Kategori adı: custom → kullanıcının yazdığı; yerleşik → i18n (UI ile aynı).
+    const nameOf = (id: string) =>
+      customCategories.find((c) => c.id === id)?.label ?? translate(language, `category.${id}`);
 
     // Yeni ay (ya da ilk değerlendirme): mevcut durumu sessizce tabanla — açılışta/
     // ay devrinde bayat uyarı atma, yalnızca bundan sonra YENİ aşımları bildir.
@@ -129,16 +131,16 @@ export function useBudgetAlerts(): void {
       nextCrossed = thresholdsMet(overallUsage, DEFAULT_BUDGET_THRESHOLDS);
     }
 
-    for (const cat of CATEGORIES) {
-      const usage = catUsage(cat.id);
+    for (const id of Object.keys(categoryBudgets)) {
+      const usage = catUsage(id);
       if (usage == null) continue;
-      const already = alertState.byCategory[cat.id] ?? [];
+      const already = alertState.byCategory[id] ?? [];
       const threshold = newlyCrossedThreshold(usage, already);
       if (threshold == null) continue;
-      toFire.push(categoryMessage(cat, threshold, language, usage));
+      toFire.push(categoryMessage(nameOf(id), threshold, language, usage));
       nextByCategory = {
         ...nextByCategory,
-        [cat.id]: thresholdsMet(usage, DEFAULT_BUDGET_THRESHOLDS),
+        [id]: thresholdsMet(usage, DEFAULT_BUDGET_THRESHOLDS),
       };
     }
 
@@ -154,6 +156,7 @@ export function useBudgetAlerts(): void {
     subscriptions,
     entries,
     categoryBudgets,
+    customCategories,
     alertState,
     setBudgetAlertState,
     language,

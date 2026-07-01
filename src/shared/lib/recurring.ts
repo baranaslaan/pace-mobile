@@ -11,7 +11,7 @@
    ============================================================= */
 
 import { dayKey } from "./date";
-import { isCategoryId } from "./categories";
+import { isCategoryRef } from "./categories";
 
 /** Hızlı ekleme şablonu (tek dokunuşla harcama). */
 export interface QuickTemplate {
@@ -51,7 +51,7 @@ function validBase(x: any): boolean {
     x.label.trim().length > 0 &&
     typeof x.amount === "number" &&
     x.amount > 0 &&
-    (x.category === undefined || isCategoryId(x.category))
+    (x.category === undefined || isCategoryRef(x.category))
   );
 }
 
