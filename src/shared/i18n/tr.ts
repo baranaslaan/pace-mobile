@@ -68,7 +68,7 @@ export const tr = {
 
   subsStep: {
     title: "Sabit giderlerin var mı?",
-    hint: "Kira, abonelik, kredi… Bütçenden peşin ayrılır, boş da geçebilirsin.",
+    hint: "Kira, abonelik, kredi… Bütçenden baştan düşülür, günlük harcamaya sayılmaz. Boş da geçebilirsin.",
     whatFor: "Ne için?",
     limitNote: "Ücretsiz planda en fazla {n} sabit gider. Pro ile sınırsız.",
   },
@@ -113,6 +113,8 @@ export const tr = {
       "Limitin her gün yeniden hesaplanır: az harcadığın gün artar, çok harcadığın gün kısılır. Dokun, anladım.",
     firstExpenseTip:
       "İlk harcamanı aşağıdaki kutudan ekle — tutarı yaz, bitti.",
+    firstResultTip:
+      "İşte tempon. Her harcamada güncellenir — bugün ne kadar kaldığını ve tempoda mısın gösterir.",
   },
 
   ring: {

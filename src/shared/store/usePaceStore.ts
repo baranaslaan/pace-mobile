@@ -59,7 +59,7 @@ function sanitizeCustomCategories(v: unknown): CustomCategory[] {
 
 /** Persist anahtarı ve şema sürümü — yedekleme/geri yükleme bunlara dayanır. */
 export const PERSIST_KEY = "pace-v1";
-export const PERSIST_VERSION = 12;
+export const PERSIST_VERSION = 13;
 
 const mmkvStorage = createMMKV({ id: "pace-storage" });
 
@@ -118,6 +118,8 @@ interface PaceState {
   rolloverTipSeen: boolean;
   /** İlk-harcama ipucu görüldü mü? (ilk kalem eklenince/dokununca kalıcı kapanır) */
   firstExpenseTipSeen: boolean;
+  /** İlk harcamadan SONRAKİ "işte tempon" onayı görüldü mü? (dokunma/otomatik) */
+  firstResultTipSeen: boolean;
   _hydrated: boolean;
 
   setBudget: (amount: number) => void;
@@ -161,6 +163,7 @@ interface PaceState {
   removeCustomCategory: (id: string) => void;
   markRolloverTipSeen: () => void;
   markFirstExpenseTipSeen: () => void;
+  markFirstResultTipSeen: () => void;
   rollIfNewMonth: () => void;
 }
 
@@ -189,6 +192,7 @@ export const usePaceStore = create<PaceState>()(
       customCategories: [],
       rolloverTipSeen: false,
       firstExpenseTipSeen: false,
+      firstResultTipSeen: false,
       _hydrated: false,
 
       setBudget: (amount) =>
@@ -290,7 +294,8 @@ export const usePaceStore = create<PaceState>()(
             note: tpl.label,
             ...(tpl.category ? { category: tpl.category } : {}),
           };
-          return { entries: [...s.entries, entry] };
+          // Şablon da bir harcamadır: ilk-açılış ipucunu kapat (addExpense ile simetrik).
+          return { entries: [...s.entries, entry], firstExpenseTipSeen: true };
         }),
 
       addRecurring: (rule) =>
@@ -437,6 +442,8 @@ export const usePaceStore = create<PaceState>()(
 
       markFirstExpenseTipSeen: () => set({ firstExpenseTipSeen: true }),
 
+      markFirstResultTipSeen: () => set({ firstResultTipSeen: true }),
+
       rollIfNewMonth: () =>
         set((s) => rollMonth(s, monthKey()) ?? s),
     }),
@@ -466,6 +473,7 @@ export const usePaceStore = create<PaceState>()(
         customCategories,
         rolloverTipSeen,
         firstExpenseTipSeen,
+        firstResultTipSeen,
       }) => ({
         budget,
         subscriptions,
@@ -489,6 +497,7 @@ export const usePaceStore = create<PaceState>()(
         customCategories,
         rolloverTipSeen,
         firstExpenseTipSeen,
+        firstResultTipSeen,
       }),
       version: PERSIST_VERSION,
       migrate: (persisted) => {
@@ -544,6 +553,9 @@ export const usePaceStore = create<PaceState>()(
           // Mevcut (zaten onboard olmuş) kullanıcılar ilk-açılış ipucunu görmesin.
           firstExpenseTipSeen:
             Boolean(s.firstExpenseTipSeen) || Boolean(s.onboarded),
+          // Aynı şekilde, mevcut kullanıcılar "işte tempon" onayını da görmesin.
+          firstResultTipSeen:
+            Boolean(s.firstResultTipSeen) || Boolean(s.onboarded),
         } as PaceState;
       },
     },

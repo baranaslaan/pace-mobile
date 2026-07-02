@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
 import { MotiView, MotiText, AnimatePresence } from "moti";
 import { getTone } from "../../../shared/lib/tone";
@@ -20,12 +20,25 @@ export function LimitBoard() {
   const markRolloverTipSeen = usePaceStore((s) => s.markRolloverTipSeen);
   const firstExpenseTipSeen = usePaceStore((s) => s.firstExpenseTipSeen);
   const markFirstExpenseTipSeen = usePaceStore((s) => s.markFirstExpenseTipSeen);
+  const firstResultTipSeen = usePaceStore((s) => s.firstResultTipSeen);
+  const markFirstResultTipSeen = usePaceStore((s) => s.markFirstResultTipSeen);
   // Devir görünür biçimde çalıştığı ilk anda, henüz görülmemişse tek seferlik ipucu.
   const showTip = !setup && rolloverActive && !rolloverTipSeen;
   // İlk açılış: bütçe kurulu ama henüz hiç harcama yokken aşağıdaki girişe yönlendir.
   // Devir ipucuyla yarışmasın diye onunla aynı anda gösterilmez.
   const showFirstTip =
     !setup && !showTip && spent === 0 && !firstExpenseTipSeen;
+  // "Aha" onayı: ilk harcama loglandıktan hemen sonra döngüyü isimlendir.
+  // firstExpenseTipSeen (uygulamada log atıldı) + spent>0 → gerçekten ilk sonuç.
+  const showResultTip =
+    !setup && !showTip && spent > 0 && firstExpenseTipSeen && !firstResultTipSeen;
+
+  // Sakin kalsın: onay birkaç saniye sonra kendiliğinden söner (dokunma da kapatır).
+  useEffect(() => {
+    if (!showResultTip) return;
+    const id = setTimeout(markFirstResultTipSeen, 6000);
+    return () => clearTimeout(id);
+  }, [showResultTip, markFirstResultTipSeen]);
 
   if (setup) {
     const oversubscribed = setup === "oversubscribed";
@@ -121,6 +134,24 @@ export function LimitBoard() {
               activeOpacity={0.8}
             >
               <Text style={styles.tipText}>{t("board.firstExpenseTip")}</Text>
+            </TouchableOpacity>
+          </MotiView>
+        )}
+
+        {showResultTip && (
+          <MotiView
+            key="resultTip"
+            from={{ opacity: 0, translateY: 8 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            exit={{ opacity: 0, translateY: 8 }}
+            transition={{ type: "timing", duration: 220 }}
+          >
+            <TouchableOpacity
+              style={styles.tip}
+              onPress={markFirstResultTipSeen}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.tipText}>{t("board.firstResultTip")}</Text>
             </TouchableOpacity>
           </MotiView>
         )}

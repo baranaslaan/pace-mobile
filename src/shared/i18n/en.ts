@@ -69,7 +69,7 @@ export const en: Catalog = {
 
   subsStep: {
     title: "Any fixed expenses?",
-    hint: "Rent, subscriptions, loans… reserved from your budget up front. Skip if you like.",
+    hint: "Rent, subscriptions, loans… deducted from your budget upfront, not counted as daily spending. Skip if you like.",
     whatFor: "What for?",
     limitNote: "Up to {n} fixed expenses on the free plan. Unlimited with Pro.",
   },
@@ -114,6 +114,8 @@ export const en: Catalog = {
       "Your limit recalculates daily: underspend and it rises, overspend and it tightens. Tap to dismiss.",
     firstExpenseTip:
       "Add your first expense in the box below — type the amount, done.",
+    firstResultTip:
+      "That's your pace. It updates with every expense — showing what's left today and whether you're on track.",
   },
 
   ring: {
