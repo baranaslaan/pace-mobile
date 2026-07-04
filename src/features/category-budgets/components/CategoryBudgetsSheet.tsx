@@ -111,6 +111,8 @@ export function CategoryBudgetsSheet({ open, onClose, onUpgrade }: CategoryBudge
                 onPress={() => setPaletteOpen((o) => !o)}
                 activeOpacity={0.7}
                 hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t("a11y.pickColor")}
               >
                 <View style={[styles.dot, styles.dotLg, { backgroundColor: newColor }]} />
               </TouchableOpacity>
@@ -130,6 +132,8 @@ export function CategoryBudgetsSheet({ open, onClose, onUpgrade }: CategoryBudge
                 onPress={submitNew}
                 disabled={!canAdd}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={t("a11y.add")}
               >
                 <PlusIcon color="#fff" />
               </TouchableOpacity>
@@ -151,6 +155,9 @@ export function CategoryBudgetsSheet({ open, onClose, onUpgrade }: CategoryBudge
                     activeOpacity={0.7}
                     hitSlop={4}
                     style={[styles.swatch, newColor === color && styles.swatchOn]}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("a11y.pickColor")}
+                    accessibilityState={{ selected: newColor === color }}
                   >
                     <View style={[styles.swatchFill, { backgroundColor: color }]} />
                   </TouchableOpacity>
@@ -174,6 +181,7 @@ interface RowProps {
 }
 
 function CategoryBudgetRow({ category, spentBase, limitBase, onCommit, onDelete, pctLabel }: RowProps) {
+  const { t } = useT();
   const { symbol, fmt, toBase, groupLive, toGroupedInput } = useCurrency();
   const grouped = toGroupedInput(limitBase);
   const [draft, setDraft] = useState(grouped);
@@ -202,7 +210,14 @@ function CategoryBudgetRow({ category, spentBase, limitBase, onCommit, onDelete,
           <View style={[styles.dot, { backgroundColor: category.color }]} />
           <Text style={styles.name}>{category.name}</Text>
           {onDelete && (
-            <TouchableOpacity onPress={onDelete} activeOpacity={0.6} hitSlop={8} style={styles.del}>
+            <TouchableOpacity
+              onPress={onDelete}
+              activeOpacity={0.6}
+              hitSlop={8}
+              style={styles.del}
+              accessibilityRole="button"
+              accessibilityLabel={`${category.name}, ${t("a11y.delete")}`}
+            >
               <TrashIcon size={14} color={theme.colors.textDim} />
             </TouchableOpacity>
           )}

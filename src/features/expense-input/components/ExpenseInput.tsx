@@ -113,6 +113,8 @@ export function ExpenseInput({ bottomInset = 0 }: { bottomInset?: number }) {
             onPress={submit}
             disabled={!valid}
             activeOpacity={0.86}
+            accessibilityRole="button"
+            accessibilityLabel={t("a11y.addExpense")}
           >
             <ArrowUpIcon color="#fff" />
           </TouchableOpacity>

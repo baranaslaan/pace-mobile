@@ -129,6 +129,8 @@ export default function AppIndex() {
                   setMenuOpen(!menuOpen);
                 }}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={translate(language, "a11y.menu")}
               >
                 <MoreIcon color={theme.colors.textPrimary} />
               </TouchableOpacity>

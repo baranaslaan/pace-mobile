@@ -13,6 +13,7 @@ import Animated, {
 import { XIcon } from "./icons";
 import { theme } from "../styles/theme";
 import { Text } from "../typography/Text";
+import { useT } from "../i18n";
 
 interface BottomSheetProps {
   open: boolean;
@@ -27,6 +28,7 @@ const CLOSE_DISTANCE = 120;
 const CLOSE_VELOCITY = 800;
 
 export function BottomSheet({ open, onClose, title, children }: BottomSheetProps) {
+  const { t } = useT();
   // Çıkış animasyonu bitene kadar DOM'da kalsın diye iç "mounted" durumu.
   const [mounted, setMounted] = useState(open);
   const translateY = useSharedValue(SCREEN_HEIGHT);
@@ -110,7 +112,13 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
     <View style={[StyleSheet.absoluteFill, { zIndex: 30 }]} pointerEvents="box-none">
       {/* Backdrop — sürükledikçe sönen */}
       <Animated.View style={[styles.backdrop, backdropStyle]}>
-        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
+        <TouchableOpacity
+          style={StyleSheet.absoluteFill}
+          activeOpacity={1}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={t("a11y.close")}
+        />
       </Animated.View>
 
       {/* Sheet */}
@@ -121,7 +129,13 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
             <View style={styles.grabber} />
             <View style={styles.head}>
               <Text style={styles.title}>{title}</Text>
-              <TouchableOpacity style={styles.close} onPress={onClose} activeOpacity={0.7}>
+              <TouchableOpacity
+                style={styles.close}
+                onPress={onClose}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={t("a11y.close")}
+              >
                 <XIcon size={16} color={theme.colors.textSoft} />
               </TouchableOpacity>
             </View>

@@ -12,6 +12,18 @@ export const en: Catalog = {
     pct: "{n}%",
   },
 
+  // Screen-reader labels for icon-only controls (invisible, read aloud).
+  a11y: {
+    close: "Close",
+    menu: "Menu",
+    back: "Back",
+    addExpense: "Add expense",
+    add: "Add",
+    delete: "Delete",
+    changeCategory: "Change category",
+    pickColor: "Pick color",
+  },
+
   tone: {
     good: "on track",
     warn: "watch out",

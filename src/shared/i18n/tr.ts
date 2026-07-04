@@ -11,6 +11,18 @@ export const tr = {
     pct: "%{n}",
   },
 
+  // Ekran okuyucu etiketleri — ikon-only kontroller için (görünmez, sesli okunur).
+  a11y: {
+    close: "Kapat",
+    menu: "Menü",
+    back: "Geri",
+    addExpense: "Harcama ekle",
+    add: "Ekle",
+    delete: "Sil",
+    changeCategory: "Kategoriyi değiştir",
+    pickColor: "Renk seç",
+  },
+
   tone: {
     good: "iyi gidiyor",
     warn: "dikkatli ol",

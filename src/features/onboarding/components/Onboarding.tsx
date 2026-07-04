@@ -71,6 +71,8 @@ export function Onboarding() {
               style={styles.back}
               onPress={flow.goBack}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={t("a11y.back")}
             >
               <ChevronLeftIcon color="rgba(255,255,255,0.5)" />
             </TouchableOpacity>

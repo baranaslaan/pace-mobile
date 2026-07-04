@@ -72,6 +72,8 @@ export function SubscriptionsStep({
           onPress={submit}
           disabled={!canAdd}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t("a11y.add")}
         >
           <PlusIcon color="#fff" />
         </TouchableOpacity>
@@ -100,6 +102,8 @@ export function SubscriptionsStep({
                 style={styles.remove}
                 onPress={() => onRemove(sub.id)}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`${sub.name}, ${t("a11y.delete")}`}
               >
                 <XIcon size={14} color={theme.colors.textDim} />
               </TouchableOpacity>

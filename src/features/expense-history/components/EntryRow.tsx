@@ -66,6 +66,8 @@ export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
         onPress={cycleCategory}
         activeOpacity={0.6}
         hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
+        accessibilityRole="button"
+        accessibilityLabel={`${t("a11y.changeCategory")}: ${cat.name}`}
       >
         <View style={[styles.catDot, { backgroundColor: cat.color }]} />
       </TouchableOpacity>
@@ -101,6 +103,8 @@ export function EntryRow({ entry, onUpdate, onRemove }: EntryRowProps) {
         style={styles.remove}
         onPress={() => onRemove(entry.id)}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={t("a11y.delete")}
       >
         <TrashIcon color={theme.colors.textDim} />
       </TouchableOpacity>

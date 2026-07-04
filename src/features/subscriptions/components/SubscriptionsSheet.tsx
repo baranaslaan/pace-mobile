@@ -117,6 +117,8 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
             onPress={submit}
             disabled={!canAdd}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={t("a11y.add")}
           >
             <PlusIcon color="#fff" />
           </TouchableOpacity>

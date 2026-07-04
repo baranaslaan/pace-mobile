@@ -11,8 +11,6 @@ export interface Category {
   id: string;
   /** Görünen ad (TR). */
   label: string;
-  /** Görünen ad (EN). */
-  labelEn: string;
   /** Nokta/çubuk rengi (hex). */
   color: string;
 }
@@ -25,14 +23,14 @@ export const DEFAULT_CATEGORY_ID = "diger";
  * varsayılandır. Yeni kategori eklerken `id`'leri ASLA değiştirme (kalıcı veri).
  */
 export const CATEGORIES: Category[] = [
-  { id: "market", label: "Market", labelEn: "Groceries", color: "#22c55e" },
-  { id: "yemek", label: "Yemek", labelEn: "Food", color: "#f97316" },
-  { id: "ulasim", label: "Ulaşım", labelEn: "Transit", color: "#3b82f6" },
-  { id: "kahve", label: "Kahve", labelEn: "Coffee", color: "#d4a373" },
-  { id: "eglence", label: "Eğlence", labelEn: "Fun", color: "#a855f7" },
-  { id: "fatura", label: "Fatura", labelEn: "Bills", color: "#ef4444" },
-  { id: "saglik", label: "Sağlık", labelEn: "Health", color: "#14b8a6" },
-  { id: DEFAULT_CATEGORY_ID, label: "Diğer", labelEn: "Other", color: "#94a3b8" },
+  { id: "market", label: "Market", color: "#22c55e" },
+  { id: "yemek", label: "Yemek", color: "#f97316" },
+  { id: "ulasim", label: "Ulaşım", color: "#3b82f6" },
+  { id: "kahve", label: "Kahve", color: "#d4a373" },
+  { id: "eglence", label: "Eğlence", color: "#a855f7" },
+  { id: "fatura", label: "Fatura", color: "#ef4444" },
+  { id: "saglik", label: "Sağlık", color: "#14b8a6" },
+  { id: DEFAULT_CATEGORY_ID, label: "Diğer", color: "#94a3b8" },
 ];
 
 const BY_ID: Record<string, Category> = Object.fromEntries(

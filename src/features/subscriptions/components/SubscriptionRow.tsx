@@ -5,6 +5,7 @@ import { MotiView } from "moti";
 import { TrashIcon } from "../../../shared/ui/icons";
 import { useCurrency } from "../../../shared/store/useCurrency";
 import { parseGrouped } from "../../../shared/lib/money";
+import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
 interface SubscriptionRowProps {
@@ -15,6 +16,7 @@ interface SubscriptionRowProps {
 
 export function SubscriptionRow({ sub, onUpdateAmount, onRemove }: SubscriptionRowProps) {
   const { symbol, toBase, groupLive, toGroupedInput } = useCurrency();
+  const { t } = useT();
   // Yazarken de blur'da da binlik ayıraçlı — tek tutarlı biçim.
   const grouped = toGroupedInput(sub.amount);
   const [draft, setDraft] = useState(grouped);
@@ -61,6 +63,8 @@ export function SubscriptionRow({ sub, onUpdateAmount, onRemove }: SubscriptionR
         style={styles.remove}
         onPress={() => onRemove(sub.id)}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`${sub.name}, ${t("a11y.delete")}`}
       >
         <TrashIcon color={theme.colors.textSoft} />
       </TouchableOpacity>

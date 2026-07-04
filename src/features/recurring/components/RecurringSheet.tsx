@@ -134,7 +134,13 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
               <View style={[styles.dot, { backgroundColor: resolveCat(tpl.category).color }]} />
               <Text style={styles.itemName} numberOfLines={1}>{tpl.label}</Text>
               <Text style={styles.itemAmount} numberOfLines={1}>{fmt(tpl.amount)}</Text>
-              <TouchableOpacity style={styles.remove} onPress={() => removeTemplate(tpl.id)} activeOpacity={0.7}>
+              <TouchableOpacity
+                style={styles.remove}
+                onPress={() => removeTemplate(tpl.id)}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`${tpl.label}, ${t("a11y.delete")}`}
+              >
                 <TrashIcon color={theme.colors.textSoft} />
               </TouchableOpacity>
             </MotiView>
@@ -182,6 +188,8 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
                 onPress={submitQuick}
                 disabled={!qValid}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel={t("a11y.add")}
               >
                 <PlusIcon color="#fff" />
               </TouchableOpacity>
@@ -212,7 +220,13 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
                 <Text style={styles.ruleSummary}>{ruleSummary(r.cadence, r.day)}</Text>
               </View>
               <Text style={styles.itemAmount} numberOfLines={1}>{fmt(r.amount)}</Text>
-              <TouchableOpacity style={styles.remove} onPress={() => removeRecurring(r.id)} activeOpacity={0.7}>
+              <TouchableOpacity
+                style={styles.remove}
+                onPress={() => removeRecurring(r.id)}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`${r.label}, ${t("a11y.delete")}`}
+              >
                 <TrashIcon color={theme.colors.textSoft} />
               </TouchableOpacity>
             </MotiView>
@@ -251,6 +265,8 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
             onPress={submitScheduled}
             disabled={!sValid}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={t("a11y.add")}
           >
             <PlusIcon color="#fff" />
           </TouchableOpacity>
