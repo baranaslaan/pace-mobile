@@ -6,6 +6,7 @@ import { Easing } from "react-native-reanimated";
 import { usePaceStore } from "../../../shared/store/usePaceStore";
 import { ActivityIcon, CardIcon, ListIcon, RepeatIcon, SettingsIcon, SparklesIcon } from "../../../shared/ui/icons";
 import { useT } from "../../../shared/i18n";
+import { useBackClose } from "../../../shared/lib/useBackClose";
 import { theme } from "../../../shared/styles/theme";
 
 interface MoreMenuProps {
@@ -31,6 +32,8 @@ export function MoreMenu({
 }: MoreMenuProps) {
   const isPro = usePaceStore((s) => s.isPro);
   const { t } = useT();
+  // Android donanım geri tuşu: menü açıkken uygulamadan çıkmak yerine kapat.
+  useBackClose(open, onClose);
   return (
     <AnimatePresence>
       {open && (

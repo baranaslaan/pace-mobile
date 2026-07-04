@@ -13,6 +13,7 @@ import { RecapStep } from "./RecapStep";
 import { StepDots } from "./StepDots";
 import { tapSuccess } from "../../../shared/lib/haptics";
 import { parseGrouped } from "../../../shared/lib/money";
+import { useBackClose } from "../../../shared/lib/useBackClose";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
@@ -25,6 +26,10 @@ export function Onboarding() {
   const flow = useOnboardingFlow();
   const { t } = useT();
   const { step, direction } = flow;
+
+  // Android donanım geri tuşu: ilk adımdan sonra bir önceki adıma dön
+  // (uygulamadan çıkma). İlk adımda (step 0) varsayılan çıkışa izin verilir.
+  useBackClose(step > 0, flow.goBack);
 
   // finish() ile aynı parse — girdi binlik ayıraçlı (groupLive) olduğundan
   // parseFloat yanlış yorumlar (TR'de "1.500" → 1.5); parseGrouped doğru okur.

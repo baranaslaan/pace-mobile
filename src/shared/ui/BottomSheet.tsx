@@ -14,6 +14,7 @@ import { XIcon } from "./icons";
 import { theme } from "../styles/theme";
 import { Text } from "../typography/Text";
 import { useT } from "../i18n";
+import { useBackClose } from "../lib/useBackClose";
 
 interface BottomSheetProps {
   open: boolean;
@@ -29,6 +30,8 @@ const CLOSE_VELOCITY = 800;
 
 export function BottomSheet({ open, onClose, title, children }: BottomSheetProps) {
   const { t } = useT();
+  // Android donanım geri tuşu: sheet açıkken uygulamadan çıkmak yerine kapat.
+  useBackClose(open, onClose);
   // Çıkış animasyonu bitene kadar DOM'da kalsın diye iç "mounted" durumu.
   const [mounted, setMounted] = useState(open);
   const translateY = useSharedValue(SCREEN_HEIGHT);

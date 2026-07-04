@@ -81,6 +81,9 @@ export default function AppIndex() {
   }, [hydrated, reminderEnabled, reminderHour, reminderMinute, language]);
 
   const [menuOpen, setMenuOpen] = useState(false);
+  // Kararlı referans: MoreMenu'nun Android geri-tuşu köprüsü onClose kimliğine
+  // bağlı — her render'da yeniden register etmemek için memoize.
+  const closeMenu = React.useCallback(() => setMenuOpen(false), []);
 
   return (
     <View style={styles.screen}>
@@ -145,7 +148,7 @@ export default function AppIndex() {
             <ExpenseInput bottomInset={insets.bottom} />
           </View>
 
-          <AppSheets menuOpen={menuOpen} onCloseMenu={() => setMenuOpen(false)} />
+          <AppSheets menuOpen={menuOpen} onCloseMenu={closeMenu} />
         </MotiView>
       )}
       </AnimatePresence>

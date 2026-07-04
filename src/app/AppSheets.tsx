@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { MoreMenu } from "../features/menu/components/MoreMenu";
 import { SubscriptionsSheet } from "../features/subscriptions/components/SubscriptionsSheet";
 import { HistorySheet } from "../features/expense-history/components/HistorySheet";
@@ -38,17 +38,22 @@ export function AppSheets({ menuOpen, onCloseMenu }: AppSheetsProps) {
   // tekrar açılış sorunsuz çalışsın diye).
   const [everOpened, setEverOpened] = useState<Set<Sheet>>(() => new Set());
 
-  const open = (s: Sheet) => {
+  // Kararlı referanslar: sheet'lerin geri-tuşu köprüsü (useBackClose) onClose
+  // kimliğine bağlı — her render'da yeniden register etmemek için memoize.
+  const open = useCallback((s: Sheet) => {
     setEverOpened((prev) => (prev.has(s) ? prev : new Set(prev).add(s)));
     setActive(s);
-  };
-  const close = () => setActive("none");
-  const upgrade = () => open("paywall");
+  }, []);
+  const close = useCallback(() => setActive("none"), []);
+  const upgrade = useCallback(() => open("paywall"), [open]);
   // Menüden açılışlar: önce menüyü kapat, sonra hedef sheet'i aç.
-  const openFromMenu = (s: Sheet) => {
-    onCloseMenu();
-    open(s);
-  };
+  const openFromMenu = useCallback(
+    (s: Sheet) => {
+      onCloseMenu();
+      open(s);
+    },
+    [onCloseMenu, open],
+  );
 
   return (
     <>
