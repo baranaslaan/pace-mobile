@@ -208,7 +208,7 @@ function CategoryBudgetRow({ category, spentBase, limitBase, onCommit, onDelete,
       <View style={styles.rowTop}>
         <View style={styles.nameWrap}>
           <View style={[styles.dot, { backgroundColor: category.color }]} />
-          <Text style={styles.name}>{category.name}</Text>
+          <Text style={styles.name} numberOfLines={1}>{category.name}</Text>
           {onDelete && (
             <TouchableOpacity
               onPress={onDelete}
@@ -297,6 +297,7 @@ const styles = StyleSheet.create({
     borderRadius: 7,
   },
   name: {
+    flexShrink: 1,
     fontSize: 16,
     fontWeight: "600",
     fontFamily: theme.fonts.outfitSemi,

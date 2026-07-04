@@ -12,6 +12,7 @@ import { FeaturesStep } from "./FeaturesStep";
 import { RecapStep } from "./RecapStep";
 import { StepDots } from "./StepDots";
 import { tapSuccess } from "../../../shared/lib/haptics";
+import { parseGrouped } from "../../../shared/lib/money";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
 
@@ -25,7 +26,9 @@ export function Onboarding() {
   const { t } = useT();
   const { step, direction } = flow;
 
-  const parsedBudget = Number.parseFloat(flow.budget);
+  // finish() ile aynı parse — girdi binlik ayıraçlı (groupLive) olduğundan
+  // parseFloat yanlış yorumlar (TR'de "1.500" → 1.5); parseGrouped doğru okur.
+  const parsedBudget = parseGrouped(flow.budget);
   const budgetValid = !Number.isNaN(parsedBudget) && parsedBudget > 0;
   const advanceBudget = () => budgetValid && flow.goNext();
 

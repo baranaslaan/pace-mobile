@@ -169,6 +169,7 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
                 placeholder={t("recurring.name")}
                 placeholderTextColor={theme.colors.textDim}
                 value={qName}
+                maxLength={24}
                 onChangeText={setQName}
               />
               <View style={styles.amountField}>
@@ -246,6 +247,7 @@ export function RecurringSheet({ open, onClose, onUpgrade }: RecurringSheetProps
             placeholder={t("recurring.name")}
             placeholderTextColor={theme.colors.textDim}
             value={sName}
+            maxLength={24}
             onChangeText={setSName}
           />
           <View style={styles.amountField}>

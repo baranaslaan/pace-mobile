@@ -96,6 +96,7 @@ export function SubscriptionsSheet({ open, onClose, onUpgrade }: SubscriptionsSh
             placeholder={t("subs.whatFor")}
             placeholderTextColor={theme.colors.textDim}
             value={name}
+            maxLength={24}
             onChangeText={setName}
             onSubmitEditing={submit}
           />

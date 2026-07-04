@@ -140,7 +140,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                     return (
                       <View key={c.categoryId} style={styles.catRow}>
                         <View style={[styles.catDot, { backgroundColor: cat.color }]} />
-                        <Text style={styles.catName}>{cat.name}</Text>
+                        <Text style={styles.catName} numberOfLines={1}>{cat.name}</Text>
                         <View style={styles.catBarTrack}>
                           <View
                             style={[
@@ -168,7 +168,7 @@ export function AnalyticsSheet({ open, onClose, onUpgrade }: AnalyticsSheetProps
                     return (
                       <View key={b.id} style={styles.catRow}>
                         <View style={[styles.catDot, { backgroundColor: cat.color }]} />
-                        <Text style={styles.catName}>{cat.name}</Text>
+                        <Text style={styles.catName} numberOfLines={1}>{cat.name}</Text>
                         <View style={styles.catBarTrack}>
                           <View
                             style={[styles.catBar, { width: `${barPct}%`, backgroundColor: usageColor(b.pct) }]}

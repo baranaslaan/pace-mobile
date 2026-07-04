@@ -51,6 +51,7 @@ export function SubscriptionsStep({
           placeholder={t("subsStep.whatFor")}
           placeholderTextColor={theme.colors.textMute}
           value={name}
+          maxLength={24}
           onChangeText={setName}
           onSubmitEditing={submit}
         />

@@ -138,6 +138,9 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions, o
       Alert.alert(t("settings.noDataTitle"), t("settings.noDataBody"));
       return;
     }
+    // Paylaşımdan sonra silinsin diye try dışında — hassas finansal veri
+    // cache'de düz metin olarak kalmamalı.
+    let file: File | null = null;
     try {
       setExporting(true);
       // UTF-8 BOM → Excel'in Türkçe karakterleri doğru okuması için.
@@ -155,7 +158,7 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions, o
             note: t("csv.note"),
           },
         });
-      const file = new File(Paths.cache, "pace-expenses.csv");
+      file = new File(Paths.cache, "pace-expenses.csv");
       file.create({ overwrite: true });
       file.write(csv);
       await Share.share({ url: file.uri, title: "pace" });
@@ -163,6 +166,8 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions, o
       Alert.alert(t("settings.exportFailTitle"), t("settings.exportFailBody"));
     } finally {
       setExporting(false);
+      // Paylaşım tamamlandı/iptal edildi — geçici dosyayı temizle.
+      if (file?.exists) try { file.delete(); } catch {}
     }
   };
 
@@ -170,12 +175,15 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions, o
   // veri kaybı koruması temel bir güven özelliği (CSV/analiz Pro'da kalır).
   const handleBackup = async () => {
     if (backingUp) return;
+    // Paylaşımdan sonra silinsin diye try dışında — yedek tüm state'i düz metin
+    // içerir, cache'de kalmamalı.
+    let file: File | null = null;
     try {
       setBackingUp(true);
       // getItem senkron (MMKV) — StateStorage tipi async union döndürse de.
       const raw = zustandStorage.getItem(PERSIST_KEY) as string | null;
       const json = serializeBackup(raw, { appVersion: VERSION });
-      const file = new File(Paths.cache, "pace-backup.json");
+      file = new File(Paths.cache, "pace-backup.json");
       file.create({ overwrite: true });
       file.write(json);
       await Share.share({ url: file.uri, title: "pace" });
@@ -187,6 +195,8 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions, o
       }
     } finally {
       setBackingUp(false);
+      // Paylaşım tamamlandı/iptal edildi — geçici dosyayı temizle.
+      if (file?.exists) try { file.delete(); } catch {}
     }
   };
 
@@ -214,7 +224,10 @@ export function SettingsSheet({ open, onClose, onUpgrade, onOpenSubscriptions, o
         copyToCacheDirectory: true,
       });
       if (picked.canceled) return;
-      const text = await new File(picked.assets[0].uri).text();
+      // DocumentPicker cache'e kopyalar; okuduktan sonra düz-metin kopyayı sil.
+      const src = new File(picked.assets[0].uri);
+      const text = await src.text();
+      try { if (src.exists) src.delete(); } catch {}
       const blob = parseBackup(text);
       // version'ı 0'a düşür → rehydrate her zaman migrate'i çalıştırır, böylece
       // her alan store'un kendi doğrulamasından geçer (kötü/eski veri temizlenir).
