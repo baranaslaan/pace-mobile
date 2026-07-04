@@ -287,7 +287,6 @@ export const tr = {
     lifetimeNote: "tek seferlik ödeme",
     annual: "Yıllık",
     annualNote: "yılda bir yenilenir",
-    bestValue: "En avantajlı",
     founderBadge: "Kurucu fiyatı",
     launchNote: "İlklere özel — kısa süreliğine senin fiyatın",
     processing: "İşleniyor…",

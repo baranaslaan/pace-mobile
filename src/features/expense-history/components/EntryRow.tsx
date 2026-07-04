@@ -9,10 +9,14 @@ import { useCurrency } from "../../../shared/store/useCurrency";
 import { parseGrouped } from "../../../shared/lib/money";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
+import type { ExpenseEntry } from "../../../shared/lib/engine";
 
 interface EntryRowProps {
-  entry: any;
-  onUpdate: (id: string, patch: any) => void;
+  entry: ExpenseEntry;
+  onUpdate: (
+    id: string,
+    patch: Partial<Pick<ExpenseEntry, "amount" | "note" | "category">>,
+  ) => void;
   onRemove: (id: string) => void;
 }
 

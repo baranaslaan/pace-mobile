@@ -6,6 +6,7 @@ import { RingAura } from "./RingAura";
 import { useCurrency } from "../../../shared/store/useCurrency";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
+import type { Tone } from "../../../shared/lib/tone";
 import Animated, { useAnimatedProps, withTiming } from "react-native-reanimated";
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -23,7 +24,13 @@ function fitFontSize(length: number): number {
   return 32;
 }
 
-export function Ring({ remaining, limit, tone }: any) {
+interface RingProps {
+  remaining: number;
+  limit: number;
+  tone: Tone;
+}
+
+export function Ring({ remaining, limit, tone }: RingProps) {
   const { symbol, fmtNum, toDisplay } = useCurrency();
   const { t, tu } = useT();
   const over = tone.key === "over";

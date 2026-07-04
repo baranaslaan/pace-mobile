@@ -7,9 +7,10 @@ import { useCurrency } from "../../../shared/store/useCurrency";
 import { parseGrouped } from "../../../shared/lib/money";
 import { useT } from "../../../shared/i18n";
 import { theme } from "../../../shared/styles/theme";
+import type { Subscription } from "../../../shared/lib/engine";
 
 interface SubscriptionRowProps {
-  sub: any;
+  sub: Subscription;
   onUpdateAmount: (id: string, amount: number) => void;
   onRemove: (id: string) => void;
 }

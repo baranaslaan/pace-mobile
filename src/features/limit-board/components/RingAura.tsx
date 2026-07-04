@@ -9,13 +9,14 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
+import type { Tone } from "../../../shared/lib/tone";
 
 export function RingAura({
   tone,
   size,
   alarm = false,
 }: {
-  tone: { rgb: string; color: string; label: string; key: string };
+  tone: Tone;
   size: number;
   alarm?: boolean;
 }) {
